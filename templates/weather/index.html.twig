@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Weather Information{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-cloud-sun"></i> Weather Information
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                    <div class="mb-3">
+                        {{ form_label(form.destination, 'Enter Destination') }}
+                        {{ form_widget(form.destination) }}
+                        {{ form_errors(form.destination) }}
+                    </div>
+                    <div class="text-center">
+                        {{ form_widget(form.search) }}
+                    </div>
+                    {{ form_end(form) }}
+
+                    {% if error %}
+                        <div class="alert alert-danger mt-3" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                        </div>
+                    {% endif %}
+
+                    {% if weatherData %}
+                        <div class="mt-4">
+                            <h4 class="text-center mb-4">
+                                <i class="fas fa-map-marker-alt"></i> 
+                                {{ weatherData.city }}, {{ weatherData.country }}
+                            </h4>
+                            
+                            <div class="row text-center">
+                                <div class="col-md-6">
+                                    <div class="weather-main">
+                                        <img src="https://openweathermap.org/img/wn/{{ weatherData.icon }}@2x.png" 
+                                             alt="{{ weatherData.description }}" 
+                                             class="weather-icon">
+                                        <div class="temperature">
+                                            <h2>{{ weatherData.temperature|round }}°C</h2>
+                                            <p class="text-capitalize">{{ weatherData.description }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="weather-details">
+                                        <p><strong>Feels like:</strong> {{ weatherData.feels_like|round }}°C</p>
+                                        <p><strong>Humidity:</strong> {{ weatherData.humidity }}%</p>
+                                        <p><strong>Pressure:</strong> {{ weatherData.pressure }} hPa</p>
+                                        <p><strong>Wind Speed:</strong> {{ weatherData.wind_speed }} m/s</p>
+                                        <p><strong>Wind Direction:</strong> {{ weatherData.wind_direction }}°</p>
+                                        <p><strong>Visibility:</strong> {{ weatherData.visibility / 1000 }} km</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.weather-main {
+    text-align: center;
+    padding: 20px;
+}
+
+.weather-icon {
+    width: 100px;
+    height: 100px;
+}
+
+.temperature h2 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #007bff;
+    margin: 10px 0;
+}
+
+.weather-details {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.weather-details p {
+    margin: 10px 0;
+    font-size: 1.1rem;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-control {
+    font-size: 1.1rem;
+    padding: 12px;
+}
+
+.btn-primary {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}
