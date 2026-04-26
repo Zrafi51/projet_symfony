@@ -26,12 +26,12 @@ class WeatherController extends AbstractController
             ->add('destination', TextType::class, [
                 'label' => 'Destination',
                 'attr' => [
-                    'placeholder' => 'Enter city name...',
+                    'placeholder' => 'Entrez le nom de la ville...',
                     'class' => 'form-control'
                 ]
             ])
             ->add('search', SubmitType::class, [
-                'label' => 'Get Weather',
+                'label' => 'Obtenir la météo',
                 'attr' => ['class' => 'btn btn-primary mt-2']
             ])
             ->getForm();
@@ -47,7 +47,7 @@ class WeatherController extends AbstractController
             try {
                 $weatherData = $this->getWeatherData($destination);
             } catch (\Exception $e) {
-                $error = 'Unable to fetch weather data. Please check the city name and try again.';
+                $error = 'Impossible de récupérer les données météo. Veuillez vérifier le nom de la ville et réessayer.';
             }
         }
 
@@ -60,14 +60,14 @@ class WeatherController extends AbstractController
 
     private function getWeatherData(string $city): array
     {
-        // Using OpenWeatherMap API with your API key
+        // Using OpenWeatherMap API 
         $apiKey = 'd937c4d5e323ba07156fa97da211a4ae';
         $url = "https://api.openweathermap.org/data/2.5/weather?q={$city}&appid={$apiKey}&units=metric";
 
         $response = $this->httpClient->request('GET', $url);
         
         if ($response->getStatusCode() !== 200) {
-            throw new \Exception('Weather API request failed');
+            throw new \Exception('La requête API météo a échoué');
         }
 
         $data = $response->toArray();
