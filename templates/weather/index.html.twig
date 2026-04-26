@@ -1,67 +1,144 @@
-{% extends 'base.html.twig' %}
+{% extends 'layout.html.twig' %}
 
-{% block title %}Weather Information{% endblock %}
+{% set title = 'Meteo' %}
+{% set path = '/weather' %}
 
-{% block body %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">
-                        <i class="fas fa-cloud-sun"></i> Weather Information
-                    </h3>
-                </div>
-                <div class="card-body">
-                    {{ form_start(form) }}
-                    <div class="mb-3">
-                        {{ form_label(form.destination, 'Enter Destination') }}
-                        {{ form_widget(form.destination) }}
-                        {{ form_errors(form.destination) }}
+{% block content %}
+<div class="page-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="content-card weather-card">
+                    <div class="content-card-header">
+                        <p class="content-card-subtitle">Consultez les conditions meteores pour n'importe quelle destination</p>
                     </div>
-                    <div class="text-center">
-                        {{ form_widget(form.search) }}
-                    </div>
-                    {{ form_end(form) }}
-
-                    {% if error %}
-                        <div class="alert alert-danger mt-3" role="alert">
-                            <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                    
+                    <div class="content-card-body">
+                        {{ form_start(form, {'attr': {'class': 'travel-form weather-form', 'id': 'weatherForm'}}) }}
+                        <div class="form-group">
+                            {{ form_label(form.destination, 'Destination', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.destination, {'attr': {'class': 'form-input', 'placeholder': 'Entrez le nom de la ville...', 'id': 'cityInput'}}) }}
+                            {{ form_errors(form.destination) }}
                         </div>
-                    {% endif %}
+                        <div class="form-actions">
+                            {{ form_widget(form.search, {'attr': {'class': 'btn btn-primary', 'id': 'searchBtn'}}) }}
+                        </div>
+                        {{ form_end(form) }}
 
-                    {% if weatherData %}
-                        <div class="mt-4">
-                            <h4 class="text-center mb-4">
-                                <i class="fas fa-map-marker-alt"></i> 
-                                {{ weatherData.city }}, {{ weatherData.country }}
-                            </h4>
-                            
-                            <div class="row text-center">
-                                <div class="col-md-6">
-                                    <div class="weather-main">
-                                        <img src="https://openweathermap.org/img/wn/{{ weatherData.icon }}@2x.png" 
-                                             alt="{{ weatherData.description }}" 
-                                             class="weather-icon">
-                                        <div class="temperature">
-                                            <h2>{{ weatherData.temperature|round }}°C</h2>
-                                            <p class="text-capitalize">{{ weatherData.description }}</p>
+                        <div id="loadingState" class="loading-state hidden">
+                            <div class="loading-spinner"></div>
+                            <p>Recherche des informations meteo...</p>
+                        </div>
+
+                        {% if error %}
+                            <div class="alert alert-error weather-error">
+                                <span class="alert-icon">⚠️</span>
+                                {{ error }}
+                            </div>
+                        {% endif %}
+
+                        {% if weatherData %}
+                            <div class="weather-result" data-weather-condition="{{ weatherData.description }}">
+                                <div class="weather-header">
+                                    <h3 class="weather-location">
+                                        <span class="location-icon">📍</span>
+                                        {{ weatherData.city }}, {{ weatherData.country }}
+                                    </h3>
+                                    <div class="weather-time">
+                                        <span class="time-icon">🕐</span>
+                                        Mis a jour: {{ "now"|date("H:i") }}
+                                    </div>
+                                </div>
+                                
+                                <div class="weather-content weather-gradient-{{ weatherData.icon|slice(0, 2) }}">
+                                    <div class="weather-main-info">
+                                        <div class="weather-icon-container">
+                                            <img src="https://openweathermap.org/img/wn/{{ weatherData.icon }}@2x.png" 
+                                                 alt="{{ weatherData.description }}" 
+                                                 class="weather-icon animated-icon">
+                                            <div class="weather-animation-bg"></div>
+                                        </div>
+                                        <div class="weather-temp-container">
+                                            <div class="weather-temp">{{ weatherData.temperature|round }}°C</div>
+                                            <div class="weather-desc">{{ weatherData.description|title }}</div>
+                                            <div class="weather-feels">Ressenti: {{ weatherData.feels_like|round }}°C</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="weather-details-grid">
+                                        <div class="weather-detail-item">
+                                            <div class="detail-icon">💧</div>
+                                            <div class="detail-label">Humidite</div>
+                                            <div class="detail-value">{{ weatherData.humidity }}%</div>
+                                        </div>
+                                        <div class="weather-detail-item">
+                                            <div class="detail-icon">🌡️</div>
+                                            <div class="detail-label">Pression</div>
+                                            <div class="detail-value">{{ weatherData.pressure }} hPa</div>
+                                        </div>
+                                        <div class="weather-detail-item">
+                                            <div class="detail-icon">💨</div>
+                                            <div class="detail-label">Vent</div>
+                                            <div class="detail-value">{{ weatherData.wind_speed }} m/s</div>
+                                        </div>
+                                        <div class="weather-detail-item">
+                                            <div class="detail-icon">🧭</div>
+                                            <div class="detail-label">Direction</div>
+                                            <div class="detail-value">{{ weatherData.wind_direction }}°</div>
+                                        </div>
+                                        <div class="weather-detail-item">
+                                            <div class="detail-icon">👁️</div>
+                                            <div class="detail-label">Visibilite</div>
+                                            <div class="detail-value">{{ weatherData.visibility / 1000 }} km</div>
+                                        </div>
+                                        <div class="weather-detail-item">
+                                            <div class="detail-icon">🌡️</div>
+                                            <div class="detail-label">Min/Max</div>
+                                            <div class="detail-value">{{ (weatherData.temperature - 3)|round }}° / {{ (weatherData.temperature + 3)|round }}°</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="weather-tips">
+                                        <h4>Conseils pour aujourd'hui</h4>
+                                        <div class="tips-grid">
+                                            {% if weatherData.temperature > 25 %}
+                                                <div class="tip-item">
+                                                    <span class="tip-icon">☀️</span>
+                                                    <span>Protection solaire recommandee</span>
+                                                </div>
+                                            {% elseif weatherData.temperature < 10 %}
+                                                <div class="tip-item">
+                                                    <span class="tip-icon">🧥</span>
+                                                    <span>Vettements chauds necessaires</span>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if weatherData.humidity > 70 %}
+                                                <div class="tip-item">
+                                                    <span class="tip-icon">☔</span>
+                                                    <span>Possibilite de pluie</span>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if weatherData.wind_speed > 5 %}
+                                                <div class="tip-item">
+                                                    <span class="tip-icon">💨</span>
+                                                    <span>Vent fort - attention aux objets legers</span>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="weather-details">
-                                        <p><strong>Feels like:</strong> {{ weatherData.feels_like|round }}°C</p>
-                                        <p><strong>Humidity:</strong> {{ weatherData.humidity }}%</p>
-                                        <p><strong>Pressure:</strong> {{ weatherData.pressure }} hPa</p>
-                                        <p><strong>Wind Speed:</strong> {{ weatherData.wind_speed }} m/s</p>
-                                        <p><strong>Wind Direction:</strong> {{ weatherData.wind_direction }}°</p>
-                                        <p><strong>Visibility:</strong> {{ weatherData.visibility / 1000 }} km</p>
-                                    </div>
-                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="recent-searches" id="recentSearches">
+                            <h4>Recherches recentes</h4>
+                            <div class="searches-list" id="searchesList">
+                                <!-- Recent searches will be added here with JavaScript -->
                             </div>
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -69,46 +146,424 @@
 </div>
 
 <style>
-.weather-main {
+.weather-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.weather-icon-animated {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.weather-form {
+    position: relative;
+}
+
+.loading-state {
     text-align: center;
-    padding: 20px;
+    padding: 2rem;
+    display: none;
+}
+
+.loading-state.hidden {
+    display: none;
+}
+
+.loading-state:not(.hidden) {
+    display: block;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.weather-error {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.weather-result {
+    margin-top: 2rem;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.weather-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.weather-location {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.weather-time {
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.time-icon {
+    font-size: 0.8rem;
+}
+
+.location-icon {
+    margin-right: 0.5rem;
+}
+
+.weather-content {
+    border-radius: 1rem;
+    padding: 2rem;
+    color: #2c3e50;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.weather-content:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Dynamic weather gradients - Light colors */
+.weather-gradient-01 {
+    background: linear-gradient(135deg, #87CEEB 0%, #B0E0E6 100%);
+}
+
+.weather-gradient-02 {
+    background: linear-gradient(135deg, #E0F6FF 0%, #87CEEB 100%);
+}
+
+.weather-gradient-03 {
+    background: linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%);
+}
+
+.weather-gradient-04 {
+    background: linear-gradient(135deg, #F5F5F5 0%, #E8E8E8 100%);
+}
+
+.weather-gradient-09 {
+    background: linear-gradient(135deg, #4682B4 0%, #87CEEB 100%);
+}
+
+.weather-gradient-10 {
+    background: linear-gradient(135deg, #5F9EA0 0%, #87CEEB 100%);
+}
+
+.weather-gradient-11 {
+    background: linear-gradient(135deg, #6495ED 0%, #87CEEB 100%);
+}
+
+.weather-gradient-13 {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F0F8FF 100%);
+}
+
+.weather-gradient-50 {
+    background: linear-gradient(135deg, #D3D3D3 0%, #E8E8E8 100%);
+}
+
+.weather-main-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    gap: 2rem;
+    position: relative;
+}
+
+.weather-icon-container {
+    text-align: center;
+    position: relative;
 }
 
 .weather-icon {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+    animation: pulse 2s ease-in-out infinite;
 }
 
-.temperature h2 {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #007bff;
-    margin: 10px 0;
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
-.weather-details {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
+.weather-animation-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: rotate 20s linear infinite;
 }
 
-.weather-details p {
-    margin: 10px 0;
+@keyframes rotate {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.weather-temp-container {
+    text-align: center;
+}
+
+.weather-temp {
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.weather-desc {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    text-transform: capitalize;
+    margin-bottom: 0.25rem;
+}
+
+.weather-feels {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+.weather-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.weather-detail-item {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.weather-detail-item:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.detail-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
     font-size: 1.1rem;
+    font-weight: 600;
 }
 
-.card {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.weather-tips {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.form-control {
+.weather-tips h4 {
+    margin: 0 0 1rem 0;
     font-size: 1.1rem;
-    padding: 12px;
+    color: #2c3e50;
 }
 
-.btn-primary {
-    padding: 12px 30px;
-    font-size: 1.1rem;
+.tips-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #2c3e50;
+}
+
+.tip-icon {
+    font-size: 1rem;
+}
+
+.recent-searches {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #eee;
+}
+
+.recent-searches h4 {
+    margin: 0 0 1rem 0;
+    color: #666;
+    font-size: 1rem;
+}
+
+.searches-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.search-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-item:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+@media (max-width: 768px) {
+    .weather-main-info {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .weather-temp {
+        font-size: 3rem;
+    }
+    
+    .weather-details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .weather-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .tips-grid {
+        flex-direction: column;
+    }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('weatherForm');
+    const searchBtn = document.getElementById('searchBtn');
+    const loadingState = document.getElementById('loadingState');
+    const cityInput = document.getElementById('cityInput');
+    const searchesList = document.getElementById('searchesList');
+    
+    // Recent searches functionality
+    let recentSearches = JSON.parse(localStorage.getItem('recentWeatherSearches') || '[]');
+    
+    function updateRecentSearches() {
+        searchesList.innerHTML = '';
+        recentSearches.slice(0, 5).forEach(city => {
+            const searchItem = document.createElement('span');
+            searchItem.className = 'search-item';
+            searchItem.textContent = city;
+            searchItem.onclick = () => {
+                cityInput.value = city;
+                form.submit();
+            };
+            searchesList.appendChild(searchItem);
+        });
+    }
+    
+    function addToRecentSearches(city) {
+        recentSearches = recentSearches.filter(c => c !== city);
+        recentSearches.unshift(city);
+        recentSearches = recentSearches.slice(0, 10);
+        localStorage.setItem('recentWeatherSearches', JSON.stringify(recentSearches));
+        updateRecentSearches();
+    }
+    
+    // Show loading state
+    form.addEventListener('submit', function() {
+        const city = cityInput.value.trim();
+        if (city) {
+            loadingState.classList.remove('hidden');
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Recherche...';
+            addToRecentSearches(city);
+        }
+    });
+    
+    // Auto-complete suggestions (basic implementation)
+    cityInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        if (value.length > 2) {
+            const matches = recentSearches.filter(city => 
+                city.toLowerCase().includes(value)
+            );
+            // You could implement a dropdown here
+        }
+    });
+    
+    // Initialize recent searches
+    updateRecentSearches();
+});
+</script>
 {% endblock %}
