@@ -1,0 +1,330 @@
+<section class="admin-destinations-shell">
+    <div class="admin-destinations-hero-grid">
+        <article class="admin-panel-card admin-destinations-hero-card">
+            <div class="admin-destinations-hero-head">
+                <div class="admin-destinations-hero-copy">
+                    <h2>Destinations vedettes</h2>
+                    <p>Cette section alimente directement `DestinationsSection` sur la page Home via `featured_destinations`. Les compteurs viennent des reservations reelles.</p>
+                </div>
+                <div class="admin-destinations-hero-actions">
+                    <form method="post" action="/admin/destinations/refresh-ai">
+                        <input type="hidden" name="section" value="destinations">
+                        <button class="admin-primary-button" type="submit">Rafraichir avec IA</button>
+                    </form>
+                    <a class="admin-card-action admin-card-action-blue" href="/">Voir la Home</a>
+                </div>
+            </div>
+
+            <div class="admin-destinations-pill-row">
+                <span class="admin-range-pill admin-range-pill-active">Home {{ visibleFeaturedCount }}/{{ featuredHomeSlots }}</span>
+                <span class="admin-range-pill">Reservations liees {{ linkedFeaturedReservations }}</span>
+                <span class="admin-range-pill">Historique {{ featuredHistoryEntries|length }}</span>
+            </div>
+
+            <div class="admin-destinations-kpi-grid">
+                <article class="admin-destinations-mini-card">
+                    <span>Destinations</span>
+                    <strong>{{ featuredEntries|length }}</strong>
+                </article>
+                <article class="admin-destinations-mini-card">
+                    <span>Visibles</span>
+                    <strong>{{ visibleFeaturedCount }}</strong>
+                </article>
+                <article class="admin-destinations-mini-card">
+                    <span>Score IA moyen</span>
+                    <strong>{{ featuredAverageAiScore|default(0)|number_format(1, '.', '') }}</strong>
+                </article>
+                <article class="admin-destinations-mini-card">
+                    <span>Satisfaction</span>
+                    <strong>{{ featuredAverageSatisfaction|default(0)|number_format(1, '.', '') }}</strong>
+                </article>
+            </div>
+        </article>
+
+        <aside class="admin-panel-card admin-destinations-sync-card">
+            <h2>Sync Home</h2>
+            <p>Les cartes de Home lisent `featured_destinations`. Modifier ici met a jour la vitrine publique.</p>
+            <span class="admin-status-pill {{ visibleFeaturedCount >= featuredHomeSlots ? 'admin-status-pill-green' : 'admin-status-pill-orange' }}">
+                {{ visibleFeaturedCount >= featuredHomeSlots ? 'HOME PRETE' : 'HOME PARTIELLE' }}
+            </span>
+            <article class="admin-destinations-mini-card">
+                <span>Slots Home</span>
+                <strong>{{ visibleFeaturedCount }}/{{ featuredHomeSlots }}</strong>
+            </article>
+            <article class="admin-destinations-mini-card">
+                <span>Reservations</span>
+                <strong>{{ linkedFeaturedReservations }}</strong>
+            </article>
+            <article class="admin-destinations-mini-card">
+                <span>Dernier refresh IA</span>
+                <strong>{{ featuredLastRefreshMeta }}</strong>
+            </article>
+        </aside>
+    </div>
+
+    <section class="admin-panel-card admin-destinations-sponsor-card">
+        <div class="admin-destinations-sponsor-head">
+            <div>
+                <h2>Sponsors Home</h2>
+                <p>Ajoutez ou supprimez les logos sponsors affiches sous le Hero de la Home.</p>
+            </div>
+            <span class="admin-meta-pill">{{ sponsors|length }}</span>
+        </div>
+
+        <div class="admin-destinations-kpi-grid admin-destinations-kpi-grid-sponsors">
+            <article class="admin-destinations-mini-card">
+                <span>Sponsors</span>
+                <strong>{{ sponsors|length }}</strong>
+            </article>
+            <article class="admin-destinations-mini-card">
+                <span>Actifs Home</span>
+                <strong>{{ overview.counts.active_sponsors|default(0) }}</strong>
+            </article>
+            <article class="admin-destinations-mini-card">
+                <span>Avec logo</span>
+                <strong>{{ sponsorsWithLogoCount|default(0) }}</strong>
+            </article>
+        </div>
+
+        <form class="admin-destinations-sponsor-form" method="post" action="/admin/destinations/sponsors/create" enctype="multipart/form-data">
+            <input type="hidden" name="section" value="destinations">
+            <label>
+                <span>Nom</span>
+                <input class="admin-destinations-input" type="text" name="nom" placeholder="Nom sponsor" required>
+            </label>
+            <label>
+                <span>Logo URL</span>
+                <input class="admin-destinations-input" type="text" name="logo_url" placeholder="/uploads/logo.png ou https://...">
+            </label>
+            <label>
+                <span>Image logo</span>
+                <input class="admin-destinations-input admin-destinations-file-input" type="file" name="sponsor_logo" accept="image/*" data-sponsor-logo-input>
+                <small class="admin-destinations-file-copy" data-sponsor-logo-name>Aucun fichier selectionne</small>
+            </label>
+            <label>
+                <span>Type</span>
+                <input class="admin-destinations-input" type="text" name="type" value="Partenaire">
+            </label>
+            <label>
+                <span>Site web</span>
+                <input class="admin-destinations-input" type="url" name="site_web" placeholder="https://site.com" inputmode="url" required>
+                <small class="admin-destinations-file-copy">Lien obligatoire, commence par http:// ou https://.</small>
+            </label>
+            <label>
+                <span>Montant</span>
+                <input class="admin-destinations-input" type="text" name="montant_sponsoring" value="0">
+            </label>
+            <label class="admin-destinations-checkbox">
+                <input type="checkbox" name="est_actif" value="1" checked>
+                <span>Actif sur Home</span>
+            </label>
+            <label class="admin-destinations-span-2">
+                <span>Description</span>
+                <textarea class="admin-destinations-textarea" name="description" rows="2" placeholder="Sponsor officiel EasyTravel."></textarea>
+            </label>
+            <div class="admin-destinations-sponsor-form-actions">
+                <button class="admin-primary-button" type="submit">Ajouter logo sponsor</button>
+            </div>
+        </form>
+
+        {% if sponsors is empty %}
+            <p class="admin-empty-copy">Aucun sponsor configure. Cliquez sur "Ajouter logo sponsor" pour alimenter la section Home.</p>
+        {% else %}
+            <div class="admin-destinations-sponsor-grid">
+                {% for sponsor in sponsors %}
+                    {% set sponsorName = sponsor.nom|default('Sponsor')|trim %}
+                    {% set sponsorActive = sponsor.est_actif|default(1) == 1 %}
+                    {% set sponsorLogoUrl = sponsor.logo_display_url|default(sponsor.logo_url|default(''))|trim %}
+                    {% set sponsorLogoStorageCopy = sponsor.logo_mime_type|default('')|trim is not empty ? 'image stockee en base' : (sponsorLogoUrl is not empty ? sponsorLogoUrl : 'logo indisponible') %}
+                    <article class="admin-destinations-sponsor-row">
+                        <div class="admin-destinations-sponsor-logo">
+                            {% if sponsorLogoUrl is not empty %}
+                                <img src="{{ sponsorLogoUrl }}" alt="{{ sponsorName is not empty ? sponsorName : 'Sponsor' }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                                <span style="display:none;">{{ (sponsorName is not empty ? sponsorName : 'Sponsor')|slice(0, 1)|upper }}</span>
+                            {% else %}
+                                <span>{{ (sponsorName is not empty ? sponsorName : 'Sponsor')|slice(0, 1)|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="admin-destinations-sponsor-copy">
+                            <strong>{{ sponsorName is not empty ? sponsorName : 'Sponsor' }}</strong>
+                            <span>{{ sponsor.type|default('Partenaire') }} | {{ sponsorLogoStorageCopy }}</span>
+                        </div>
+                        <div class="admin-destinations-sponsor-side">
+                            <span class="admin-status-pill {{ sponsorActive ? 'admin-status-pill-green' : 'admin-status-pill-orange' }}">
+                                {{ sponsorActive ? 'ACTIF' : 'INACTIF' }}
+                            </span>
+                            <form method="post" action="/admin/destinations/sponsors/{{ sponsor.id|default(0) }}/delete" onsubmit="return confirm('Supprimer ce sponsor de la Home ?');">
+                                <input type="hidden" name="section" value="destinations">
+                                <button class="admin-card-action admin-card-action-red" type="submit">Supprimer</button>
+                            </form>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    {% if featuredEntries is empty %}
+        <section class="admin-panel-card">
+            <h2>Aucune destination vedette configuree</h2>
+            <p>Utilisez le bouton "Rafraichir avec IA" pour generer une premiere selection pour la Home.</p>
+        </section>
+    {% else %}
+        <section class="admin-destinations-featured-grid">
+            {% for featuredEntry in featuredEntries %}
+                {% set featuredVisible = featuredEntry.is_featured|default(1) == 1 %}
+                {% set reservationStats = featuredEntry.reservation_stats|default({'reservation_count': 0, 'total_amount': 0, 'last_reservation_at': null}) %}
+                {% set slotNumber = featuredEntry.slot_number|default(loop.index) %}
+                {% set matchedDestinationId = featuredEntry.matched_destination_id|default(0) %}
+                {% set featuredVisualTone = featuredEntry.visual_tone|default('blue') %}
+                {% set avgPrice = featuredEntry.avg_price|default(0) %}
+                <form class="admin-panel-card admin-destinations-featured-card" method="post" action="/admin/destinations/featured/{{ featuredEntry.id|default(0) }}/save">
+                    <input type="hidden" name="section" value="destinations">
+
+                    <div class="admin-destinations-featured-top">
+                        <span class="admin-destinations-slot-label">Slot #{{ slotNumber }}</span>
+                        <span class="admin-destinations-source-pill">{{ featuredEntry.source_type|default('IA') }}</span>
+                    </div>
+
+                    <div class="admin-destinations-visual admin-destinations-visual-{{ featuredVisualTone }}">
+                        <span class="admin-destinations-score-pill">Score IA {{ featuredEntry.ai_score|default(0)|number_format(1, '.', '') }}</span>
+                        <span class="admin-destinations-visibility-pill {{ featuredVisible ? 'admin-destinations-visibility-pill-visible' : 'admin-destinations-visibility-pill-hidden' }}">
+                            {{ featuredVisible ? 'VISIBLE HOME' : 'MASQUEE' }}
+                        </span>
+                        <strong>{{ featuredEntry.initials|default('FD') }}</strong>
+                    </div>
+
+                    <div class="admin-destinations-field-grid">
+                        <label>
+                            <span>Destination</span>
+                            <input class="admin-destinations-input" type="text" name="destination_name" value="{{ featuredEntry.destination_name|default('') }}">
+                        </label>
+                        <label>
+                            <span>Pays</span>
+                            <input class="admin-destinations-input" type="text" name="country" value="{{ featuredEntry.country|default('') }}">
+                        </label>
+                        <label>
+                            <span>Continent</span>
+                            <input class="admin-destinations-input" type="text" name="continent" value="{{ featuredEntry.continent|default('') }}">
+                        </label>
+                        <label>
+                            <span>Prix moyen</span>
+                            <input class="admin-destinations-input" type="text" name="avg_price" value="{{ avgPrice|number_format(0, '.', '') }}">
+                        </label>
+                        <label class="admin-destinations-span-2">
+                            <span>Description</span>
+                            <textarea class="admin-destinations-textarea" name="description" rows="2">{{ featuredEntry.description|default('') }}</textarea>
+                        </label>
+                        <label>
+                            <span>Meilleure saison</span>
+                            <input class="admin-destinations-input" type="text" name="best_season" value="{{ featuredEntry.best_season|default('') }}">
+                        </label>
+                        <label>
+                            <span>Video</span>
+                            <input class="admin-destinations-input" type="text" name="video_path" value="{{ featuredEntry.video_path|default('') }}">
+                        </label>
+                        <label>
+                            <span>Types de voyage</span>
+                            <input class="admin-destinations-input" type="text" name="travel_types" value="{{ featuredEntry.travel_types|default('') }}">
+                        </label>
+                        <label>
+                            <span>Interets</span>
+                            <input class="admin-destinations-input" type="text" name="interests" value="{{ featuredEntry.interests|default('') }}">
+                        </label>
+                    </div>
+
+                    <div class="admin-destinations-chip-row">
+                        <article class="admin-destinations-chip admin-destinations-chip-violet">
+                            <span>Reservations</span>
+                            <strong>{{ reservationStats.reservation_count|default(0) }}</strong>
+                        </article>
+                        <article class="admin-destinations-chip admin-destinations-chip-orange">
+                            <span>Satisfaction</span>
+                            <strong>{{ featuredEntry.satisfaction_score|default(0)|number_format(1, '.', '') }}</strong>
+                        </article>
+                        <article class="admin-destinations-chip admin-destinations-chip-blue">
+                            <span>Prix Home</span>
+                            <strong>{{ avgPrice >= 1000000 ? 'EUR' ~ ((avgPrice / 1000000)|number_format(1, '.', ' ')) ~ 'M' : (avgPrice >= 1000 ? 'EUR' ~ ((avgPrice / 1000)|number_format(1, '.', ' ')) ~ 'K' : 'EUR' ~ (avgPrice|number_format(0, '.', ' '))) }}</strong>
+                        </article>
+                    </div>
+
+                    <div class="admin-destinations-insight">
+                        <strong>Liaison reservations</strong>
+                        <p>{{ featuredEntry.reservation_copy|default('Aucune reservation recente.') }}</p>
+                    </div>
+
+                    <div class="admin-destinations-state-row">
+                        <label class="admin-destinations-checkbox">
+                            <input type="checkbox" name="is_featured" value="1" {{ featuredVisible ? 'checked' : '' }}>
+                            <span>Visible sur la page Home</span>
+                        </label>
+                        <select class="admin-destinations-select" name="destination_id">
+                            <option value="">Remplacer par une destination</option>
+                            {% for destinationOption in allDestinationOptions %}
+                                {% set destinationOptionId = destinationOption.id|default(0) %}
+                                <option value="{{ destinationOptionId }}" {{ matchedDestinationId == destinationOptionId ? 'selected' : '' }}>
+                                    {{ destinationOption.nom|default('Destination') }} | {{ destinationOption.pays|default('Pays') }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="admin-destinations-card-actions">
+                        <button class="admin-card-action admin-card-action-green" type="submit">Sauvegarder</button>
+                        <button class="admin-card-action admin-card-action-blue" type="submit" formaction="/admin/destinations/featured/{{ featuredEntry.id|default(0) }}/replace">Remplacer</button>
+                        <button class="admin-card-action admin-card-action-orange" type="submit" name="direction" value="up" formaction="/admin/destinations/featured/{{ featuredEntry.id|default(0) }}/move" {{ loop.first ? 'disabled' : '' }}>Monter</button>
+                        <button class="admin-card-action admin-card-action-orange" type="submit" name="direction" value="down" formaction="/admin/destinations/featured/{{ featuredEntry.id|default(0) }}/move" {{ loop.last ? 'disabled' : '' }}>Descendre</button>
+                    </div>
+                </form>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    <div class="admin-destinations-footer-grid">
+        <section class="admin-panel-card admin-destinations-history-card">
+            <h2>Historique IA</h2>
+            <p>Trace des refresh IA et des modifications appliquees aux destinations vedettes.</p>
+
+            {% if featuredHistoryEntries is empty %}
+                <p class="admin-empty-copy">Aucune mise a jour IA enregistree pour l instant.</p>
+            {% else %}
+                <div class="admin-destinations-history-list">
+                    {% for historyEntry in featuredHistoryEntries %}
+                        {% set historyAction = historyEntry.action_type|default('SYNC')|upper %}
+                        {% set historyTone = historyAction in ['ACCEPTED', 'AI_SYNC'] ? 'green' : (historyAction == 'REJECTED' ? 'red' : (historyAction in ['AI_REFRESH', 'PENDING'] ? 'orange' : 'blue')) %}
+                        <article class="admin-destinations-history-row">
+                            <span class="admin-status-pill admin-status-pill-{{ historyTone }}">
+                                {{ historyEntry.action_type|default('SYNC') }}
+                            </span>
+                            <div class="admin-destinations-history-copy">
+                                <strong>{{ historyEntry.destination_name|default('Selection Home') }}</strong>
+                                <span>{{ historyEntry.note|default('Aucune note') }}</span>
+                            </div>
+                            <strong class="admin-destinations-history-meta">
+                                {{ historyEntry.created_at|default('') ? historyEntry.created_at|date('d/m/Y H:i') : 'Non renseigne' }} | score {{ historyEntry.ai_score|default(0)|number_format(1, '.', '') }}
+                            </strong>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <aside class="admin-panel-card admin-destinations-logic-card">
+            <h2>Logique metier</h2>
+            <p>Les cartes admin ne sont plus de simples placeholders. Elles sont reliees aux reservations via `packages` puis exposees sur Home via `featured_destinations`.</p>
+            <span class="admin-status-pill admin-status-pill-blue">RESERVATIONS LIEES</span>
+            <article class="admin-destinations-mini-card">
+                <span>Source publique</span>
+                <strong>featured_destinations</strong>
+            </article>
+            <article class="admin-destinations-mini-card">
+                <span>Section Home</span>
+                <strong>DestinationsSection</strong>
+            </article>
+            <article class="admin-destinations-mini-card">
+                <span>Mise a jour</span>
+                <strong>AdminDashboard</strong>
+            </article>
+        </aside>
+    </div>
+</section>

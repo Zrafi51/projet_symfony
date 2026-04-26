@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Génération de Facture - EasyTravel</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/facture.css">
+</head>
+<body class="facture-body">
+    <div class="facture-container">
+        <div class="facture-scroll">
+            <div class="facture-content">
+                
+                <!-- Header -->
+                <div class="facture-header">
+                    <div class="facture-header-icon">
+                        <span class="facture-icon">📄</span>
+                    </div>
+                    <div class="facture-header-text">
+                        <h1>Génération de Facture</h1>
+                        <p>Créer et envoyer des factures professionnelles</p>
+                    </div>
+                </div>
+
+                <!-- Formulaire -->
+                <form method="post" action="/factures/generer" id="factureForm" class="facture-form-grid">
+                    
+                    <!-- Colonne gauche: Informations -->
+                    <div class="facture-card facture-card-left">
+                        
+                        <h2 class="facture-section-title">📋 Informations Client</h2>
+                        
+                        <!-- Sélection paiement -->
+                        <div class="facture-field">
+                            <label>Sélectionner un paiement</label>
+                            <select name="paiement_id" id="paiementSelect" class="facture-input">
+                                <option value="0">Choisir un paiement...</option>
+                                {% for paiement in paiements %}
+                                    <option 
+                                        value="{{ paiement.id }}"
+                                        data-client="{{ paiement.client_nom }}"
+                                        data-destination="{{ paiement.destination }}"
+                                        data-montant="{{ paiement.montant }}"
+                                        data-type="{{ paiement.type_voyage }}"
+                                    >
+                                        {{ paiement.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="facture-btn-secondary" onclick="window.location.reload()">
+                                🔄 Charger les paiements
+                            </button>
+                        </div>
+
+                        <div class="facture-separator"></div>
+
+                        <!-- Nom client -->
+                        <div class="facture-field">
+                            <label>Nom du client</label>
+                            <input type="text" name="client_nom" id="clientNom" placeholder="Ahmed Ben Ali" class="facture-input" required>
+                        </div>
+
+                        <!-- Email client -->
+                        <div class="facture-field">
+                            <label>Email du client</label>
+                            <input type="email" name="client_email" id="clientEmail" placeholder="ahmed@example.com" class="facture-input" required>
+                        </div>
+
+                        <!-- Adresse client -->
+                        <div class="facture-field">
+                            <label>Adresse du client</label>
+                            <input type="text" name="client_adresse" id="clientAdresse" placeholder="123 Rue de la Liberté, Tunis" class="facture-input">
+                        </div>
+
+                        <div class="facture-separator"></div>
+
+                        <h2 class="facture-section-title">🌍 Détails du Voyage</h2>
+
+                        <!-- Destination -->
+                        <div class="facture-field">
+                            <label>Destination</label>
+                            <input type="text" name="destination" id="destination" placeholder="Paris, France" class="facture-input" required>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="facture-field-row">
+                            <div class="facture-field">
+                                <label>Date début</label>
+                                <input type="text" name="date_debut" id="dateDebut" placeholder="01/02/2024" class="facture-input" required>
+                            </div>
+                            <div class="facture-field">
+                                <label>Date fin</label>
+                                <input type="text" name="date_fin" id="dateFin" placeholder="08/02/2024" class="facture-input" required>
+                            </div>
+                        </div>
+
+                        <!-- Nombre de personnes -->
+                        <div class="facture-field">
+                            <label>Nombre de personnes</label>
+                            <input type="number" name="nb_personnes" id="nbPersonnes" value="1" min="1" class="facture-input">
+                        </div>
+
+                    </div>
+
+                    <!-- Colonne droite: Montants -->
+                    <div class="facture-card facture-card-right">
+                        
+                        <h2 class="facture-section-title">💰 Détails des Montants</h2>
+
+                        <!-- Transport -->
+                        <div class="facture-field">
+                            <label>Transport (€)</label>
+                            <input type="number" name="montant_transport" id="montantTransport" placeholder="450.00" step="0.01" min="0" class="facture-input" required>
+                        </div>
+
+                        <!-- Hébergement -->
+                        <div class="facture-field">
+                            <label>Hébergement (€)</label>
+                            <input type="number" name="montant_hebergement" id="montantHebergement" placeholder="550.00" step="0.01" min="0" class="facture-input" required>
+                        </div>
+
+                        <!-- Activités -->
+                        <div class="facture-field">
+                            <label>Activités (€)</label>
+                            <input type="number" name="montant_activites" id="montantActivites" placeholder="200.00" step="0.01" min="0" class="facture-input" required>
+                        </div>
+
+                        <div class="facture-separator"></div>
+
+                        <!-- Total -->
+                        <div class="facture-total-box">
+                            <label class="facture-total-label">MONTANT TOTAL</label>
+                            <div class="facture-total-value" id="montantTotalDisplay">0.00 €</div>
+                            <input type="hidden" name="montant_total" id="montantTotal" value="0">
+                            <button type="button" class="facture-btn-calculate" onclick="calculerTotal()">
+                                Calculer le total
+                            </button>
+                        </div>
+
+                        <div class="facture-separator"></div>
+
+                        <!-- Message -->
+                        <div id="messageBox" class="facture-message" style="display: none;"></div>
+
+                        <!-- Boutons d'action -->
+                        <div class="facture-actions">
+                            <button type="submit" class="facture-btn-primary">
+                                📄 Générer la Facture
+                            </button>
+                            <button type="button" class="facture-btn-preview" onclick="previsualiserFacture()">
+                                👁 Prévisualiser
+                            </button>
+                            <button type="button" class="facture-btn-secondary" onclick="window.location.href='/admin/dashboard?section=paiements'">
+                                🔙 Retour Admin
+                            </button>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/facture.js"></script>
+</body>
+</html>

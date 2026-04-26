@@ -1,0 +1,152 @@
+{% set supportTotal = supportCounts.total|default(0) %}
+{% set supportPending = supportCounts.pending|default(0) %}
+{% set supportInProgress = supportCounts.in_progress|default(0) %}
+{% set supportResolved = supportCounts.resolved|default(0) %}
+{% set supportAnswered = supportCounts.answered|default(0) %}
+
+<section class="admin-support-shell">
+    <section class="admin-panel-card admin-support-hero-card admin-reclamation-hero-card">
+        <div class="admin-reclamation-hero-top">
+            <div>
+                <h2>Support / Reclamations</h2>
+                <p>Cette section lit la table `reclamation`, affiche les reponses admin et synchronise le suivi client dans le dashboard.</p>
+            </div>
+            <a class="admin-ghost-button" href="/admin/dashboard?section=reclamations">Actualiser</a>
+        </div>
+
+        <div class="admin-reclamation-stats-grid">
+            <article class="admin-reclamation-stat-box">
+                <span>Total</span>
+                <strong>{{ supportTotal }}</strong>
+            </article>
+            <article class="admin-reclamation-stat-box">
+                <span>En attente</span>
+                <strong>{{ supportPending }}</strong>
+            </article>
+            <article class="admin-reclamation-stat-box">
+                <span>En cours</span>
+                <strong>{{ supportInProgress }}</strong>
+            </article>
+            <article class="admin-reclamation-stat-box">
+                <span>Resolues</span>
+                <strong>{{ supportResolved }}</strong>
+            </article>
+            <article class="admin-reclamation-stat-box">
+                <span>Avec reponse</span>
+                <strong>{{ supportAnswered }}</strong>
+            </article>
+        </div>
+    </section>
+
+    {% if supportReclamations is empty %}
+        <section class="admin-panel-card">
+            <p class="admin-empty-copy">Les reclamations creees depuis la page Contact apparaitront ici automatiquement.</p>
+        </section>
+    {% else %}
+        <section class="admin-support-grid">
+            {% for reclamation in supportReclamations %}
+                {% set reclamationId = reclamation.id|default(0) %}
+                {% set responses = attribute(supportResponses, reclamationId)|default([]) %}
+                {% set focusedReclamation = focusReclamationId == reclamationId %}
+                {% set rawStatus = reclamation.statut|default('EN_ATTENTE')|upper %}
+                {% set supportStatusClass =
+                    rawStatus == 'RESOLUE' ? 'admin-status-pill-green'
+                    : (rawStatus == 'REJETEE' ? 'admin-status-pill-red'
+                    : (rawStatus == 'EN_COURS' ? 'admin-status-pill-blue' : 'admin-status-pill-orange'))
+                %}
+                <article class="admin-panel-card admin-support-card {{ focusedReclamation ? 'admin-support-card-focused' : '' }}">
+                    <div class="admin-support-card__header">
+                        <div class="admin-support-card__titles">
+                            <h2>{{ reclamation.sujet|default('Reclamation') }}</h2>
+                            <p>
+                                {{ reclamation.display_name|default('Client') }}
+                                |
+                                {{ reclamation.email|default('Email indisponible') }}
+                                |
+                                {{ reclamation.created_at|default('') ? reclamation.created_at|date('d/m/Y H:i') : 'Non renseigne' }}
+                            </p>
+                        </div>
+                        <div class="admin-support-card__badges">
+                            <span class="admin-status-pill {{ supportStatusClass }}">
+                                {{ reclamation.status_label|default(reclamation.statut|default('EN ATTENTE')) }}
+                            </span>
+                            <span class="admin-status-pill {{ responses is empty ? 'admin-status-pill-orange' : 'admin-status-pill-green' }}">
+                                {{ responses is empty ? 'Sans reponse' : 'Repondu' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="admin-stat-chip-row admin-reclamation-chip-row">
+                        <div class="admin-stat-chip admin-reclamation-chip-box">
+                            <span>Client</span>
+                            <strong>{{ reclamation.display_name|default('Client') }}</strong>
+                        </div>
+                        <div class="admin-stat-chip admin-reclamation-chip-box">
+                            <span>Statut</span>
+                            <strong>{{ reclamation.status_label|default(reclamation.statut|default('EN ATTENTE')) }}</strong>
+                        </div>
+                        <div class="admin-stat-chip admin-reclamation-chip-box">
+                            <span>Reponses</span>
+                            <strong>{{ responses|length }}</strong>
+                        </div>
+                    </div>
+
+                    <p class="admin-support-card__description">{{ reclamation.description|default('Aucune description fournie.') }}</p>
+
+                    <div class="admin-support-thread">
+                        <div>
+                            <strong>Fil de reponses</strong>
+                            <p>Les reponses ajoutees ici seront visibles dans le dashboard client.</p>
+                        </div>
+                        {% if responses is empty %}
+                            <div class="admin-support-reply-row">
+                                <strong>Administration</strong>
+                                <p>Aucune reponse admin envoyee pour cette reclamation.</p>
+                            </div>
+                        {% else %}
+                            {% for response in responses %}
+                                <div class="admin-support-reply-row">
+                                    <div class="admin-support-reply-row__meta">
+                                        <strong>{{ response.admin_name|default('Administration') }}</strong>
+                                        <span>{{ response.created_at|default('') ? response.created_at|date('d/m/Y H:i') : 'Non renseigne' }}</span>
+                                    </div>
+                                    <p>{{ response.contenu|default('') }}</p>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="admin-support-form-grid">
+                        <form class="admin-support-inline-form" method="post" action="/admin/reclamations/{{ reclamationId }}/status">
+                            <input type="hidden" name="section" value="reclamations">
+                            <input type="hidden" name="focus_reclamation" value="{{ reclamationId }}">
+                            <label class="admin-support-field">
+                                <span>Statut</span>
+                                <select class="admin-role-select admin-support-select" name="statut">
+                                    {% for statusOption in ['EN_ATTENTE', 'EN_COURS', 'RESOLUE', 'REJETEE'] %}
+                                        <option value="{{ statusOption }}" {{ rawStatus == statusOption ? 'selected' : '' }}>
+                                            {{ statusOption|replace({'_': ' '}) }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <button class="admin-card-action admin-card-action-blue" type="submit">Mettre a jour</button>
+                        </form>
+
+                        <form class="admin-support-reply-form" method="post" action="/admin/reclamations/{{ reclamationId }}/reply">
+                            <input type="hidden" name="section" value="reclamations">
+                            <input type="hidden" name="focus_reclamation" value="{{ reclamationId }}">
+                            <label class="admin-support-field">
+                                <span>Nouvelle reponse</span>
+                                <textarea class="admin-support-textarea" name="contenu" rows="4" placeholder="Ecrire une reponse claire au client..."></textarea>
+                            </label>
+                            <div class="admin-user-actions">
+                                <button class="admin-card-action admin-card-action-green" type="submit">Envoyer la reponse</button>
+                            </div>
+                        </form>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+    {% endif %}
+</section>

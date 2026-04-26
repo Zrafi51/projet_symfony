@@ -1,0 +1,277 @@
+{% set reservationTodayCount = reservationStats.today_count|default(0) %}
+{% set reservationWeekCount = reservationStats.week_count|default(0) %}
+{% set reservationMonthCount = reservationStats.month_count|default(0) %}
+{% set reservationPendingCount = reservationStats.pending_count|default(0) %}
+{% set reservationValidationCounter = reservationPendingCount < 10 ? '0' ~ reservationPendingCount : reservationPendingCount %}
+{% set reservationDestinationOptions = allDestinationOptions|default([]) %}
+
+<section class="admin-reservations-shell">
+    <section class="admin-reservations-hero-grid">
+        <article class="admin-panel-card admin-reservations-hero-card">
+            <div class="admin-reservations-hero-head">
+                <div>
+                    <h2>Reservations</h2>
+                    <p>Vue admin dynamique avec pipeline, validations et recap rapide depuis la base.</p>
+                </div>
+                <button class="admin-primary-button" type="button" data-reservation-create-open>+ Nouvelle reservation</button>
+            </div>
+
+            <div class="admin-reservations-pill-row">
+                <span class="admin-range-pill admin-range-pill-active">Aujourd hui {{ reservationTodayCount }}</span>
+                <span class="admin-range-pill">Cette semaine {{ reservationWeekCount }}</span>
+                <span class="admin-range-pill">Ce mois {{ reservationMonthCount }}</span>
+                <span class="admin-range-pill">En attente {{ reservationPendingCount }}</span>
+            </div>
+        </article>
+
+        <article class="admin-panel-card admin-reservations-urgent-card">
+            <h2>Validation urgente</h2>
+            <p>{{ reservationUrgentCopy }}</p>
+            <div class="admin-reservations-pill-row">
+                <span class="admin-status-pill admin-status-pill-green">Paye</span>
+                <span class="admin-status-pill admin-status-pill-orange">A revoir</span>
+                <span class="admin-status-pill admin-status-pill-violet">VIP</span>
+            </div>
+            <a class="admin-ghost-button" href="{{ reservationForumHref }}">Ouvrir forum clients</a>
+        </article>
+    </section>
+
+    <section class="admin-reservations-kpi-grid">
+        <article class="admin-panel-card admin-mini-summary-card">
+            <span>Aujourd hui</span>
+            <strong>{{ reservationTodayCount }}</strong>
+        </article>
+        <article class="admin-panel-card admin-mini-summary-card">
+            <span>Cette semaine</span>
+            <strong>{{ reservationWeekCount }}</strong>
+        </article>
+        <article class="admin-panel-card admin-mini-summary-card">
+            <span>Ce mois</span>
+            <strong>{{ reservationMonthCount }}</strong>
+        </article>
+        <article class="admin-panel-card admin-mini-summary-card">
+            <span>En attente</span>
+            <strong>{{ reservationPendingCount }}</strong>
+        </article>
+    </section>
+
+    <section class="admin-reservations-content-grid">
+        <article class="admin-panel-card admin-reservations-pipeline-card">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Reservations en cours</h2>
+                    <p>Suivi temps reel des dossiers prioritaires.</p>
+                </div>
+                <span class="admin-range-pill admin-range-pill-active">Live</span>
+            </div>
+
+            {% if reservationPipelineEntries is empty %}
+                <p class="admin-empty-copy">Aucune reservation active en cours.</p>
+            {% else %}
+                <div class="admin-reservations-pipeline-list">
+                    {% for reservationEntry in reservationPipelineEntries %}
+                        <article class="admin-booking-row">
+                            <div class="admin-reservations-pipeline-top">
+                                <div class="admin-booking-code {{ reservationEntry.code_tone_class|default('admin-booking-code-blue') }}">
+                                    <span class="admin-booking-code-label">{{ reservationEntry.code|default('RS') }}</span>
+                                </div>
+                                <div class="admin-list-copy">
+                                    <strong>{{ reservationEntry.title|default('Reservation') }}</strong>
+                                    <span>{{ reservationEntry.subtitle|default('Client') }} | {{ reservationEntry.amount_compact|default('EUR0') }}</span>
+                                </div>
+                                <div class="admin-reservations-status-box">
+                                    <strong class="admin-reservations-progress-value">{{ reservationEntry.progress_percent|default(0) }}%</strong>
+                                    <span class="admin-status-pill {{ reservationEntry.status_tone_class|default('admin-status-pill-green') }}">
+                                        {{ reservationEntry.status_text|default('Paye') }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="admin-progress-track">
+                                <span class="admin-progress-fill {{ reservationEntry.progress_tone_class|default('admin-progress-fill-blue') }}" style="width: {{ reservationEntry.progress_percent|default(0) }}%;"></span>
+                            </div>
+
+                            {% if reservationEntry.is_pending|default(false) %}
+                                <div class="admin-reservations-action-row">
+                                    <form method="post" action="/admin/reservations/{{ reservationEntry.id|default(0) }}/accept">
+                                        <input type="hidden" name="section" value="reservations">
+                                        <button class="admin-card-action admin-card-action-green" type="submit">Accepter</button>
+                                    </form>
+                                    <button
+                                        class="admin-card-action admin-card-action-red"
+                                        type="button"
+                                        data-reservation-refuse-open
+                                        data-reservation-id="{{ reservationEntry.id|default(0) }}"
+                                        data-reservation-title="{{ reservationEntry.title|default('Reservation') }}"
+                                    >
+                                        Refuser
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </article>
+
+        <article class="admin-panel-card admin-reservations-validations-card">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Validations a traiter</h2>
+                    <p>{{ reservationValidationEntries is empty ? 'Aucune validation urgente pour le moment.' : 'Reservations en attente de validation admin.' }}</p>
+                </div>
+                <span class="admin-meta-pill">{{ reservationValidationCounter }}</span>
+            </div>
+
+            {% if reservationValidationEntries is empty %}
+                <p class="admin-empty-copy">Aucune validation urgente pour le moment.</p>
+            {% else %}
+                <div class="admin-list-stack">
+                    {% for reservationEntry in reservationValidationEntries %}
+                        <article class="admin-list-row">
+                            <div class="admin-rank-badge admin-rank-blue">
+                                <span class="admin-booking-code-label">{{ reservationEntry.validation_rank|default('01') }}</span>
+                            </div>
+                            <div class="admin-list-copy">
+                                <strong>Validation paiement en attente</strong>
+                                <span>{{ reservationEntry.validation_copy|default('Reservation admin') }}</span>
+                            </div>
+                            <div class="admin-reservations-validation-actions">
+                                <form method="post" action="/admin/reservations/{{ reservationEntry.id|default(0) }}/accept">
+                                    <input type="hidden" name="section" value="reservations">
+                                    <button class="admin-card-action admin-card-action-green" type="submit">Accepter</button>
+                                </form>
+                                <button
+                                    class="admin-card-action admin-card-action-red"
+                                    type="button"
+                                    data-reservation-refuse-open
+                                    data-reservation-id="{{ reservationEntry.id|default(0) }}"
+                                    data-reservation-title="{{ reservationEntry.title|default('Reservation') }}"
+                                >
+                                    Refuser
+                                </button>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </article>
+    </section>
+
+    <section class="admin-panel-card admin-reservations-recent-card">
+        <div class="admin-panel-head">
+            <div>
+                <h2>Reservations recentes</h2>
+                <p>Dernieres confirmations, paiements et dossiers a suivre.</p>
+            </div>
+            <a class="admin-ghost-button" href="/admin/reservations/export">Exporter</a>
+        </div>
+
+        {% if reservationRecentEntries is empty %}
+            <p class="admin-empty-copy">Aucune reservation recente disponible.</p>
+        {% else %}
+            <div class="admin-list-stack">
+                {% for reservationEntry in reservationRecentEntries %}
+                    <article class="admin-list-row">
+                        <div class="admin-booking-code {{ reservationEntry.code_tone_class|default('admin-booking-code-blue') }}">
+                            <span class="admin-booking-code-label">{{ reservationEntry.time_badge|default('RS') }}</span>
+                        </div>
+                        <div class="admin-list-copy">
+                            <strong>{{ reservationEntry.title|default('Reservation') }}</strong>
+                            <span>{{ reservationEntry.recent_subtitle|default('Client') }}</span>
+                        </div>
+                        <span class="admin-status-pill {{ reservationEntry.status_tone_class|default('admin-status-pill-green') }}">
+                            {{ reservationEntry.status_text|default('Paye') }}
+                        </span>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+</section>
+
+<dialog class="admin-package-dialog admin-reservation-dialog" data-reservation-create-dialog>
+    <form class="admin-package-dialog-form admin-reservation-dialog-form" method="post" action="/admin/reservations/create">
+        <input type="hidden" name="section" value="reservations">
+        <div class="admin-package-dialog-head">
+            <div>
+                <h3>Nouvelle reservation admin</h3>
+                <p>Creez un brouillon de reservation comme dans le dashboard Java, mais relie directement a la base.</p>
+            </div>
+            <button class="admin-package-dialog-close" type="button" data-reservation-create-close>X</button>
+        </div>
+
+        <div class="admin-package-dialog-grid">
+            <label>
+                <span>Destination</span>
+                <select name="destination_id" required data-reservation-destination-select>
+                    <option value="">Choisir une destination</option>
+                    {% for destinationOption in reservationDestinationOptions %}
+                        <option
+                            value="{{ destinationOption.id|default(0) }}"
+                            data-price="{{ destinationOption.prix_base|default(0) }}"
+                        >
+                            {{ destinationOption.nom|default('Destination') }} | {{ destinationOption.pays|default('Pays') }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Client</span>
+                <input type="text" name="client_nom" value="Reservation admin" required>
+            </label>
+            <label>
+                <span>Email</span>
+                <input type="email" name="client_email" value="admin-reservation@easytravel.local">
+            </label>
+            <label>
+                <span>Date debut</span>
+                <input type="date" name="date_debut" data-reservation-date-start>
+            </label>
+            <label>
+                <span>Date fin</span>
+                <input type="date" name="date_fin" data-reservation-date-end>
+            </label>
+            <label>
+                <span>Adultes</span>
+                <input type="number" min="1" name="nb_adultes" value="2">
+            </label>
+            <label>
+                <span>Enfants</span>
+                <input type="number" min="0" name="nb_enfants" value="0">
+            </label>
+            <label>
+                <span>Prix total</span>
+                <input type="number" min="0" step="0.01" name="prix_total" value="0" data-reservation-price-input>
+            </label>
+        </div>
+
+        <div class="admin-package-dialog-actions">
+            <button class="admin-secondary-button" type="button" data-reservation-create-close>Annuler</button>
+            <button class="admin-primary-button" type="submit">Creer la reservation</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog class="admin-package-dialog admin-reservation-dialog" data-reservation-refuse-dialog>
+    <form class="admin-package-dialog-form admin-reservation-dialog-form" method="post" action="" data-reservation-refuse-form>
+        <input type="hidden" name="section" value="reservations">
+        <div class="admin-package-dialog-head">
+            <div>
+                <h3 data-reservation-refuse-title>Refuser la reservation</h3>
+                <p data-reservation-refuse-helper>Ajoutez un motif admin avant de refuser cette reservation.</p>
+            </div>
+            <button class="admin-package-dialog-close" type="button" data-reservation-refuse-close>X</button>
+        </div>
+
+        <label class="admin-reservation-reason-field">
+            <span>Motif du refus</span>
+            <textarea name="reason" rows="4" placeholder="Ex: dates non disponibles, destination fermee, paiement incomplet..." data-reservation-refuse-reason></textarea>
+        </label>
+
+        <div class="admin-package-dialog-actions">
+            <button class="admin-secondary-button" type="button" data-reservation-refuse-close>Annuler</button>
+            <button class="admin-danger-button" type="submit">Confirmer le refus</button>
+        </div>
+    </form>
+</dialog>

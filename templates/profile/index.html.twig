@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - EasyTravel</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/currency.css">
+    <link rel="stylesheet" href="/profile.css">
+    <link rel="stylesheet" href="/custom-cursor.css">
+</head>
+<body>
+{% set currentUser = current_user(currentUser|default(null)) %}
+{% set notificationForm = notificationForm|default({}) %}
+{% set fullName = (currentUser.prenom|default('') ~ ' ' ~ currentUser.nom|default(''))|trim %}
+{% set displayName = displayName|default(fullName) %}
+{% if displayName == '' %}
+    {% set displayName = currentUser.email|default('Voyageur') %}
+{% endif %}
+{% set photoUrl = photoDisplayUrl|default('')|trim %}
+{% set userInitial = (currentUser.prenom|default(displayName)|slice(0, 1))|upper %}
+{% set modeLabel = modeLabel|default(databaseError is not null ? 'Synchronisation indisponible' : 'Base synchronisee') %}
+{% set rememberedSession = rememberedSession|default(false) %}
+{% set notificationOptions = [
+    {
+        name: 'notify_security',
+        title: 'Alertes de securite',
+        description: 'Connexions, mot de passe et changements sensibles du compte.',
+        kicker: 'Priorite haute'
+    },
+    {
+        name: 'notify_booking',
+        title: 'Reservations et paiements',
+        description: 'Suivi des reservations, paiements et mises a jour importantes.',
+        kicker: 'Voyages'
+    },
+    {
+        name: 'notify_forum',
+        title: 'Forum et support',
+        description: 'Reponses du forum, support et reclamations.',
+        kicker: 'Communaute'
+    },
+    {
+        name: 'notify_offers',
+        title: 'Offres et recommandations',
+        description: 'Promotions EasyTravel et suggestions personnalisees.',
+        kicker: 'Optionnel'
+    }
+] %}
+{% set selectedNotificationsCount =
+    (notificationForm.notify_security|default(false) ? 1 : 0)
+    + (notificationForm.notify_booking|default(false) ? 1 : 0)
+    + (notificationForm.notify_forum|default(false) ? 1 : 0)
+    + (notificationForm.notify_offers|default(false) ? 1 : 0)
+%}
+<div class="profile-root">
+    <div class="navbar-shell">
+        <div class="navbar-logo">
+            <canvas id="logoCanvas" width="200" height="60"></canvas>
+        </div>
+        <div class="navbar-spacer"></div>
+        <div class="navbar-links">
+            <a href="/" class="nav-button">Accueil</a>
+            <a href="/destinations" class="nav-button">Destinations</a>
+            <a href="/about" class="nav-button">A propos</a>
+            <a href="/forum" class="nav-button">Forum</a>
+            <a href="/contact" class="nav-button">Contact</a>
+        </div>
+        <div class="navbar-spacer"></div>
+        <div class="navbar-actions">
+            <button class="search-button" type="button" id="profileSearchToggle" aria-label="Ouvrir la recherche">&#128269;</button>
+            {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'profileCurrencySwitcher'} %}
+
+            <div class="notification-menu-wrapper">
+                <button class="search-button notification-button" type="button" id="profileNotificationToggle" aria-label="Ouvrir les notifications">
+                    <span class="notification-button-icon">&#128276;</span>
+                    {% if unreadNotificationCount|default(0) > 0 %}
+                        <span class="notification-badge">{{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}</span>
+                    {% endif %}
+                </button>
+                <div class="navbar-notification-menu" id="profileNotificationMenu" style="display: none;">
+                    <div class="notification-menu-header">
+                        <div>
+                            <strong>Notifications</strong>
+                            <small>{{ unreadNotificationCount|default(0) }} non lue(s)</small>
+                        </div>
+                        <a href="/dashboard" class="notification-menu-link">Dashboard</a>
+                    </div>
+                    <div class="account-menu-separator"></div>
+                    <div class="notification-menu-list">
+                        {% if latestNotifications|default([]) is empty %}
+                            <div class="notification-empty-state">
+                                <strong>Aucune notification</strong>
+                                <span>Les activites du compte apparaitront ici.</span>
+                            </div>
+                        {% else %}
+                            {% for notification in latestNotifications %}
+                                <div class="notification-menu-item {{ notification.is_read|default(false) ? '' : 'notification-menu-item-unread' }}">
+                                    <div class="notification-menu-item-copy">
+                                        <strong>{{ notification.title|default('Notification compte') }}</strong>
+                                        <span>{{ notification.message|default('Mise a jour du compte.') }}</span>
+                                    </div>
+                                    <small>{{ notification.created_at is defined and notification.created_at ? notification.created_at|date('d/m/Y H:i') : 'Maintenant' }}</small>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="account-menu-separator"></div>
+                    <div class="notification-menu-actions">
+                        <form method="post" action="/profile/notifications/read-all">
+                            <input type="hidden" name="redirect_route" value="profile_index">
+                            <button type="submit" class="notification-menu-action-button">Tout marquer comme lu</button>
+                        </form>
+                        <a href="/dashboard" class="notification-menu-action-link">Retour dashboard</a>
+                    </div>
+                </div>
+            </div>
+
+            {% if currentUser is defined and currentUser %}
+                <div class="account-menu-wrapper">
+                    <button class="connexion-button account-button account-button-logged-in" id="accountMenuButton" type="button">
+                        <div class="account-button-content">
+                            <div class="account-button-avatar">
+                                {% if photoUrl %}
+                                    <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-avatar-image">
+                                {% else %}
+                                    <span class="account-button-avatar-label">{{ userInitial }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="account-button-name">{{ currentUser.prenom|default('Mon compte') }}</span>
+                            <span class="account-button-arrow">&#9662;</span>
+                        </div>
+                    </button>
+                    <div class="navbar-account-menu" id="accountMenu" style="display: none;">
+                        <div class="account-menu-header">
+                            <div class="account-menu-header-avatar">
+                                {% if photoUrl %}
+                                    <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-menu-avatar-image">
+                                {% else %}
+                                    <span class="account-menu-header-avatar-label">{{ userInitial }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="account-menu-header-text">
+                                <div class="account-menu-header-name">{{ displayName }}</div>
+                                <div class="account-menu-header-email">{{ currentUser.email|default('Compte utilisateur') }}</div>
+                            </div>
+                        </div>
+                        <div class="account-menu-separator"></div>
+                        <a href="/profile" class="account-menu-item">
+                            <div class="account-menu-icon-shell">
+                                <div class="account-menu-icon-shape account-menu-icon-profile"></div>
+                            </div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Gerer profil</div>
+                                <div class="account-menu-subtitle">Vos informations personnelles</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="/forum" class="account-menu-item">
+                            <div class="account-menu-icon-shell">
+                                <div class="account-menu-icon-shape account-menu-icon-forum"></div>
+                            </div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Forum</div>
+                                <div class="account-menu-subtitle">Discussions des voyageurs</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="/dashboard" class="account-menu-item">
+                            <div class="account-menu-icon-shell">
+                                <div class="account-menu-icon-shape account-menu-icon-dashboard"></div>
+                            </div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Dashboard</div>
+                                <div class="account-menu-subtitle">Votre espace client</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <div class="account-menu-separator"></div>
+                        <a href="/logout" class="account-menu-item account-menu-item-danger">
+                            <div class="account-menu-icon-shell account-menu-icon-shell-danger">
+                                <div class="account-menu-icon-shape account-menu-icon-shape-danger account-menu-icon-logout"></div>
+                            </div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title account-menu-title-danger">Deconnexion</div>
+                                <div class="account-menu-subtitle account-menu-subtitle-danger">Fermer la session active et garder le compte memorise</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="/login" class="connexion-button">Connexion</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-scroll">
+        <div class="profile-content">
+            <div class="profile-hero-container">
+                <div class="profile-hero">
+                    <div class="profile-hero-left">
+                        <span class="profile-badge">COMPTE EASYTRAVEL</span>
+                        <h1 class="profile-hero-title">Bonjour, {{ currentUser.prenom|default('Voyageur') }}</h1>
+                        <p class="profile-hero-copy">Vos informations sont synchronisees avec votre compte EasyTravel et la base de donnees.</p>
+                        <div class="profile-chips">
+                            <span class="profile-chip">{{ currentUser.email|default('voyageur@easytravel.tn') }}</span>
+                            <span class="profile-chip profile-chip-accent">{{ currentUser.role|default('USER') }}</span>
+                            <span class="profile-chip">{{ rememberedSession ? 'Compte memorise' : 'Compte non memorise' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-avatar-panel">
+                        <div class="profile-avatar-shell-large">
+                            <img
+                                src="{{ photoUrl }}"
+                                alt="{{ displayName }}"
+                                class="profile-avatar-image"
+                                id="avatarPreview"
+                                style="{{ photoUrl ? '' : 'display:none;' }}"
+                            >
+                            <span class="profile-avatar-initial" id="avatarInitial" style="{{ photoUrl ? 'display:none;' : '' }}">{{ userInitial }}</span>
+                        </div>
+                        <div class="profile-avatar-info">
+                            <h3 class="profile-panel-title">Photo de profil</h3>
+                            <p class="profile-panel-copy" id="avatarLabel">{{ photoUrl ? currentUser.photo_url|default('Photo active') : 'PNG, JPG ou WEBP - 5 Mo max' }}</p>
+                        </div>
+
+                        <form class="profile-upload-form" method="post" action="/profile/avatar" enctype="multipart/form-data" data-profile-avatar-form>
+                            <input class="profile-file-input" type="file" id="avatarInput" name="avatar" accept="image/*" required>
+                            <div class="profile-upload-row">
+                                <button type="button" class="profile-secondary-button" data-profile-avatar-trigger>Choisir une image</button>
+                                <span class="profile-upload-name" data-profile-avatar-name>Aucun fichier selectionne</span>
+                            </div>
+                            <button type="submit" class="profile-primary-button profile-full-button" data-profile-avatar-submit disabled>Uploader une image</button>
+                        </form>
+
+                        <form method="post" action="/profile/avatar/remove">
+                            <button type="submit" class="profile-danger-button profile-full-button">Supprimer avatar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {% if databaseError is not null or errorMessage or statusMessage %}
+                <div class="profile-alert-stack">
+                    {% if databaseError is not null %}
+                        <div class="profile-alert profile-alert-error">{{ databaseError }}</div>
+                    {% endif %}
+                    {% if errorMessage %}
+                        <div class="profile-alert profile-alert-error">{{ errorMessage }}</div>
+                    {% endif %}
+                    {% if statusMessage %}
+                        <div class="profile-alert profile-alert-success">{{ statusMessage }}</div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="profile-main-grid">
+                <div class="profile-side-card">
+                    <div class="profile-card-header">
+                        <h2 class="profile-card-title">Resume du compte</h2>
+                        <p class="profile-card-copy">Un apercu rapide de votre espace client.</p>
+                    </div>
+
+                    <div class="profile-summary-box">
+                        <div class="profile-avatar-shell-small">
+                            <img
+                                src="{{ photoUrl }}"
+                                alt="{{ displayName }}"
+                                class="profile-avatar-image profile-avatar-image-small"
+                                id="summaryAvatarPreview"
+                                style="{{ photoUrl ? '' : 'display:none;' }}"
+                            >
+                            <span class="profile-avatar-initial-small" id="summaryAvatarInitial" style="{{ photoUrl ? 'display:none;' : '' }}">{{ userInitial }}</span>
+                        </div>
+                        <h3 class="profile-summary-name">{{ displayName }}</h3>
+                        <p class="profile-summary-email">{{ currentUser.email|default('voyageur@easytravel.tn') }}</p>
+                    </div>
+
+                    <div class="profile-info-list">
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Role</span>
+                            <span class="profile-info-value">{{ currentUser.role|default('USER') }}</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Mode</span>
+                            <span class="profile-info-value">{{ modeLabel }}</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Memoire appareil</span>
+                            <span class="profile-info-value">{{ rememberedSession ? 'Active apres logout' : 'Inactive' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-mini-note">
+                        <h4 class="profile-mini-title">Conseil</h4>
+                        <p class="profile-mini-copy">Depuis cette page vous pouvez modifier vos informations, votre photo, votre mot de passe et vos notifications sans quitter votre espace client. Si remember est actif, la deconnexion garde le compte memorise sur cet appareil.</p>
+                    </div>
+                </div>
+
+                <div class="profile-forms-column">
+                    <div class="profile-form-card">
+                        <div class="profile-card-header">
+                            <h2 class="profile-card-title">Informations personnelles</h2>
+                            <p class="profile-card-copy">Mettez a jour votre profil, votre email et vos coordonnees.</p>
+                        </div>
+
+                        <form method="post" action="/profile/update" class="profile-form-grid">
+                            <div class="profile-field">
+                                <label class="profile-field-label">Prenom</label>
+                                <input type="text" name="prenom" class="profile-input" placeholder="Votre prenom" value="{{ currentUser.prenom|default('') }}">
+                            </div>
+                            <div class="profile-field">
+                                <label class="profile-field-label">Nom</label>
+                                <input type="text" name="nom" class="profile-input" placeholder="Votre nom" value="{{ currentUser.nom|default('') }}">
+                            </div>
+                            <div class="profile-field">
+                                <label class="profile-field-label">Email</label>
+                                <input type="email" name="email" class="profile-input" placeholder="nom@exemple.com" value="{{ currentUser.email|default('') }}" required>
+                            </div>
+                            <div class="profile-field">
+                                <label class="profile-field-label">Telephone</label>
+                                <input type="tel" name="telephone" class="profile-input" placeholder="+216 00 000 000" value="{{ currentUser.telephone|default('') }}">
+                            </div>
+                            <div class="profile-field">
+                                <label class="profile-field-label">Date de naissance</label>
+                                <input type="date" name="date_naissance" class="profile-input" value="{{ currentUser.date_naissance|default('') }}">
+                            </div>
+                            <div class="profile-field">
+                                <label class="profile-field-label">Role du compte</label>
+                                <input type="text" class="profile-input profile-readonly-input" value="{{ currentUser.role|default('USER') }}" readonly>
+                            </div>
+                            <div class="profile-field profile-field-full">
+                                <label class="profile-field-label">Adresse</label>
+                                <textarea name="adresse" class="profile-textarea" rows="4" placeholder="Votre adresse complete">{{ currentUser.adresse|default('') }}</textarea>
+                            </div>
+
+                            <div class="profile-form-actions">
+                                <button type="reset" class="profile-secondary-button">Annuler les changements</button>
+                                <button type="submit" class="profile-primary-button">Sauvegarder le profil</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="profile-features-row">
+                        <div class="profile-feature-card">
+                            <div class="profile-card-header">
+                                <h2 class="profile-card-title">Changer le mot de passe</h2>
+                                <p class="profile-card-copy">Securisez votre compte avec un mot de passe plus fort.</p>
+                            </div>
+
+                            <form method="post" action="/profile/change-password" class="profile-password-form">
+                                <div class="profile-field">
+                                    <label class="profile-field-label">Mot de passe actuel</label>
+                                    <input type="password" name="current_password" class="profile-input" placeholder="Mot de passe actuel" required>
+                                </div>
+                                <div class="profile-field">
+                                    <label class="profile-field-label">Nouveau mot de passe</label>
+                                    <input type="password" name="new_password" class="profile-input" placeholder="Nouveau mot de passe" required>
+                                </div>
+                                <div class="profile-field">
+                                    <label class="profile-field-label">Confirmer le nouveau mot de passe</label>
+                                    <input type="password" name="confirm_password" class="profile-input" placeholder="Confirmer le mot de passe" required>
+                                </div>
+
+                                <div class="profile-form-actions-right">
+                                    <button type="submit" class="profile-primary-button">Changer le mot de passe</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="profile-feature-card">
+                            <div class="profile-card-header profile-card-header-inline">
+                                <div>
+                                    <h2 class="profile-card-title">Notifications du compte</h2>
+                                    <p class="profile-card-copy">Choisissez les alertes que vous voulez recevoir dans votre espace client.</p>
+                                </div>
+                                <span class="profile-selection-badge" data-notification-count>{{ selectedNotificationsCount }} active(s)</span>
+                            </div>
+
+                            <form method="post" action="/profile/notifications" class="profile-notifications-form" data-notification-form>
+                                <div class="profile-selection-actions">
+                                    <button class="profile-secondary-button" type="button" data-notification-action="all">Tout activer</button>
+                                    <button class="profile-secondary-button" type="button" data-notification-action="essential">Essentiel</button>
+                                    <button class="profile-secondary-button" type="button" data-notification-action="none">Tout couper</button>
+                                </div>
+
+                                <div class="profile-notification-grid">
+                                    {% for notificationOption in notificationOptions %}
+                                        {% set isChecked = attribute(notificationForm, notificationOption.name)|default(false) %}
+                                        <label class="profile-notification-card {{ isChecked ? 'profile-notification-card-active' : '' }}">
+                                            <input
+                                                class="profile-notification-input"
+                                                type="checkbox"
+                                                name="{{ notificationOption.name }}"
+                                                value="1"
+                                                {{ isChecked ? 'checked' : '' }}
+                                            >
+                                            <span class="profile-notification-visual">
+                                                <span class="profile-notification-check"></span>
+                                            </span>
+                                            <span class="profile-notification-copy">
+                                                <small>{{ notificationOption.kicker }}</small>
+                                                <strong>{{ notificationOption.title }}</strong>
+                                                <span>{{ notificationOption.description }}</span>
+                                            </span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="profile-form-actions-right">
+                                    <button type="submit" class="profile-primary-button">Enregistrer les notifications</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="profile-search-overlay" id="profileSearchOverlay" style="display: none;">
+    <div class="profile-search-panel">
+        <div class="profile-search-panel-header">
+            <div>
+                <strong>Recherche du profil</strong>
+                <small>Filtre les cartes et sections du compte.</small>
+            </div>
+            <button type="button" class="profile-search-close" id="profileSearchClose">Fermer</button>
+        </div>
+        <div class="profile-search-input-row">
+            <input
+                type="search"
+                id="profileSearchInput"
+                class="profile-search-input"
+                placeholder="Ex: email, mot de passe, notifications..."
+                autocomplete="off"
+            >
+            <button type="button" class="profile-search-clear" id="profileSearchClear">Effacer</button>
+        </div>
+        <p class="profile-search-summary" id="profileSearchSummary">Tapez pour filtrer les sections du profil.</p>
+    </div>
+</div>
+
+<script src="/custom-cursor.js"></script>
+<script src="/currency.js"></script>
+<script src="/profile.js"></script>
+</body>
+</html>

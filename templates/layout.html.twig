@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title|default('Projet Symfony') }}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/currency.css">
+    {% for stylesheet in stylesheets|default([]) %}
+        <link rel="stylesheet" href="{{ stylesheet }}">
+    {% endfor %}
+</head>
+{% set currentPath = path|default('/') %}
+{% set databaseError = databaseError|default(null) %}
+{% set statusMessage = statusMessage|default(null) %}
+{% set errorMessage = errorMessage|default(null) %}
+{% set currentUser = current_user(currentUser|default(null)) %}
+{% set photoUrl = currentUser.photo_display_url|default(currentUser.photo_url|default(''))|trim %}
+{% set fullName = (currentUser.prenom|default('') ~ ' ' ~ currentUser.nom|default(''))|trim %}
+{% set displayName = currentUser.display_name|default(fullName) %}
+{% if displayName == '' %}
+    {% set displayName = currentUser.email|default('Voyageur') %}
+{% endif %}
+{% set accountButtonName = currentUser.prenom|default('')|trim %}
+{% if accountButtonName == '' %}
+    {% set accountButtonName = currentUser.nom|default('')|trim %}
+{% endif %}
+{% if accountButtonName == '' %}
+    {% set accountButtonName = displayName %}
+{% endif %}
+{% if '@' in accountButtonName %}
+    {% set accountButtonName = accountButtonName|split('@')|first %}
+{% endif %}
+{% set userInitial = (currentUser.prenom|default(displayName)|slice(0, 1))|upper %}
+{% set userRole = currentUser.role|default('USER')|upper %}
+{% set isAdminUser = userRole == 'ADMIN' %}
+{% set accountDashboardPath = isAdminUser ? '/admin/dashboard' : '/dashboard' %}
+{% set accountProfilePath = isAdminUser ? '/admin/settings' : '/profile' %}
+{% set accountProfileTitle = isAdminUser ? 'Parametres admin' : 'Gerer profil' %}
+{% set accountProfileSubtitle = isAdminUser ? 'Securite et informations du compte' : 'Vos informations personnelles' %}
+{% set accountDashboardTitle = isAdminUser ? 'Dashboard admin' : 'Dashboard' %}
+{% set accountDashboardSubtitle = isAdminUser ? 'Piloter la plateforme' : 'Votre espace client' %}
+<body>
+    <div class="page-backdrop"></div>
+    <div class="shell">
+        <header class="site-header">
+            <a class="brand" href="/">
+                <span class="brand-logo-shell">
+                    <img class="brand-logo brand-logo-animated" src="/assets/java/logo-animated.svg" alt="Logo anime EasyTravel du projet Java">
+                </span>
+                <span class="brand-copy">
+                    <small>Logo anime de l'accueil Java</small>
+                    <strong>Migre tel quel dans Symfony</strong>
+                </span>
+            </a>
+
+            <nav class="site-nav">
+                <a class="{{ currentPath == '/' ? 'is-active' : '' }}" href="/">Accueil</a>
+                <a class="{{ currentPath starts with '/destinations' ? 'is-active' : '' }}" href="/destinations">Destinations</a>
+                <a class="{{ currentPath starts with '/activites' ? 'is-active' : '' }}" href="/activites">Activites</a>
+                <a class="{{ currentPath starts with '/contact' ? 'is-active' : '' }}" href="/contact">Contact</a>
+            </nav>
+
+            <div class="site-header-actions">
+                <div class="header-pill">
+                    <span class="status-dot"></span>
+                    <span>{{ isAdminUser ? 'Session admin connectee' : 'Meme base MySQL que Java' }}</span>
+                </div>
+                {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'layoutCurrencySwitcher'} %}
+
+                {% if currentUser %}
+                    <div class="account-menu-wrapper" data-account-menu-wrapper>
+                        <button
+                            class="connexion-button site-login-button account-button account-button-logged-in"
+                            type="button"
+                            data-account-menu-button
+                            aria-controls="siteAccountMenu"
+                            aria-expanded="false"
+                        >
+                            <div class="account-button-content">
+                                <div class="account-button-avatar">
+                                    {% if photoUrl %}
+                                        <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-avatar-image">
+                                    {% else %}
+                                        <span class="account-button-avatar-label">{{ userInitial }}</span>
+                                    {% endif %}
+                                </div>
+                                <span class="account-button-name">{{ accountButtonName }}</span>
+                                <span class="account-button-arrow">&#9662;</span>
+                            </div>
+                        </button>
+
+                        <div class="navbar-account-menu" id="siteAccountMenu" data-account-menu hidden>
+                            <div class="account-menu-header">
+                                <div class="account-menu-header-avatar">
+                                    {% if photoUrl %}
+                                        <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-menu-avatar-image">
+                                    {% else %}
+                                        <span class="account-menu-header-avatar-label">{{ userInitial }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="account-menu-header-text">
+                                    <div class="account-menu-header-name">{{ displayName }}</div>
+                                    <div class="account-menu-header-email">{{ currentUser.email|default('Compte utilisateur') }}</div>
+                                </div>
+                            </div>
+                            <div class="account-menu-separator"></div>
+                            <a href="{{ accountProfilePath }}" class="account-menu-item">
+                                <div class="account-menu-icon-shell">
+                                    <div class="account-menu-icon-shape account-menu-icon-profile"></div>
+                                </div>
+                                <div class="account-menu-item-labels">
+                                    <div class="account-menu-title">{{ accountProfileTitle }}</div>
+                                    <div class="account-menu-subtitle">{{ accountProfileSubtitle }}</div>
+                                </div>
+                                <span class="account-menu-item-chevron">&#8250;</span>
+                            </a>
+                            <a href="/forum" class="account-menu-item">
+                                <div class="account-menu-icon-shell">
+                                    <div class="account-menu-icon-shape account-menu-icon-forum"></div>
+                                </div>
+                                <div class="account-menu-item-labels">
+                                    <div class="account-menu-title">Forum</div>
+                                    <div class="account-menu-subtitle">Discussions et echanges voyageurs</div>
+                                </div>
+                                <span class="account-menu-item-chevron">&#8250;</span>
+                            </a>
+                            <a href="{{ accountDashboardPath }}" class="account-menu-item">
+                                <div class="account-menu-icon-shell">
+                                    <div class="account-menu-icon-shape account-menu-icon-dashboard"></div>
+                                </div>
+                                <div class="account-menu-item-labels">
+                                    <div class="account-menu-title">{{ accountDashboardTitle }}</div>
+                                    <div class="account-menu-subtitle">{{ accountDashboardSubtitle }}</div>
+                                </div>
+                                <span class="account-menu-item-chevron">&#8250;</span>
+                            </a>
+                            <div class="account-menu-separator"></div>
+                            <a href="/logout" class="account-menu-item account-menu-item-danger">
+                                <div class="account-menu-icon-shell account-menu-icon-shell-danger">
+                                    <div class="account-menu-icon-shape account-menu-icon-shape-danger account-menu-icon-logout"></div>
+                                </div>
+                                <div class="account-menu-item-labels">
+                                    <div class="account-menu-title account-menu-title-danger">Deconnexion</div>
+                                    <div class="account-menu-subtitle account-menu-subtitle-danger">Fermer la session active et garder le compte memorise</div>
+                                </div>
+                                <span class="account-menu-item-chevron">&#8250;</span>
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="/login" class="connexion-button site-login-button">Connexion</a>
+                {% endif %}
+            </div>
+        </header>
+
+        {% if showPageHeading|default(true) %}
+            <section class="page-heading">
+                <p class="eyebrow">Design Java applique aux templates Symfony</p>
+                <h1>{{ title|default('Projet Symfony') }}</h1>
+                <p class="lead">Navigation, hero, cartes et ecrans CRUD rebranches sur la meme logique de donnees que l'application Java.</p>
+            </section>
+        {% endif %}
+
+        {% if databaseError is not empty %}
+            <div class="alert alert-error">{{ databaseError }}</div>
+        {% endif %}
+
+        {% if statusMessage is not empty %}
+            <div class="alert alert-success">{{ statusMessage }}</div>
+        {% endif %}
+
+        {% if errorMessage is not empty %}
+            <div class="alert alert-error">{{ errorMessage }}</div>
+        {% endif %}
+
+        <main class="page">
+            {% block content %}
+                {{ legacy_content|default('')|raw }}
+            {% endblock %}
+        </main>
+    </div>
+    <script src="/app.js"></script>
+    <script src="/currency.js"></script>
+</body>
+</html>
