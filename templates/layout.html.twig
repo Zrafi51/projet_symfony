@@ -60,6 +60,7 @@
                 <a class="{{ currentPath starts with '/destinations' ? 'is-active' : '' }}" href="/destinations">Destinations</a>
                 <a class="{{ currentPath starts with '/activites' ? 'is-active' : '' }}" href="/activites">Activites</a>
                 <a class="{{ currentPath starts with '/contact' ? 'is-active' : '' }}" href="/contact">Contact</a>
+                <a class="{{ currentPath starts with '/weather' ? 'is-active' : '' }}" href="/weather">Météo</a>
             </nav>
 
             <div class="site-header-actions">
@@ -113,6 +114,16 @@
                                 <div class="account-menu-item-labels">
                                     <div class="account-menu-title">{{ accountProfileTitle }}</div>
                                     <div class="account-menu-subtitle">{{ accountProfileSubtitle }}</div>
+                                </div>
+                                <span class="account-menu-item-chevron">&#8250;</span>
+                            </a>
+                            <a href="/weather" class="account-menu-item">
+                                <div class="account-menu-icon-shell">
+                                    <div class="account-menu-icon-shape account-menu-icon-weather">🌤️</div>
+                                </div>
+                                <div class="account-menu-item-labels">
+                                    <div class="account-menu-title">Météo</div>
+                                    <div class="account-menu-subtitle">Prévisions météo mondiales</div>
                                 </div>
                                 <span class="account-menu-item-chevron">&#8250;</span>
                             </a>
