@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 23, 2026 at 11:16 PM
+-- Generation Time: Apr 26, 2026 at 07:18 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -144,7 +144,8 @@ CREATE TABLE `admin_profile_preferences` (
 --
 
 INSERT INTO `admin_profile_preferences` (`id`, `user_email`, `job_title`, `company`, `bio`, `created_at`, `updated_at`) VALUES
-(1, 'zrafimehdi5@gmail.com', 'Super Admin', 'EasyTravel', 'Admin principal de la console EasyTravel. Gestion des operations, du support et des contenus premium.', '2026-04-13 15:55:39', '2026-04-13 15:55:39');
+(1, 'zrafimehdi5@gmail.com', 'Super Admin', 'EasyTravel', 'Admin principal de la console EasyTravel. Gestion des operations, du support et des contenus premium.', '2026-04-13 15:55:39', '2026-04-13 15:55:39'),
+(4, 'zrafimehdi@gmail.com', 'Super Admin', 'EasyTravel', 'Admin principal de la console EasyTravel. Gestion des operations, du support et des contenus premium.', '2026-04-26 16:33:04', '2026-04-26 16:33:04');
 
 -- --------------------------------------------------------
 
@@ -395,7 +396,8 @@ CREATE TABLE `forum_comments` (
 --
 
 INSERT INTO `forum_comments` (`id`, `post_id`, `user_id`, `content`, `created_at`, `updated_at`) VALUES
-(2, 1, 14, 'sa7a wassime 👏👏👏🍹', '2026-04-18 15:34:01', '2026-04-18 15:34:01');
+(2, 1, 14, 'sa7a wassime 👏👏👏🍹', '2026-04-18 15:34:01', '2026-04-18 15:34:01'),
+(3, 2, 16, 'bien wlh tanja7 elforum hethi', '2026-04-26 16:53:11', '2026-04-26 16:53:11');
 
 -- --------------------------------------------------------
 
@@ -442,7 +444,8 @@ CREATE TABLE `forum_reactions` (
 
 INSERT INTO `forum_reactions` (`id`, `post_id`, `user_id`, `reaction_code`, `created_at`, `updated_at`) VALUES
 (1, 1, 15, 'LOVE', '2026-04-18 16:39:44', '2026-04-18 16:39:52'),
-(3, 1, 14, 'WOW', '2026-04-18 17:33:45', '2026-04-18 17:33:45');
+(3, 1, 14, 'WOW', '2026-04-18 17:33:45', '2026-04-18 17:33:45'),
+(4, 2, 16, 'LOVE', '2026-04-26 17:52:07', '2026-04-26 17:52:07');
 
 -- --------------------------------------------------------
 
@@ -677,6 +680,7 @@ INSERT INTO `packages` (`id`, `destination_id`, `client_nom`, `client_email`, `d
 CREATE TABLE `paiements` (
   `id` int(11) NOT NULL,
   `client_nom` varchar(100) NOT NULL,
+  `client_email` varchar(190) DEFAULT NULL,
   `destination` varchar(200) NOT NULL,
   `montant` decimal(10,2) NOT NULL,
   `date_paiement` datetime NOT NULL DEFAULT current_timestamp(),
@@ -691,11 +695,11 @@ CREATE TABLE `paiements` (
 -- Dumping data for table `paiements`
 --
 
-INSERT INTO `paiements` (`id`, `client_nom`, `destination`, `montant`, `date_paiement`, `statut`, `reference_transaction`, `package_id`, `numero_carte_masque`, `type_voyage`) VALUES
-(1, 'yassmine aaaa', 'Algiers, Algérie', 6139.84, '2026-04-01 10:39:52', 'PAYE', 'PAY-1775032792416-7844', 0, '**** **** **** 6565', 'Aventure'),
-(2, 'yassmine aaaa', 'Rio de Janeiro, Brésil', 1917.28, '2026-04-01 14:23:00', 'PAYE', 'PAY-1775046180971-1903', 0, '**** **** **** 4546', 'Aventure'),
-(3, 'yassmine aaaa', 'Casablanca, Maroc', 20676.00, '2026-04-01 22:52:15', 'PAYE', 'PAY-1775076735639-9387', 0, '**** **** **** 6793', 'Aventure'),
-(4, 'wassim aaa', 'Algiers, Algérie', 6139.84, '2026-04-02 17:01:28', 'PAYE', 'PAY-1775142088505-1871', 0, '**** **** **** 5252', 'Aventure');
+INSERT INTO `paiements` (`id`, `client_nom`, `client_email`, `destination`, `montant`, `date_paiement`, `statut`, `reference_transaction`, `package_id`, `numero_carte_masque`, `type_voyage`) VALUES
+(1, 'yassmine aaaa', NULL, 'Algiers, Algérie', 6139.84, '2026-04-01 10:39:52', 'PAYE', 'PAY-1775032792416-7844', 0, '**** **** **** 6565', 'Aventure'),
+(2, 'yassmine aaaa', NULL, 'Rio de Janeiro, Brésil', 1917.28, '2026-04-01 14:23:00', 'PAYE', 'PAY-1775046180971-1903', 0, '**** **** **** 4546', 'Aventure'),
+(3, 'yassmine aaaa', NULL, 'Casablanca, Maroc', 20676.00, '2026-04-01 22:52:15', 'PAYE', 'PAY-1775076735639-9387', 0, '**** **** **** 6793', 'Aventure'),
+(4, 'wassim aaa', NULL, 'Algiers, Algérie', 6139.84, '2026-04-02 17:01:28', 'PAYE', 'PAY-1775142088505-1871', 0, '**** **** **** 5252', 'Aventure');
 
 -- --------------------------------------------------------
 
@@ -1019,9 +1023,10 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `nom`, `prenom`, `email`, `password`, `telephone`, `adresse`, `date_naissance`, `role`, `photo_url`, `is_active`, `is_validated`, `validated_at`, `date_inscription`, `created_at`, `updated_at`) VALUES
-(13, 'Zrafi', 'Mehdi', 'zrafimehdi5@gmail.com', 'i7DPbrmxfQ99IrRW8SElfcElTh8BZlNwR2OD6ndt9BQ=', '51418902', 'RUE N° 6', NULL, 'ADMIN', 'file:///C:/Users/seif/.easytravel/profile-photos/zrafimehdi5-gmail-com-20260414002210-9e7cfee3.png', 1, 1, NULL, '2026-02-22', '2026-02-22 09:12:53', '2026-04-13 22:22:12'),
+(13, 'Zrafi', 'Mehdi', 'zrafimehdi5@gmail.com', 'i7DPbrmxfQ99IrRW8SElfcElTh8BZlNwR2OD6ndt9BQ=', '51418902', 'RUE N° 6', NULL, 'ADMIN', NULL, 1, 1, NULL, '2026-02-22', '2026-02-22 09:12:53', '2026-04-26 17:12:56'),
 (14, 'aaaa', 'yassmine', 'yassmine@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', '', 'kairouan', '2016-03-05', 'ADMIN', NULL, 1, 1, '2026-03-31 02:29:38', '2026-03-31', '2026-03-30 23:15:19', '2026-04-02 14:24:58'),
-(15, 'aaa', 'wassim', 'wassim@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', NULL, NULL, NULL, 'USER', NULL, 1, 1, '2026-04-02 14:24:27', '2026-04-02', '2026-04-02 14:22:57', '2026-04-02 14:25:12');
+(15, 'aaa', 'wassim', 'wassim@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', NULL, NULL, NULL, 'USER', NULL, 1, 1, '2026-04-02 14:24:27', '2026-04-02', '2026-04-02 14:22:57', '2026-04-02 14:25:12'),
+(16, 'Zrafi', 'Mehdi', 'zrafimehdi@gmail.com', 'v3BGi7hyZdrY9m6r9LlPeba2RFBdwI5vPgzOa3iL5Mk=', '+21651418902', 'Rue 6 N°436\r\nSuite', '2003-07-14', 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426190746-5e934ccb.png', 1, 1, NULL, '2026-04-26', '2026-04-26 16:25:32', '2026-04-26 17:07:46');
 
 -- --------------------------------------------------------
 
@@ -1073,7 +1078,17 @@ INSERT INTO `user_notifications` (`id`, `recipient_email`, `sender_email`, `send
 (25, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PHOTO', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-13 22:22:12'),
 (26, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-14 04:26:57'),
 (27, 'yassmine@gmail.com', 'wassim@gmail.com', 'USER', 'ACCOUNT', 'Nouvelle reclamation client', 'wassim aaa a envoye une reclamation : bvbvvbbv', 0, '2026-04-18 06:21:47'),
-(28, 'zrafimehdi5@gmail.com', 'wassim@gmail.com', 'USER', 'ACCOUNT', 'Nouvelle reclamation client', 'wassim aaa a envoye une reclamation : bvbvvbbv', 0, '2026-04-18 06:21:47');
+(28, 'zrafimehdi5@gmail.com', 'wassim@gmail.com', 'USER', 'ACCOUNT', 'Nouvelle reclamation client', 'wassim aaa a envoye une reclamation : bvbvvbbv', 0, '2026-04-18 06:21:47'),
+(29, 'zrafimehdi@gmail.com', 'system@easytravel.local', 'SYSTEM', 'ACCOUNT', 'Compte cree en attente de validation', 'Bienvenue Mehdi, votre compte EasyTravel a ete cree et attend maintenant la validation d\'un administrateur.', 1, '2026-04-26 16:25:32'),
+(30, 'yassmine@gmail.com', 'zrafimehdi@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-04-26 16:25:32'),
+(31, 'zrafimehdi5@gmail.com', 'zrafimehdi@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-04-26 16:25:32'),
+(32, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 16:32:41'),
+(33, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 16:33:04'),
+(34, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 16:34:20'),
+(35, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 16:37:14'),
+(36, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 17:07:46'),
+(37, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 17:07:50'),
+(38, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 17:07:55');
 
 -- --------------------------------------------------------
 
@@ -1100,7 +1115,8 @@ CREATE TABLE `user_notification_preferences` (
 INSERT INTO `user_notification_preferences` (`id`, `user_email`, `user_role`, `notify_security`, `notify_booking`, `notify_forum`, `notify_offers`, `created_at`, `updated_at`) VALUES
 (1, 'zrafimehdi5@gmail.com', 'ADMIN', 1, 1, 1, 0, '2026-03-31 01:30:47', '2026-03-31 01:30:47'),
 (2, 'yassmine@gmail.com', 'USER', 1, 1, 1, 0, '2026-03-31 02:29:39', '2026-03-31 02:29:39'),
-(3, 'wassim@gmail.com', 'USER', 1, 1, 1, 0, '2026-04-02 14:22:57', '2026-04-02 14:22:57');
+(3, 'wassim@gmail.com', 'USER', 1, 1, 1, 0, '2026-04-02 14:22:57', '2026-04-02 14:22:57'),
+(11, 'zrafimehdi@gmail.com', 'ADMIN', 1, 1, 1, 0, '2026-04-26 16:25:32', '2026-04-26 16:32:41');
 
 -- --------------------------------------------------------
 
@@ -1440,7 +1456,7 @@ ALTER TABLE `activites`
 -- AUTO_INCREMENT for table `admin_profile_preferences`
 --
 ALTER TABLE `admin_profile_preferences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `atmosphere_destinations`
@@ -1482,7 +1498,7 @@ ALTER TABLE `featured_destination_history`
 -- AUTO_INCREMENT for table `forum_comments`
 --
 ALTER TABLE `forum_comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `forum_posts`
@@ -1494,7 +1510,7 @@ ALTER TABLE `forum_posts`
 -- AUTO_INCREMENT for table `forum_reactions`
 --
 ALTER TABLE `forum_reactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `forum_stories`
@@ -1590,13 +1606,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `user_notifications`
 --
 ALTER TABLE `user_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `user_notification_preferences`
 --
 ALTER TABLE `user_notification_preferences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `user_remember_me`
