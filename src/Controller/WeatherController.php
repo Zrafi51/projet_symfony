@@ -60,8 +60,8 @@ class WeatherController extends AbstractController
 
     private function getWeatherData(string $city): array
     {
-        // Using OpenWeatherMap API (you'll need to get an API key)
-        $apiKey = $_ENV['WEATHER_API_KEY'] ?? 'demo_key';
+        // Using OpenWeatherMap API with your API key
+        $apiKey = 'd937c4d5e323ba07156fa97da211a4ae';
         $url = "https://api.openweathermap.org/data/2.5/weather?q={$city}&appid={$apiKey}&units=metric";
 
         $response = $this->httpClient->request('GET', $url);
