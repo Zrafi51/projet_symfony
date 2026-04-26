@@ -1,214 +1,370 @@
-{% extends 'layout.html.twig' %}
+{% extends 'weather-layout.html.twig' %}
 
 {% set title = 'Meteo' %}
 {% set path = '/weather' %}
 
 {% block content %}
-<div class="page-section">
+<div class="weather-page">
+    <div class="weather-background"></div>
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="content-card weather-card">
-                    <div class="content-card-header">
-                        <p class="content-card-subtitle">Consultez les conditions meteores pour n'importe quelle destination</p>
+        <div class="weather-container">
+            <div class="weather-header-card">
+                <div class="weather-title-section">
+                    <h1 class="weather-main-title">
+                        <span class="weather-title-icon">🌤️</span>
+                        Météo Mondiale
+                    </h1>
+                    <p class="weather-subtitle">Découvrez les conditions météo en temps réel</p>
+                </div>
+            </div>
+
+            <div class="weather-search-card">
+                {{ form_start(form, {'attr': {'class': 'weather-search-form', 'id': 'weatherForm'}}) }}
+                <div class="search-input-group">
+                    <div class="search-input-wrapper">
+                        {{ form_widget(form.destination, {'attr': {'class': 'search-input', 'placeholder': '🔍 Rechercher une ville...', 'id': 'cityInput'}}) }}
+                        <div class="search-icon">🔍</div>
                     </div>
-                    
-                    <div class="content-card-body">
-                        {{ form_start(form, {'attr': {'class': 'travel-form weather-form', 'id': 'weatherForm'}}) }}
-                        <div class="form-group">
-                            {{ form_label(form.destination, 'Destination', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.destination, {'attr': {'class': 'form-input', 'placeholder': 'Entrez le nom de la ville...', 'id': 'cityInput'}}) }}
-                            {{ form_errors(form.destination) }}
-                        </div>
-                        <div class="form-actions">
-                            {{ form_widget(form.search, {'attr': {'class': 'btn btn-primary', 'id': 'searchBtn'}}) }}
-                        </div>
-                        {{ form_end(form) }}
+                    {{ form_widget(form.search, {'attr': {'class': 'search-button', 'id': 'searchBtn'}}) }}
+                </div>
+                {{ form_end(form) }}
 
-                        <div id="loadingState" class="loading-state hidden">
-                            <div class="loading-spinner"></div>
-                            <p>Recherche des informations meteo...</p>
-                        </div>
+                {% if error %}
+                    <div class="error-message">
+                        <span class="error-icon">⚠️</span>
+                        {{ error }}
+                    </div>
+                {% endif %}
+            </div>
 
-                        {% if error %}
-                            <div class="alert alert-error weather-error">
-                                <span class="alert-icon">⚠️</span>
-                                {{ error }}
+            {% if weatherData %}
+                <div class="weather-result-card">
+                    <div class="weather-result-header">
+                        <div class="location-info">
+                            <h2 class="city-name">{{ weatherData.city }}</h2>
+                            <span class="country-name">{{ weatherData.country }}</span>
+                        </div>
+                        <div class="weather-time">
+                            <span class="time-icon">🕐</span>
+                            {{ "now"|date("H:i") }}
+                        </div>
+                    </div>
+
+                    <div class="weather-main-display">
+                        <div class="weather-visual">
+                            <div class="weather-icon-wrapper">
+                                <img src="https://openweathermap.org/img/wn/{{ weatherData.icon }}@4x.png" 
+                                     alt="{{ weatherData.description }}" 
+                                     class="weather-main-icon">
+                                <div class="weather-icon-bg"></div>
                             </div>
-                        {% endif %}
-
-                        {% if weatherData %}
-                            <div class="weather-result" data-weather-condition="{{ weatherData.description }}">
-                                <div class="weather-header">
-                                    <h3 class="weather-location">
-                                        <span class="location-icon">📍</span>
-                                        {{ weatherData.city }}, {{ weatherData.country }}
-                                    </h3>
-                                    <div class="weather-time">
-                                        <span class="time-icon">🕐</span>
-                                        Mis a jour: {{ "now"|date("H:i") }}
-                                    </div>
-                                </div>
-                                
-                                <div class="weather-content weather-gradient-{{ weatherData.icon|slice(0, 2) }}">
-                                    <div class="weather-main-info">
-                                        <div class="weather-icon-container">
-                                            <img src="https://openweathermap.org/img/wn/{{ weatherData.icon }}@2x.png" 
-                                                 alt="{{ weatherData.description }}" 
-                                                 class="weather-icon animated-icon">
-                                            <div class="weather-animation-bg"></div>
-                                        </div>
-                                        <div class="weather-temp-container">
-                                            <div class="weather-temp">{{ weatherData.temperature|round }}°C</div>
-                                            <div class="weather-desc">{{ weatherData.description|title }}</div>
-                                            <div class="weather-feels">Ressenti: {{ weatherData.feels_like|round }}°C</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="weather-details-grid">
-                                        <div class="weather-detail-item">
-                                            <div class="detail-icon">💧</div>
-                                            <div class="detail-label">Humidite</div>
-                                            <div class="detail-value">{{ weatherData.humidity }}%</div>
-                                        </div>
-                                        <div class="weather-detail-item">
-                                            <div class="detail-icon">🌡️</div>
-                                            <div class="detail-label">Pression</div>
-                                            <div class="detail-value">{{ weatherData.pressure }} hPa</div>
-                                        </div>
-                                        <div class="weather-detail-item">
-                                            <div class="detail-icon">💨</div>
-                                            <div class="detail-label">Vent</div>
-                                            <div class="detail-value">{{ weatherData.wind_speed }} m/s</div>
-                                        </div>
-                                        <div class="weather-detail-item">
-                                            <div class="detail-icon">🧭</div>
-                                            <div class="detail-label">Direction</div>
-                                            <div class="detail-value">{{ weatherData.wind_direction }}°</div>
-                                        </div>
-                                        <div class="weather-detail-item">
-                                            <div class="detail-icon">👁️</div>
-                                            <div class="detail-label">Visibilite</div>
-                                            <div class="detail-value">{{ weatherData.visibility / 1000 }} km</div>
-                                        </div>
-                                        <div class="weather-detail-item">
-                                            <div class="detail-icon">🌡️</div>
-                                            <div class="detail-label">Min/Max</div>
-                                            <div class="detail-value">{{ (weatherData.temperature - 3)|round }}° / {{ (weatherData.temperature + 3)|round }}°</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="weather-tips">
-                                        <h4>Conseils pour aujourd'hui</h4>
-                                        <div class="tips-grid">
-                                            {% if weatherData.temperature > 25 %}
-                                                <div class="tip-item">
-                                                    <span class="tip-icon">☀️</span>
-                                                    <span>Protection solaire recommandee</span>
-                                                </div>
-                                            {% elseif weatherData.temperature < 10 %}
-                                                <div class="tip-item">
-                                                    <span class="tip-icon">🧥</span>
-                                                    <span>Vettements chauds necessaires</span>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            {% if weatherData.humidity > 70 %}
-                                                <div class="tip-item">
-                                                    <span class="tip-icon">☔</span>
-                                                    <span>Possibilite de pluie</span>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            {% if weatherData.wind_speed > 5 %}
-                                                <div class="tip-item">
-                                                    <span class="tip-icon">💨</span>
-                                                    <span>Vent fort - attention aux objets legers</span>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
+                        </div>
+                        
+                        <div class="weather-info">
+                            <div class="temperature-display">
+                                <span class="temp-value">{{ weatherData.temperature|round }}</span>
+                                <span class="temp-unit">°C</span>
                             </div>
-                        {% endif %}
+                            <div class="weather-description">{{ weatherData.description|title }}</div>
+                            <div class="feels-like">Ressenti {{ weatherData.feels_like|round }}°C</div>
+                        </div>
+                    </div>
 
-                        <div class="recent-searches" id="recentSearches">
-                            <h4>Recherches recentes</h4>
-                            <div class="searches-list" id="searchesList">
-                                <!-- Recent searches will be added here with JavaScript -->
+                    <div class="weather-details">
+                        <div class="detail-card">
+                            <div class="detail-icon">💧</div>
+                            <div class="detail-info">
+                                <div class="detail-value">{{ weatherData.humidity }}%</div>
+                                <div class="detail-label">Humidité</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <div class="detail-icon">🌡️</div>
+                            <div class="detail-info">
+                                <div class="detail-value">{{ weatherData.pressure }}</div>
+                                <div class="detail-label">Pression (hPa)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <div class="detail-icon">💨</div>
+                            <div class="detail-info">
+                                <div class="detail-value">{{ weatherData.wind_speed }}</div>
+                                <div class="detail-label">Vent (m/s)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <div class="detail-icon">👁️</div>
+                            <div class="detail-info">
+                                <div class="detail-value">{{ weatherData.visibility / 1000 }}</div>
+                                <div class="detail-label">Visibilité (km)</div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <style>
-.weather-card {
+/* ===== BASE STYLES ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: #0f0f23;
+    color: #ffffff;
+    line-height: 1.6;
+}
+
+/* ===== LAYOUT ===== */
+.weather-page {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.weather-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, #1e3c72 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, #2a5298 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, #7e22ce 0%, transparent 50%),
+        linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    z-index: -2;
+}
+
+.weather-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 25% 25%, #ffffff08 2px, transparent 2px),
+        radial-gradient(circle at 75% 75%, #ffffff08 1px, transparent 1px);
+    background-size: 50px 50px, 30px 30px;
+    animation: stars 120s linear infinite;
+    z-index: -1;
+}
+
+@keyframes stars {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-100px); }
+}
+
+.weather-container {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* ===== HEADER ===== */
+.weather-header-card {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.weather-main-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.weather-title-icon {
+    font-size: clamp(2rem, 4vw, 3rem);
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.weather-subtitle {
+    font-size: 1.1rem;
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+/* ===== SEARCH CARD ===== */
+.weather-search-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.weather-search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.search-input-group {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1.25rem 3.5rem 1.25rem 1.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    border-radius: 1rem;
+    color: #ffffff;
+    font-size: 1.1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.search-input::placeholder {
+    color: #64748b;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #60a5fa;
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 
+        0 0 0 4px rgba(96, 165, 250, 0.1),
+        0 0 20px rgba(96, 165, 250, 0.2);
+    transform: translateY(-2px);
+}
+
+.search-icon {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.3rem;
+    color: #60a5fa;
+    pointer-events: none;
+}
+
+.search-button {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    border: none;
+    border-radius: 1rem;
+    padding: 1.25rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 15px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
     position: relative;
     overflow: hidden;
 }
 
-.weather-icon-animated {
-    animation: float 3s ease-in-out infinite;
+.search-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+.search-button:hover::before {
+    left: 100%;
 }
 
-.weather-form {
-    position: relative;
+.search-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 25px rgba(59, 130, 246, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-.loading-state {
-    text-align: center;
-    padding: 2rem;
-    display: none;
+.search-button:active {
+    transform: translateY(0);
 }
 
-.loading-state.hidden {
-    display: none;
+/* ===== ERROR MESSAGE ===== */
+.error-message {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: slideIn 0.5s ease-out;
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
 }
 
-.loading-state:not(.hidden) {
-    display: block;
+.error-icon {
+    font-size: 1.3rem;
+    animation: pulse 1s ease-in-out infinite;
 }
 
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* ===== RESULT CARD ===== */
+.weather-result-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 2rem;
+    padding: 2.5rem;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.6s ease-out;
 }
 
-.weather-error {
-    animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
-}
-
-.weather-result {
-    margin-top: 2rem;
-    animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
+@keyframes slideUp {
     from {
         opacity: 0;
         transform: translateY(30px);
@@ -219,127 +375,88 @@
     }
 }
 
-.weather-header {
-    text-align: center;
-    margin-bottom: 2rem;
+.weather-result-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.weather-location {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0;
+.location-info {
+    text-align: left;
+}
+
+.city-name {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.country-name {
+    font-size: 1.1rem;
+    color: #60a5fa;
+    font-weight: 500;
 }
 
 .weather-time {
-    font-size: 0.9rem;
-    color: #666;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .time-icon {
-    font-size: 0.8rem;
+    font-size: 1rem;
 }
 
-.location-icon {
-    margin-right: 0.5rem;
+/* ===== MAIN DISPLAY ===== */
+.weather-main-display {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+    align-items: center;
+    margin-bottom: 3rem;
 }
 
-.weather-content {
-    border-radius: 1rem;
-    padding: 2rem;
-    color: #2c3e50;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+.weather-visual {
     position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
 }
 
-.weather-content:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-}
-
-/* Dynamic weather gradients - Light colors */
-.weather-gradient-01 {
-    background: linear-gradient(135deg, #87CEEB 0%, #B0E0E6 100%);
-}
-
-.weather-gradient-02 {
-    background: linear-gradient(135deg, #E0F6FF 0%, #87CEEB 100%);
-}
-
-.weather-gradient-03 {
-    background: linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%);
-}
-
-.weather-gradient-04 {
-    background: linear-gradient(135deg, #F5F5F5 0%, #E8E8E8 100%);
-}
-
-.weather-gradient-09 {
-    background: linear-gradient(135deg, #4682B4 0%, #87CEEB 100%);
-}
-
-.weather-gradient-10 {
-    background: linear-gradient(135deg, #5F9EA0 0%, #87CEEB 100%);
-}
-
-.weather-gradient-11 {
-    background: linear-gradient(135deg, #6495ED 0%, #87CEEB 100%);
-}
-
-.weather-gradient-13 {
-    background: linear-gradient(135deg, #FFFFFF 0%, #F0F8FF 100%);
-}
-
-.weather-gradient-50 {
-    background: linear-gradient(135deg, #D3D3D3 0%, #E8E8E8 100%);
-}
-
-.weather-main-info {
+.weather-icon-wrapper {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 2rem;
-    gap: 2rem;
-    position: relative;
 }
 
-.weather-icon-container {
-    text-align: center;
-    position: relative;
+.weather-main-icon {
+    width: clamp(120px, 15vw, 180px);
+    height: clamp(120px, 15vw, 180px);
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.4));
+    animation: float 4s ease-in-out infinite;
 }
 
-.weather-icon {
-    width: 120px;
-    height: 120px;
-    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
-    animation: pulse 2s ease-in-out infinite;
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-.weather-animation-bg {
+.weather-icon-bg {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 140px;
-    height: 140px;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    width: clamp(150px, 20vw, 220px);
+    height: clamp(150px, 20vw, 220px);
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
     border-radius: 50%;
-    animation: rotate 20s linear infinite;
+    animation: rotate 30s linear infinite;
 }
 
 @keyframes rotate {
@@ -347,223 +464,215 @@
     to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-.weather-temp-container {
-    text-align: center;
+.weather-info {
+    text-align: left;
 }
 
-.weather-temp {
-    font-size: 4rem;
-    font-weight: 700;
+.temperature-display {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.temp-value {
+    font-size: clamp(3rem, 6vw, 6rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     line-height: 1;
+    letter-spacing: -0.05em;
+}
+
+.temp-unit {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 600;
+    color: #60a5fa;
+    margin-top: 0.5rem;
+}
+
+.weather-description {
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    color: #e2e8f0;
+    font-weight: 500;
     margin-bottom: 0.5rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.weather-desc {
-    font-size: 1.2rem;
-    opacity: 0.9;
     text-transform: capitalize;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.02em;
 }
 
-.weather-feels {
-    font-size: 0.9rem;
-    opacity: 0.7;
+.feels-like {
+    font-size: 1rem;
+    color: #94a3b8;
+    font-weight: 400;
 }
 
-.weather-details-grid {
+/* ===== DETAILS GRID ===== */
+.weather-details {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
-    background: rgba(255, 255, 255, 0.7);
-    border-radius: 0.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+.detail-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 1.2rem;
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-.weather-detail-item {
-    text-align: center;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 0.5rem;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+.detail-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.1), transparent);
+    transition: left 0.6s ease;
 }
 
-.weather-detail-item:hover {
-    background: rgba(255, 255, 255, 0.95);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.detail-card:hover::before {
+    left: 100%;
+}
+
+.detail-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(96, 165, 250, 0.3);
+    box-shadow: 
+        0 10px 25px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .detail-icon {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    display: block;
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.1));
+    border-radius: 1rem;
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    flex-shrink: 0;
 }
 
-.detail-label {
-    font-size: 0.8rem;
-    opacity: 0.8;
-    margin-bottom: 0.25rem;
+.detail-info {
+    flex: 1;
+    min-width: 0;
 }
 
 .detail-value {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
 }
 
-.weather-tips {
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.weather-tips h4 {
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-    color: #2c3e50;
-}
-
-.tips-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.tip-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    font-size: 0.9rem;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    color: #2c3e50;
-}
-
-.tip-icon {
-    font-size: 1rem;
-}
-
-.recent-searches {
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid #eee;
-}
-
-.recent-searches h4 {
-    margin: 0 0 1rem 0;
-    color: #666;
-    font-size: 1rem;
-}
-
-.searches-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.search-item {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
+.detail-label {
     font-size: 0.85rem;
-    color: #495057;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.search-item:hover {
-    background: #e9ecef;
-    border-color: #adb5bd;
-}
-
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
-    .weather-main-info {
-        flex-direction: column;
+    .weather-page {
+        padding: 1rem;
+    }
+    
+    .weather-search-card,
+    .weather-result-card {
+        padding: 1.5rem;
+    }
+    
+    .search-input-group {
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
     
-    .weather-temp {
-        font-size: 3rem;
+    .search-button {
+        width: 100%;
     }
     
-    .weather-details-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .weather-header {
+    .weather-result-header {
         flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .weather-main-display {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 2rem;
+    }
+    
+    .weather-info {
         text-align: center;
     }
     
-    .tips-grid {
-        flex-direction: column;
+    .weather-details {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .detail-card {
+        padding: 1rem;
+    }
+    
+    .detail-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .detail-value {
+        font-size: 1.2rem;
     }
 }
-</style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('weatherForm');
-    const searchBtn = document.getElementById('searchBtn');
-    const loadingState = document.getElementById('loadingState');
-    const cityInput = document.getElementById('cityInput');
-    const searchesList = document.getElementById('searchesList');
-    
-    // Recent searches functionality
-    let recentSearches = JSON.parse(localStorage.getItem('recentWeatherSearches') || '[]');
-    
-    function updateRecentSearches() {
-        searchesList.innerHTML = '';
-        recentSearches.slice(0, 5).forEach(city => {
-            const searchItem = document.createElement('span');
-            searchItem.className = 'search-item';
-            searchItem.textContent = city;
-            searchItem.onclick = () => {
-                cityInput.value = city;
-                form.submit();
-            };
-            searchesList.appendChild(searchItem);
-        });
+@media (max-width: 480px) {
+    .weather-details {
+        grid-template-columns: 1fr;
     }
     
-    function addToRecentSearches(city) {
-        recentSearches = recentSearches.filter(c => c !== city);
-        recentSearches.unshift(city);
-        recentSearches = recentSearches.slice(0, 10);
-        localStorage.setItem('recentWeatherSearches', JSON.stringify(recentSearches));
-        updateRecentSearches();
+    .detail-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
     }
     
-    // Show loading state
-    form.addEventListener('submit', function() {
-        const city = cityInput.value.trim();
-        if (city) {
-            loadingState.classList.remove('hidden');
-            searchBtn.disabled = true;
-            searchBtn.textContent = 'Recherche...';
-            addToRecentSearches(city);
-        }
-    });
-    
-    // Auto-complete suggestions (basic implementation)
-    cityInput.addEventListener('input', function() {
-        const value = this.value.toLowerCase();
-        if (value.length > 2) {
-            const matches = recentSearches.filter(city => 
-                city.toLowerCase().includes(value)
-            );
-            // You could implement a dropdown here
-        }
-    });
-    
-    // Initialize recent searches
-    updateRecentSearches();
-});
-</script>
+    .detail-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== FOCUS STYLES ===== */
+.search-button:focus,
+.search-input:focus {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+}
+</style>
 {% endblock %}
