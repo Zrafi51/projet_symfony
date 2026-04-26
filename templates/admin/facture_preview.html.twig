@@ -1,0 +1,70 @@
+{% extends 'admin-layout.html.twig' %}
+
+{% block body %}
+<main class="invoice-preview-page">
+    {% if statusMessage|default(null) %}
+        <div class="billing-alert billing-alert-success">{{ statusMessage }}</div>
+    {% endif %}
+    {% if errorMessage|default(null) %}
+        <div class="billing-alert billing-alert-error">{{ errorMessage }}</div>
+    {% endif %}
+
+    <article class="invoice-preview-paper">
+        <header class="invoice-preview-header">
+            <img src="/assets/java/trans_bg.png" alt="EasyTravel" class="invoice-preview-logo">
+            <div>
+                <h1>EASY TRAVEL</h1>
+                <p>Agence de Voyages Premium</p>
+                <span>123 Avenue Habib Bourguiba, Tunis 1000, Tunisie</span>
+            </div>
+        </header>
+
+        <section class="invoice-title-box">
+            <h2>FACTURE</h2>
+            <p>N° {{ facture.numero_facture|default('PREVIEW') }}</p>
+        </section>
+
+        <section class="invoice-info-grid">
+            <div>
+                <span>FACTURE A</span>
+                <strong>{{ facture.client_nom|default('Client') }}</strong>
+                <p>{{ facture.client_email|default('') }}</p>
+                <p>{{ facture.client_adresse|default('') }}</p>
+            </div>
+            <div>
+                <span>INFORMATIONS</span>
+                <p>Date: <strong>{{ facture.date_emission|default('now')|date('d/m/Y') }}</strong></p>
+                <p>Destination: <strong>{{ facture.destination|default('') }}</strong></p>
+                <p>Periode: <strong>{{ facture.date_debut|default('') }} - {{ facture.date_fin|default('') }}</strong></p>
+                <p>Voyageurs: <strong>{{ facture.nb_personnes|default(1) }}</strong></p>
+            </div>
+        </section>
+
+        <section class="invoice-lines">
+            <div class="invoice-line invoice-line-head"><span>Description</span><span>Montant</span></div>
+            <div class="invoice-line"><span>✈ Transport</span><strong>{{ facture.montant_transport|default(0)|number_format(2, '.', ' ') }} TND</strong></div>
+            <div class="invoice-line"><span>🏨 Hebergement</span><strong>{{ facture.montant_hebergement|default(0)|number_format(2, '.', ' ') }} TND</strong></div>
+            <div class="invoice-line"><span>🎯 Activites et excursions</span><strong>{{ facture.montant_activites|default(0)|number_format(2, '.', ' ') }} TND</strong></div>
+            <div class="invoice-line invoice-line-total"><span>Montant total a payer</span><strong>{{ facture.montant_total|default(0)|number_format(2, '.', ' ') }} TND</strong></div>
+        </section>
+
+        <section class="invoice-notes">
+            <h3>Notes</h3>
+            <p>Paiement effectue avec succes. Cette facture est valable comme justificatif de paiement.</p>
+        </section>
+
+        <footer class="invoice-preview-footer">
+            <div class="invoice-stamp">EASY<br>TRAVEL<br><small>{{ 'now'|date('Y') }}</small></div>
+            <div class="invoice-signature">
+                <strong>Mehdi Zrafi</strong>
+                <span>Directeur General</span>
+            </div>
+        </footer>
+    </article>
+
+    <div class="invoice-preview-actions">
+        <button type="button" onclick="window.print()" class="payment-button payment-button-primary">Imprimer / PDF</button>
+        <a href="/admin/factures" class="payment-button payment-button-secondary">Retour</a>
+    </div>
+</main>
+{% endblock %}

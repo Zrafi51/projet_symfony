@@ -1,0 +1,296 @@
+{% set userSummaryCards = [
+    {'label': 'Total utilisateurs', 'value': overview.counts.users|default(0)},
+    {'label': 'En attente', 'value': overview.counts.pending_users|default(0)},
+    {'label': 'Utilisateurs actifs', 'value': overview.counts.active_users|default(0)},
+] %}
+
+<section class="admin-panel-card admin-users-toolbar-card">
+    <form class="admin-users-toolbar" method="get" action="/admin/dashboard">
+        <input type="hidden" name="section" value="users">
+        <div class="admin-inline-search-shell admin-users-search-shell">
+            <input class="admin-inline-search-field" type="search" name="users_search" value="{{ usersSearch|default('') }}" placeholder="Rechercher par nom ou email...">
+        </div>
+        <div class="admin-filter-group admin-users-filter-group">
+            {% for filterValue, filterLabel in userFilterOptions|default({}) %}
+                {% set filterParams = {'section': 'users', 'user_filter': filterValue} %}
+                {% if usersSearch is not empty %}
+                    {% set filterParams = filterParams|merge({'users_search': usersSearch}) %}
+                {% endif %}
+                <a class="admin-filter-button {{ userFilter == filterValue ? 'admin-filter-button-active' : '' }}" href="{{ path('app_admin_dashboard', filterParams) }}">
+                    {{ filterLabel }}
+                </a>
+            {% endfor %}
+        </div>
+    </form>
+</section>
+
+{% if users is empty %}
+    <section class="admin-panel-card admin-users-empty-card">
+        <p class="admin-empty-copy">Aucun utilisateur ne correspond a ce filtre.</p>
+    </section>
+{% else %}
+    <section class="admin-users-directory-list">
+        {% for user in users %}
+            {% set userId = user.id|default(0) %}
+            {% set userName = user.display_name|default('Utilisateur') %}
+            {% set userEmail = user.email|default('') %}
+            {% set userInitial = userName|slice(0, 1)|upper %}
+            {% set userPhone = user.telephone|default('') %}
+            {% if userPhone is empty %}
+                {% set userPhone = 'N/A' %}
+            {% endif %}
+            {% set userRole = user.role|default('USER')|upper %}
+            {% set userStatus = user.status_label|default('ACTIF')|upper %}
+            {% set userCountry = user.country|default('Tunisie') %}
+            {% set userValidationCopy = user.is_pending_validation|default(false)
+                ? 'validation admin requise'
+                : (user.validated_at|default('') ? 'valide le ' ~ (user.validated_at|date('d/m/Y')) : 'compte valide')
+            %}
+            {% set userAddress = user.adresse|default('') %}
+            {% if userAddress is empty %}
+                {% set userAddress = 'Non renseignee' %}
+            {% endif %}
+            {% set userRegistrationDate = user.date_inscription|default('') ? user.date_inscription|date('d/m/Y') : 'Non renseigne' %}
+            {% set userPhotoUrl = user.photo_display_url|default(user.photo_url|default('')) %}
+            {% set focusCurrentUser = focusUserId == userId %}
+            {% set userStatusTone = user.status_tone|default('green') %}
+            {% set userStatusClass = userStatusTone == 'red'
+                ? 'admin-status-pill-red'
+                : (userStatusTone == 'orange'
+                    ? 'admin-status-pill-orange'
+                    : (userStatusTone == 'blue' ? 'admin-status-pill-blue' : 'admin-status-pill-green'))
+            %}
+            {% set userInfoStatusClass = userStatusTone == 'red'
+                ? 'admin-users-info-card-red'
+                : (userStatusTone == 'orange'
+                    ? 'admin-users-info-card-orange'
+                    : (userStatusTone == 'blue' ? 'admin-users-info-card-blue' : 'admin-users-info-card-violet'))
+            %}
+            {% set avatarToneClass = (userId % 4) == 1
+                ? 'admin-user-avatar-blue'
+                : ((userId % 4) == 2
+                    ? 'admin-user-avatar-violet'
+                    : ((userId % 4) == 3 ? 'admin-user-avatar-orange' : 'admin-user-avatar-green'))
+            %}
+
+            <article id="user-{{ userId }}" class="admin-panel-card admin-users-directory-card {{ focusCurrentUser ? 'admin-users-directory-card-focused' : '' }}">
+                <div class="admin-users-directory-top">
+                    <div class="admin-users-directory-header">
+                        <div class="admin-user-avatar {{ avatarToneClass }}">
+                            {% if userPhotoUrl is not empty %}
+                                <img
+                                    src="{{ userPhotoUrl }}"
+                                    alt="{{ userName }}"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                                >
+                                <span style="display:none;">{{ userInitial }}</span>
+                            {% else %}
+                                <span>{{ userInitial }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="admin-users-directory-copy">
+                            <h2>{{ userName }}</h2>
+                            <p>{{ userEmail }}</p>
+                            <small>{{ userCountry ~ ' | ' ~ userValidationCopy }}</small>
+                        </div>
+                    </div>
+                    <span class="admin-status-pill {{ userStatusClass }} admin-users-directory-status">{{ userStatus }}</span>
+                </div>
+
+                <div class="admin-users-info-grid">
+                    <div class="admin-users-info-card admin-users-info-card-blue">
+                        <span>Telephone</span>
+                        <strong>{{ userPhone }}</strong>
+                    </div>
+                    <div class="admin-users-info-card admin-users-info-card-violet">
+                        <span>Role</span>
+                        <strong>{{ userRole }}</strong>
+                    </div>
+                    <div class="admin-users-info-card {{ userInfoStatusClass }}">
+                        <span>Statut</span>
+                        <strong>{{ userStatus }}</strong>
+                    </div>
+                </div>
+
+                <div class="admin-users-action-row">
+                    <div class="admin-users-action-item admin-users-action-item-wide">
+                        <button
+                            class="admin-card-action admin-card-action-blue"
+                            type="button"
+                            data-user-sheet-open
+                            data-user-sheet-mode="profile"
+                            data-user-sheet-title="Profil client"
+                            data-user-sheet-name="{{ userName }}"
+                            data-user-sheet-email="{{ userEmail }}"
+                            data-user-sheet-phone="{{ userPhone }}"
+                            data-user-sheet-role="{{ userRole }}"
+                            data-user-sheet-status="{{ userStatus }}"
+                            data-user-sheet-status-tone="{{ userStatusTone }}"
+                            data-user-sheet-country="{{ userCountry }}"
+                            data-user-sheet-address="{{ userAddress }}"
+                            data-user-sheet-registration="{{ userRegistrationDate }}"
+                            data-user-sheet-validation="{{ userValidationCopy }}"
+                            data-user-sheet-avatar-url="{{ userPhotoUrl }}"
+                            data-user-sheet-avatar-initial="{{ userInitial }}"
+                            data-user-sheet-avatar-tone="{{ avatarToneClass }}"
+                        >
+                            Profil
+                        </button>
+                    </div>
+
+                    <div class="admin-users-action-item admin-users-action-item-wide">
+                        <button
+                            class="admin-card-action admin-card-action-orange"
+                            type="button"
+                            data-user-sheet-open
+                            data-user-sheet-mode="contact"
+                            data-user-sheet-title="Contact client"
+                            data-user-sheet-name="{{ userName }}"
+                            data-user-sheet-email="{{ userEmail }}"
+                            data-user-sheet-phone="{{ userPhone }}"
+                            data-user-sheet-role="{{ userRole }}"
+                            data-user-sheet-status="{{ userStatus }}"
+                            data-user-sheet-status-tone="{{ userStatusTone }}"
+                            data-user-sheet-country="{{ userCountry }}"
+                            data-user-sheet-validation="{{ userValidationCopy }}"
+                            data-user-sheet-avatar-url="{{ userPhotoUrl }}"
+                            data-user-sheet-avatar-initial="{{ userInitial }}"
+                            data-user-sheet-avatar-tone="{{ avatarToneClass }}"
+                            data-user-sheet-mail="{{ userEmail }}"
+                            data-user-sheet-action-label="Envoyer un email"
+                        >
+                            Contact
+                        </button>
+                    </div>
+
+                    <form class="admin-users-action-item" method="post" action="/admin/users/{{ userId }}/validate">
+                        <input type="hidden" name="section" value="users">
+                        <input type="hidden" name="user_filter" value="{{ userFilter }}">
+                        <input type="hidden" name="users_search" value="{{ usersSearch|default('') }}">
+                        <input type="hidden" name="focus_user" value="{{ userId }}">
+                        <button class="admin-card-action admin-card-action-green" type="submit">
+                            {{ user.is_pending_validation|default(false) ? 'Valider' : 'Valide' }}
+                        </button>
+                    </form>
+
+                    <div class="admin-users-action-item">
+                        <button
+                            class="admin-card-action admin-card-action-blue"
+                            type="button"
+                            data-user-role-open
+                            data-user-id="{{ userId }}"
+                            data-user-name="{{ userName }}"
+                            data-user-role="{{ userRole }}"
+                            data-user-status="{{ userStatus }}"
+                        >
+                            Changer role
+                        </button>
+                    </div>
+
+                    <form class="admin-users-action-item" method="post" action="/admin/users/{{ userId }}/toggle-active">
+                        <input type="hidden" name="section" value="users">
+                        <input type="hidden" name="user_filter" value="{{ userFilter }}">
+                        <input type="hidden" name="users_search" value="{{ usersSearch|default('') }}">
+                        <input type="hidden" name="focus_user" value="{{ userId }}">
+                        <button class="admin-card-action {{ user.is_active|default(false) ? 'admin-card-action-orange' : 'admin-card-action-blue' }}" type="submit">
+                            {{ user.is_active|default(false) ? 'Suspendre' : 'Reactiver' }}
+                        </button>
+                    </form>
+
+                    <form class="admin-users-action-item" method="post" action="/admin/users/{{ userId }}/delete" onsubmit="return confirm('Supprimer definitivement ce compte ?');">
+                        <input type="hidden" name="section" value="users">
+                        <input type="hidden" name="user_filter" value="{{ userFilter }}">
+                        <input type="hidden" name="users_search" value="{{ usersSearch|default('') }}">
+                        <button class="admin-card-action admin-card-action-red" type="submit">Supprimer</button>
+                    </form>
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+
+    <section class="admin-users-summary-grid">
+        {% for summaryCard in userSummaryCards %}
+            <article class="admin-mini-summary-card admin-users-summary-card">
+                <span>{{ summaryCard.label }}</span>
+                <strong>{{ summaryCard.value }}</strong>
+            </article>
+        {% endfor %}
+    </section>
+
+    <dialog class="admin-package-dialog admin-users-role-dialog" data-user-role-dialog>
+        <form class="admin-package-dialog-backdrop" method="dialog">
+            <button class="admin-package-dialog-close" type="submit" aria-label="Fermer" data-user-role-close>&times;</button>
+        </form>
+        <form class="admin-package-dialog-content admin-users-role-dialog-content" method="post" action="" data-user-role-form>
+            <input type="hidden" name="section" value="users">
+            <input type="hidden" name="user_filter" value="{{ userFilter }}">
+            <input type="hidden" name="users_search" value="{{ usersSearch|default('') }}">
+            <input type="hidden" name="focus_user" value="" data-user-role-focus>
+
+            <div class="admin-package-dialog-copy">
+                <span class="admin-destinations-slot-label">ROLE UTILISATEUR</span>
+                <h3 data-user-role-title>Changer le role</h3>
+                <p data-user-role-helper>Selectionnez le nouveau role pour ce compte client.</p>
+            </div>
+
+            <div class="admin-users-role-current">
+                <span class="admin-users-role-chip" data-user-role-current>USER</span>
+                <span class="admin-users-role-chip admin-users-role-chip-soft" data-user-role-status>ACTIF</span>
+            </div>
+
+            <label class="admin-users-role-field">
+                <span>Nouveau role</span>
+                <select class="admin-destinations-select" name="role" data-user-role-select>
+                    {% for roleOption in userRoleOptions|default([]) %}
+                        <option value="{{ roleOption }}">{{ roleOption }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <div class="admin-users-role-note">
+                Le compte sera active et valide automatiquement apres le changement de role.
+            </div>
+
+            <div class="admin-package-dialog-actions">
+                <button class="admin-secondary-button" type="button" data-user-role-close>Annuler</button>
+                <button class="admin-primary-button" type="submit">Mettre a jour</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog class="admin-package-dialog admin-users-sheet-dialog" data-user-sheet-dialog>
+        <form class="admin-package-dialog-backdrop" method="dialog">
+            <button class="admin-package-dialog-close" type="submit" aria-label="Fermer" data-user-sheet-close>&times;</button>
+        </form>
+        <div class="admin-package-dialog-content admin-users-sheet-dialog-content">
+            <div class="admin-package-dialog-copy">
+                <span class="admin-destinations-slot-label">DETAILS UTILISATEUR</span>
+                <h3 data-user-sheet-title>Profil client</h3>
+                <p data-user-sheet-helper>Resume rapide du compte client selectionne.</p>
+            </div>
+
+            <div class="admin-users-sheet-hero">
+                <div class="admin-users-sheet-avatar admin-user-avatar admin-user-avatar-orange" data-user-sheet-avatar>
+                    <img src="" alt="" hidden data-user-sheet-avatar-image>
+                    <span data-user-sheet-avatar-fallback>M</span>
+                </div>
+                <div class="admin-users-sheet-hero-copy">
+                    <strong data-user-sheet-hero-name>Utilisateur</strong>
+                    <span data-user-sheet-hero-meta>compte client</span>
+                    <div class="admin-users-sheet-badges">
+                        <span class="admin-users-sheet-badge" data-user-sheet-role-badge>USER</span>
+                        <span class="admin-users-sheet-badge admin-users-sheet-badge-green" data-user-sheet-status-badge>ACTIF</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-users-sheet-grid" data-user-sheet-copy></div>
+
+            <a class="admin-secondary-button admin-users-sheet-action" href="#" target="_self" hidden data-user-sheet-action>Envoyer un email</a>
+
+            <div class="admin-package-dialog-actions">
+                <button class="admin-secondary-button" type="button" data-user-sheet-close>Fermer</button>
+            </div>
+        </div>
+    </dialog>
+{% endif %}

@@ -1,0 +1,39 @@
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+# IDE
+/.idea/
+/.vscode/
+/nbproject/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Composer
+/composer.phar
+
+# Uploads (trop lourds pour git)
+/public/uploads/posts/*
+!/public/uploads/posts/.gitkeep
+/public/uploads/videos/*
+!/public/uploads/videos/.gitkeep
+/public/uploads/stories/*
+!/public/uploads/stories/.gitkeep
+/public/uploads/profiles/*
+!/public/uploads/profiles/.gitkeep
+/public/uploads/music/*
+!/public/uploads/music/.gitkeep
+
+# Logs
+*.log
+
+# Environnement
+.env.local

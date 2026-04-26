@@ -1,0 +1,70 @@
+{% extends 'auth-layout.html.twig' %}
+
+{% block content %}
+<section class="auth-card">
+    <div class="auth-visual">
+        <img src="/assets/java/trans_bg.png" alt="EasyTravel">
+    </div>
+
+    <div class="auth-panel">
+        <div class="auth-panel__header">
+            <h1>Connexion</h1>
+            <p>Connectez-vous a votre compte</p>
+        </div>
+
+        <form class="auth-form" method="post" action="/login">
+            <label>
+                <span>Email</span>
+                <input class="{{ 'email' in fieldErrors|default([]) ? 'auth-input-invalid' : '' }}" 
+                       type="email" 
+                       name="email" 
+                       value="{{ form.email|default('') }}" 
+                       placeholder="exemple@email.com" 
+                       required>
+            </label>
+
+            <label>
+                <span>Mot de passe</span>
+                <input class="{{ 'password' in fieldErrors|default([]) ? 'auth-input-invalid' : '' }}" 
+                       type="password" 
+                       name="password" 
+                       value="{{ form.password|default('') }}" 
+                       placeholder="........" 
+                       required>
+            </label>
+
+            <div class="auth-row">
+                <label class="auth-checkbox {{ not rememberMeAvailable|default(true) ? 'auth-checkbox-disabled' : '' }}">
+                    <input type="checkbox" 
+                           name="remember_me" 
+                           value="1" 
+                           {{ form.remember_me|default(false) ? 'checked' : '' }}
+                           {{ not rememberMeAvailable|default(true) ? 'disabled' : '' }}>
+                    <span>{{ rememberMeAvailable|default(true) ? 'Se souvenir de moi apres deconnexion' : 'Se souvenir de moi (base requise)' }}</span>
+                </label>
+
+                <a class="auth-link" href="/forgot-password">Mot de passe oublie ?</a>
+            </div>
+
+            <button class="button auth-submit" type="submit">Se connecter</button>
+
+            {% if errorMessage is defined and errorMessage %}
+                <p class="auth-feedback auth-feedback-error">{{ errorMessage }}</p>
+            {% elseif statusMessage is defined and statusMessage %}
+                <p class="auth-feedback auth-feedback-success">{{ statusMessage }}</p>
+            {% endif %}
+        </form>
+
+        <div class="auth-separator">
+            <span></span>
+            <small>OU</small>
+            <span></span>
+        </div>
+
+        <p class="auth-switch">
+            Vous n'avez pas de compte ?
+            <a href="/sign-up">S'inscrire</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

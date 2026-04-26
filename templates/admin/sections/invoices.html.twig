@@ -1,0 +1,275 @@
+{% set invoiceTotal = invoiceStats.total|default(0) %}
+{% set invoiceSent = invoiceStats.sent|default(0) %}
+{% set invoiceDraft = invoiceStats.draft|default(0) %}
+{% set invoiceAmount = invoiceStats.total_amount|default(0) %}
+
+<section class="admin-billing-shell admin-invoices-shell" id="admin-invoice-panel">
+    <section class="admin-panel-card admin-billing-list-card admin-invoice-management-card">
+        <div class="admin-panel-head">
+            <div>
+                <h2>Generation de facture</h2>
+                <p>Selection d un paiement, ventilation auto et envoi client comme dans le flux Java.</p>
+            </div>
+            <div class="admin-section-hero-actions">
+                <button class="admin-primary-button" type="button" data-invoice-dialog-open>+ Nouvelle facture</button>
+                <span class="admin-meta-pill">{{ invoicePaymentOptions|length }} paiement(s) paye(s)</span>
+            </div>
+        </div>
+
+        <div class="admin-reservations-pill-row">
+            <span class="admin-range-pill admin-range-pill-active">Total {{ invoiceTotal }}</span>
+            <span class="admin-range-pill">Envoyees {{ invoiceSent }}</span>
+            <span class="admin-range-pill">Brouillons {{ invoiceDraft }}</span>
+            <span class="admin-range-pill">Montant <span data-money data-money-base="EUR" data-money-amount="{{ invoiceAmount }}">{{ 'EUR' ~ (invoiceAmount|number_format(0, '.', ' ')) }}</span></span>
+        </div>
+
+        <section class="admin-reservations-kpi-grid">
+            <article class="admin-panel-card admin-mini-summary-card">
+                <span>Total factures</span>
+                <strong>{{ invoiceTotal }}</strong>
+            </article>
+            <article class="admin-panel-card admin-mini-summary-card">
+                <span>Envoyees</span>
+                <strong>{{ invoiceSent }}</strong>
+            </article>
+            <article class="admin-panel-card admin-mini-summary-card">
+                <span>Generees</span>
+                <strong>{{ invoiceDraft }}</strong>
+            </article>
+            <article class="admin-panel-card admin-mini-summary-card">
+                <span>Total facture</span>
+                <strong data-money data-money-base="EUR" data-money-amount="{{ invoiceAmount }}">{{ 'EUR' ~ ((invoiceAmount >= 1000 ? (invoiceAmount / 1000) : invoiceAmount)|number_format(invoiceAmount >= 1000 ? 1 : 0, '.', ' ')) ~ (invoiceAmount >= 1000 ? 'K' : '') }}</strong>
+            </article>
+        </section>
+
+        {% if invoiceEntries is empty %}
+            <p class="admin-empty-copy">Aucune facture disponible pour le moment.</p>
+        {% else %}
+            <div class="admin-list-stack admin-billing-list-stack">
+                {% for invoice in invoiceEntries %}
+                    {% set invoiceId = invoice.id|default(0) %}
+                    <article class="admin-list-row admin-billing-row">
+                        <div class="admin-booking-code {{ invoice.code_class|default('admin-booking-code-violet') }}">
+                            <span class="admin-booking-code-label">{{ invoice.display_rank|default('01') }}</span>
+                        </div>
+
+                        <div class="admin-list-copy">
+                            <strong>{{ invoice.numero_facture|default('Facture') }} - {{ invoice.client_nom|default('Client') }}</strong>
+                            <span>
+                                {{ invoice.destination|default('Destination') }}
+                                {% if invoice.payment_reference|default('')|trim != '' %}
+                                    | Ref paiement {{ invoice.payment_reference }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="admin-list-side admin-billing-side">
+                            <strong data-money data-money-base="EUR" data-money-amount="{{ invoice.montant_total|default(0) }}">{{ 'EUR' ~ (invoice.montant_total|default(0)|number_format(2, '.', ' ')) }}</strong>
+                            <span>{{ invoice.date_label|default('Non renseigne') }}</span>
+                        </div>
+
+                        <div class="admin-billing-row-actions">
+                            <span class="admin-status-pill {{ invoice.status_class|default('admin-status-pill-orange') }}">
+                                {{ invoice.status_label|default('GENEREE') }}
+                            </span>
+                            <button
+                                class="admin-card-action admin-card-action-blue"
+                                type="button"
+                                data-invoice-preview-open
+                                data-invoice-number="{{ invoice.numero_facture|default('Facture') }}"
+                                data-invoice-client="{{ invoice.client_nom|default('Client') }}"
+                                data-invoice-email="{{ invoice.client_email|default('') }}"
+                                data-invoice-destination="{{ invoice.destination|default('') }}"
+                                data-invoice-dates="{{ (invoice.date_debut|default('') ~ ' -> ' ~ invoice.date_fin|default(''))|trim }}"
+                                data-invoice-total="{{ 'EUR' ~ (invoice.montant_total|default(0)|number_format(2, '.', ' ')) }}"
+                                data-invoice-status="{{ invoice.status_label|default('GENEREE') }}"
+                            >
+                                Apercu
+                            </button>
+                            <button
+                                class="admin-card-action admin-card-action-blue"
+                                type="button"
+                                data-invoice-edit-open
+                                data-invoice-id="{{ invoiceId }}"
+                                data-invoice-payment-id="{{ invoice.paiement_id|default(0) }}"
+                                data-invoice-number="{{ invoice.numero_facture|default('') }}"
+                                data-invoice-date="{{ invoice.date_emission|default('') }}"
+                                data-invoice-client="{{ invoice.client_nom|default('') }}"
+                                data-invoice-email="{{ invoice.client_email|default('') }}"
+                                data-invoice-address="{{ invoice.client_adresse|default('') }}"
+                                data-invoice-destination="{{ invoice.destination|default('') }}"
+                                data-invoice-date-start="{{ invoice.date_debut|default('') }}"
+                                data-invoice-date-end="{{ invoice.date_fin|default('') }}"
+                                data-invoice-people="{{ invoice.nb_personnes|default(1) }}"
+                                data-invoice-transport="{{ invoice.montant_transport|default(0) }}"
+                                data-invoice-hosting="{{ invoice.montant_hebergement|default(0) }}"
+                                data-invoice-activities="{{ invoice.montant_activites|default(0) }}"
+                                data-invoice-status-value="{{ invoice.statut|default('GENEREE') }}"
+                                data-invoice-type="{{ invoice.type_voyage|default('') }}"
+                            >
+                                Modifier
+                            </button>
+                            {% if invoice.statut|default('GENEREE')|upper != 'ENVOYEE' %}
+                                <form method="post" action="/admin/dashboard/factures/{{ invoiceId }}/send">
+                                    <input type="hidden" name="section" value="paiements">
+                                    <button class="admin-card-action admin-card-action-green" type="submit">Envoyer</button>
+                                </form>
+                            {% endif %}
+                            <form method="post" action="/admin/dashboard/factures/{{ invoiceId }}/delete" onsubmit="return confirm('Supprimer cette facture ?');">
+                                <input type="hidden" name="section" value="paiements">
+                                <button class="admin-card-action admin-card-action-red" type="submit">Supprimer</button>
+                            </form>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+</section>
+
+<dialog class="admin-package-dialog admin-invoice-dialog" data-invoice-dialog data-selected-payment-id="{{ facturesAdmin.selected_payment_id|default(0) }}">
+    <form class="admin-package-dialog-form admin-invoice-dialog-form" method="post" action="/admin/dashboard/factures/save" data-invoice-dialog-form>
+        <input type="hidden" name="section" value="paiements">
+        <input type="hidden" name="id" value="0" data-invoice-id-input>
+        <div class="admin-package-dialog-head">
+            <div>
+                <h3 data-invoice-dialog-title>Nouvelle facture</h3>
+                <p data-invoice-dialog-helper>Selectionnez un paiement puis ajustez les informations client comme dans la vue Java.</p>
+            </div>
+            <button class="admin-package-dialog-close" type="button" data-invoice-dialog-close>X</button>
+        </div>
+
+        <div class="admin-package-dialog-grid admin-invoice-grid">
+            <label>
+                <span>Paiement</span>
+                <select name="paiement_id" data-invoice-payment-select>
+                    <option value="0">Selectionner un paiement paye</option>
+                    {% for paymentOption in invoicePaymentOptions %}
+                        <option
+                            value="{{ paymentOption.id|default(0) }}"
+                            data-client="{{ paymentOption.client_nom|default('') }}"
+                            data-destination="{{ paymentOption.destination|default('') }}"
+                            data-amount="{{ paymentOption.montant|default(0) }}"
+                            data-type="{{ paymentOption.type_voyage|default('Aventure') }}"
+                        >
+                            {{ paymentOption.label|default('Paiement') }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Numero facture</span>
+                <input type="text" name="numero_facture" data-invoice-number-input>
+            </label>
+            <label>
+                <span>Date emission</span>
+                <input type="date" name="date_emission" value="{{ 'now'|date('Y-m-d') }}" data-invoice-date-input>
+            </label>
+            <label>
+                <span>Statut</span>
+                <select name="statut" data-invoice-status-input>
+                    {% for invoiceStatus in ['GENEREE', 'PREVIEW', 'ENVOYEE'] %}
+                        <option value="{{ invoiceStatus }}">{{ invoiceStatus|replace({'_': ' '}) }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Client</span>
+                <input type="text" name="client_nom" required data-invoice-client-input>
+            </label>
+            <label>
+                <span>Email client</span>
+                <input type="email" name="client_email" required data-invoice-email-input>
+            </label>
+            <label class="admin-invoice-grid-span">
+                <span>Adresse client</span>
+                <input type="text" name="client_adresse" data-invoice-address-input>
+            </label>
+            <label>
+                <span>Destination</span>
+                <input type="text" name="destination" required data-invoice-destination-input>
+            </label>
+            <label>
+                <span>Date debut</span>
+                <input type="text" name="date_debut" required data-invoice-date-start-input>
+            </label>
+            <label>
+                <span>Date fin</span>
+                <input type="text" name="date_fin" required data-invoice-date-end-input>
+            </label>
+            <label>
+                <span>Nb personnes</span>
+                <input type="number" name="nb_personnes" min="1" value="1" data-invoice-people-input>
+            </label>
+            <label>
+                <span>Type voyage</span>
+                <input type="text" name="type_voyage" data-invoice-type-input>
+            </label>
+            <label>
+                <span>Transport</span>
+                <input type="number" name="montant_transport" min="0" step="0.01" data-invoice-transport-input>
+            </label>
+            <label>
+                <span>Hebergement</span>
+                <input type="number" name="montant_hebergement" min="0" step="0.01" data-invoice-hosting-input>
+            </label>
+            <label>
+                <span>Activites</span>
+                <input type="number" name="montant_activites" min="0" step="0.01" data-invoice-activities-input>
+            </label>
+            <label>
+                <span>Total calcule</span>
+                <input type="number" name="montant_total" min="0" step="0.01" readonly data-invoice-total-input>
+            </label>
+        </div>
+
+        <div class="admin-package-dialog-actions">
+            <button class="admin-secondary-button" type="button" data-invoice-dialog-close>Annuler</button>
+            <button class="admin-primary-button" type="submit" name="intent" value="save">Enregistrer</button>
+            <button class="admin-danger-button" type="submit" name="intent" value="send">Enregistrer et envoyer</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog class="admin-package-dialog admin-invoice-preview-dialog" data-invoice-preview-dialog>
+    <div class="admin-package-dialog-form admin-invoice-preview-card">
+        <div class="admin-package-dialog-head">
+            <div>
+                <h3 data-invoice-preview-title>Facture</h3>
+                <p data-invoice-preview-helper>Previsualisation rapide de la facture selectionnee.</p>
+            </div>
+            <button class="admin-package-dialog-close" type="button" data-invoice-preview-close>X</button>
+        </div>
+
+        <div class="admin-invoice-preview-grid">
+            <div class="admin-stat-chip">
+                <span>Client</span>
+                <strong data-invoice-preview-client>Client</strong>
+            </div>
+            <div class="admin-stat-chip">
+                <span>Email</span>
+                <strong data-invoice-preview-email>-</strong>
+            </div>
+            <div class="admin-stat-chip">
+                <span>Destination</span>
+                <strong data-invoice-preview-destination>-</strong>
+            </div>
+            <div class="admin-stat-chip">
+                <span>Dates</span>
+                <strong data-invoice-preview-dates>-</strong>
+            </div>
+            <div class="admin-stat-chip">
+                <span>Montant</span>
+                <strong data-invoice-preview-total>-</strong>
+            </div>
+            <div class="admin-stat-chip">
+                <span>Statut</span>
+                <strong data-invoice-preview-status>-</strong>
+            </div>
+        </div>
+
+        <div class="admin-package-dialog-actions">
+            <button class="admin-secondary-button" type="button" data-invoice-preview-close>Fermer</button>
+        </div>
+    </div>
+</dialog>

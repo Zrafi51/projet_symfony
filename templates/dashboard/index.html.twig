@@ -1,0 +1,527 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Client - EasyTravel</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/custom-cursor.css">
+    {% include 'dashboard/dashboard-assets.html.twig' %}
+</head>
+<body>
+{% set currentUser = current_user(currentUser|default(null)) %}
+{% set photoUrl = currentUser.photo_display_url|default('')|trim %}
+{% set fullName = (currentUser.prenom|default('') ~ ' ' ~ currentUser.nom|default(''))|trim %}
+{% set displayName = currentUser.display_name|default(fullName) %}
+{% if displayName == '' %}
+    {% set displayName = currentUser.email|default('Voyageur') %}
+{% endif %}
+{% set userInitial = (currentUser.prenom|default(displayName)|slice(0, 1))|upper %}
+<div class="dashboard-root">
+    <div class="navbar-shell">
+        <div class="navbar-logo">
+            <canvas id="logoCanvas" width="200" height="60"></canvas>
+        </div>
+        <div class="navbar-spacer"></div>
+        <div class="navbar-links">
+            <a href="/" class="nav-button">Accueil</a>
+            <a href="/destinations" class="nav-button">Destinations</a>
+            <a href="/about" class="nav-button">A propos</a>
+            <a href="/social/forum" class="nav-button">Forum</a>
+            <a href="/contact" class="nav-button">Contact</a>
+        </div>
+        <div class="navbar-spacer"></div>
+        <div class="navbar-actions">
+            <button class="search-button" type="button" id="dashboardSearchToggle" aria-label="Ouvrir la recherche">&#128269;</button>
+            {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'dashboardCurrencySwitcher'} %}
+
+            <div class="notification-menu-wrapper">
+                <button class="search-button notification-button" type="button" id="notificationToggle" aria-label="Ouvrir les notifications">
+                    <span class="notification-button-icon">&#128276;</span>
+                    {% if unreadNotificationCount|default(0) > 0 %}
+                        <span class="notification-badge">{{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}</span>
+                    {% endif %}
+                </button>
+                <div class="navbar-notification-menu" id="notificationMenu" style="display: none;">
+                    <div class="notification-menu-header">
+                        <div>
+                            <strong>Notifications</strong>
+                            <small>{{ unreadNotificationCount|default(0) }} non lue(s)</small>
+                        </div>
+                        <a href="/profile" class="notification-menu-link">Compte</a>
+                    </div>
+                    <div class="account-menu-separator"></div>
+                    <div class="notification-menu-list">
+                        {% if latestNotifications|default([]) is empty %}
+                            <div class="notification-empty-state">
+                                <strong>Aucune notification</strong>
+                                <span>Les nouvelles activites de votre compte apparaitront ici.</span>
+                            </div>
+                        {% else %}
+                            {% for notification in latestNotifications %}
+                                <div class="notification-menu-item {{ notification.is_read|default(false) ? '' : 'notification-menu-item-unread' }}">
+                                    <div class="notification-menu-item-copy">
+                                        <strong>{{ notification.title|default('Notification compte') }}</strong>
+                                        <span>{{ notification.message|default('Mise a jour du compte.') }}</span>
+                                    </div>
+                                    <small>{{ notification.created_at is defined and notification.created_at ? notification.created_at|date('d/m/Y H:i') : 'Maintenant' }}</small>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="account-menu-separator"></div>
+                    <div class="notification-menu-actions">
+                        <form method="post" action="/profile/notifications/read-all">
+                            <input type="hidden" name="redirect_route" value="app_dashboard">
+                            <button type="submit" class="notification-menu-action-button">Tout marquer comme lu</button>
+                        </form>
+                        <a href="/profile" class="notification-menu-action-link">Gerer le compte</a>
+                    </div>
+                </div>
+            </div>
+
+            {% if currentUser is defined and currentUser %}
+                <div class="account-menu-wrapper">
+                    <button class="connexion-button account-button account-button-logged-in" id="accountMenuButton" type="button">
+                        <div class="account-button-content">
+                            <div class="account-button-avatar">
+                                {% if photoUrl %}
+                                    <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-avatar-image">
+                                {% else %}
+                                    <span class="account-button-avatar-label">{{ userInitial }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="account-button-name">{{ currentUser.prenom|default('Mon compte') }}</span>
+                            <span class="account-button-arrow">&#9662;</span>
+                        </div>
+                    </button>
+                    <div class="navbar-account-menu" id="accountMenu" style="display: none;">
+                        <div class="account-menu-header">
+                            <div class="account-menu-header-avatar">
+                                {% if photoUrl %}
+                                    <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-menu-avatar-image">
+                                {% else %}
+                                    <span class="account-menu-header-avatar-label">{{ userInitial }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="account-menu-header-text">
+                                <div class="account-menu-header-name">{{ displayName }}</div>
+                                <div class="account-menu-header-email">{{ currentUser.email|default('Compte utilisateur') }}</div>
+                            </div>
+                        </div>
+                        <div class="account-menu-separator"></div>
+                        <a href="/profile" class="account-menu-item">
+                            <div class="account-menu-icon-shell">
+                                <div class="account-menu-icon-shape account-menu-icon-profile"></div>
+                            </div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Gerer profil</div>
+                                <div class="account-menu-subtitle">Vos informations personnelles</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="/social/forum" class="account-menu-item">
+                            <div class="account-menu-icon-shell">
+                                <div class="account-menu-icon-shape account-menu-icon-forum"></div>
+                            </div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Forum</div>
+                                <div class="account-menu-subtitle">Discussions des voyageurs</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="/dashboard" class="account-menu-item">
+                            <div class="account-menu-icon-shell">
+                                <div class="account-menu-icon-shape account-menu-icon-dashboard"></div>
+                            </div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Dashboard</div>
+                                <div class="account-menu-subtitle">Votre espace client</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <div class="account-menu-separator"></div>
+                        <a href="/logout" class="account-menu-item account-menu-item-danger">
+                            <div class="account-menu-icon-shell account-menu-icon-shell-danger">
+                                <div class="account-menu-icon-shape account-menu-icon-shape-danger account-menu-icon-logout"></div>
+                            </div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title account-menu-title-danger">Deconnexion</div>
+                                <div class="account-menu-subtitle account-menu-subtitle-danger">Fermer la session active et garder le compte memorise</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="/login" class="connexion-button">Connexion</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="dashboard-scroll">
+        <div class="dashboard-content">
+            <div class="dashboard-hero-band">
+                <div class="hero-shell">
+                    <div class="hero-left">
+                        <span class="hero-badge">ESPACE CLIENT PREMIUM</span>
+                        <h1 class="hero-title">Bonjour, {{ currentUser.prenom|default('Voyageur') }}</h1>
+                        <p class="hero-copy">Retrouvez vos departs, vos favoris et vos documents dans un dashboard plus premium, plus lisible et plus rapide a utiliser.</p>
+                        <div class="hero-pills">
+                            <span class="hero-pill">Recherche rapide</span>
+                            <span class="hero-pill">Favoris premium</span>
+                            <span class="hero-pill">Documents centralises</span>
+                        </div>
+                    </div>
+                    <div class="hero-right">
+                        <div class="hero-mini-stats">
+                            <div class="hero-mini-stat">
+                                <div class="hero-mini-value">{{ '%02d'|format(metrics.upcoming_count|default(0)) }}</div>
+                                <div class="hero-mini-label">Voyages a venir</div>
+                            </div>
+                            <div class="hero-mini-stat">
+                                <div class="hero-mini-value">{{ '%02d'|format(metrics.favorites_count|default(0)) }}</div>
+                                <div class="hero-mini-label">Favoris actifs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if databaseError is not null or errorMessage or statusMessage %}
+                <div class="dashboard-alert-stack">
+                    {% if databaseError is not null %}
+                        <div class="dashboard-alert dashboard-alert-error">{{ databaseError }}</div>
+                    {% endif %}
+                    {% if errorMessage %}
+                        <div class="dashboard-alert dashboard-alert-error">{{ errorMessage }}</div>
+                    {% endif %}
+                    {% if statusMessage %}
+                        <div class="dashboard-alert dashboard-alert-success">{{ statusMessage }}</div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="metric-chip metric-chip-ocean">
+                            <span class="metric-chip-label">01</span>
+                        </div>
+                        <span class="metric-change">Actifs</span>
+                    </div>
+                    <div class="metric-label">Voyages planifies</div>
+                    <div class="metric-value">{{ '%02d'|format(metrics.planned_trips|default(0)) }}</div>
+                    <div class="sparkline-row">
+                        <div class="sparkline-bar sparkline-ocean" style="height: 20px;"></div>
+                        <div class="sparkline-bar sparkline-ocean" style="height: 28px;"></div>
+                        <div class="sparkline-bar sparkline-ocean" style="height: 18px;"></div>
+                        <div class="sparkline-bar sparkline-ocean" style="height: 32px;"></div>
+                        <div class="sparkline-bar sparkline-ocean" style="height: 26px;"></div>
+                        <div class="sparkline-bar sparkline-ocean" style="height: 38px;"></div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="metric-chip metric-chip-sand">
+                            <span class="metric-chip-label">02</span>
+                        </div>
+                        <span class="metric-change">Moyenne</span>
+                    </div>
+                    <div class="metric-label">Budget moyen</div>
+                    <div class="metric-value" data-money data-money-base="EUR" data-money-amount="{{ metrics.budget_average|default(0) }}">{{ metrics.budget_average|default(0)|number_format(0, '.', ' ') }} EUR</div>
+                    <div class="sparkline-row">
+                        <div class="sparkline-bar sparkline-sand" style="height: 16px;"></div>
+                        <div class="sparkline-bar sparkline-sand" style="height: 24px;"></div>
+                        <div class="sparkline-bar sparkline-sand" style="height: 30px;"></div>
+                        <div class="sparkline-bar sparkline-sand" style="height: 22px;"></div>
+                        <div class="sparkline-bar sparkline-sand" style="height: 36px;"></div>
+                        <div class="sparkline-bar sparkline-sand" style="height: 40px;"></div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="metric-chip metric-chip-green">
+                            <span class="metric-chip-label">03</span>
+                        </div>
+                        <span class="metric-change">Archive</span>
+                    </div>
+                    <div class="metric-label">Voyages termines</div>
+                    <div class="metric-value">{{ '%02d'|format(metrics.history_trips|default(0)) }}</div>
+                    <div class="sparkline-row">
+                        <div class="sparkline-bar sparkline-green" style="height: 24px;"></div>
+                        <div class="sparkline-bar sparkline-green" style="height: 28px;"></div>
+                        <div class="sparkline-bar sparkline-green" style="height: 34px;"></div>
+                        <div class="sparkline-bar sparkline-green" style="height: 30px;"></div>
+                        <div class="sparkline-bar sparkline-green" style="height: 38px;"></div>
+                        <div class="sparkline-bar sparkline-green" style="height: 42px;"></div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="metric-chip metric-chip-coral">
+                            <span class="metric-chip-label">04</span>
+                        </div>
+                        <span class="metric-change">Suivi</span>
+                    </div>
+                    <div class="metric-label">Destinations suivies</div>
+                    <div class="metric-value">{{ '%02d'|format(metrics.tracked_destinations|default(0)) }}</div>
+                    <div class="sparkline-row">
+                        <div class="sparkline-bar sparkline-coral" style="height: 18px;"></div>
+                        <div class="sparkline-bar sparkline-coral" style="height: 30px;"></div>
+                        <div class="sparkline-bar sparkline-coral" style="height: 22px;"></div>
+                        <div class="sparkline-bar sparkline-coral" style="height: 34px;"></div>
+                        <div class="sparkline-bar sparkline-coral" style="height: 38px;"></div>
+                        <div class="sparkline-bar sparkline-coral" style="height: 28px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-tabs-container">
+                <div class="tab-bar">
+                    <button class="tab-button tab-button-active" data-tab="upcoming" type="button">A venir</button>
+                    <button class="tab-button" data-tab="history" type="button">Historique</button>
+                    <button class="tab-button" data-tab="wishlist" type="button">Favoris</button>
+                    <button class="tab-button" data-tab="reclamations" type="button">Reclamations</button>
+                    <button class="tab-button" data-tab="documents" type="button">Documents</button>
+                </div>
+
+                <div class="content-stack">
+                    <div class="tab-section" id="upcoming-section">
+                        <div class="section-header">
+                            <h2 class="section-heading">Voyages a venir</h2>
+                            <p class="section-copy">Un espace client simple pour retrouver les reservations et ouvrir les details utiles.</p>
+                        </div>
+                        <div class="trips-container">
+                            {% if upcomingTrips is empty %}
+                                <div class="dashboard-empty-card">
+                                    <h3 class="dashboard-empty-title">Aucun voyage a venir pour le moment.</h3>
+                                    <p class="dashboard-empty-copy">Ajoutez un pack depuis la page Destinations puis confirmez votre reservation pour le retrouver ici.</p>
+                                    <a href="/destinations" class="card-button card-button-primary">Explorer les destinations</a>
+                                </div>
+                            {% else %}
+                                {% for trip in upcomingTrips %}
+                                    {% include 'dashboard/partials/trip-card.html.twig' with {trip: trip, isHistory: false} %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="tab-section" id="history-section" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-heading">Historique</h2>
+                            <p class="section-copy">Les voyages passes et les souvenirs restent accessibles dans le meme espace client.</p>
+                        </div>
+                        <div class="trips-container">
+                            {% if historyTrips is empty %}
+                                <div class="dashboard-empty-card">
+                                    <h3 class="dashboard-empty-title">Aucun voyage archive pour le moment.</h3>
+                                    <p class="dashboard-empty-copy">Une fois un sejour termine, il rejoindra automatiquement votre historique client.</p>
+                                    <a href="/destinations" class="card-button card-button-primary">Voir les destinations</a>
+                                </div>
+                            {% else %}
+                                {% for trip in historyTrips %}
+                                    {% include 'dashboard/partials/trip-card.html.twig' with {trip: trip, isHistory: true} %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="tab-section" id="wishlist-section" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-heading">Favoris</h2>
+                            <p class="section-copy">Les destinations enregistrees restent visibles pour preparer la prochaine reservation.</p>
+                        </div>
+                        <div class="trips-container">
+                            {% if favoritePackages is empty %}
+                                <div class="dashboard-empty-card">
+                                    <h3 class="dashboard-empty-title">Aucun favori enregistre pour l'instant.</h3>
+                                    <p class="dashboard-empty-copy">Sur la page Destinations, utilisez le coeur sur une carte pour sauvegarder un pack ici.</p>
+                                    <a href="/destinations" class="card-button card-button-primary">Ajouter un favori</a>
+                                </div>
+                            {% else %}
+                                {% for favorite in favoritePackages %}
+                                    <article class="trip-card favorite-trip-card">
+                                        <div class="favorite-trip-media">
+                                            {% if favorite.image_path|default('') %}
+                                                <img src="{{ favorite.image_path }}" alt="{{ favorite.destination_name|default('Voyage favori') }}">
+                                            {% else %}
+                                                <div class="favorite-trip-placeholder">&#9829;</div>
+                                            {% endif %}
+                                            <span class="favorite-trip-heart" aria-hidden="true">&#9829;</span>
+                                        </div>
+                                        <div class="trip-card-body favorite-trip-body">
+                                            <div class="trip-card-header">
+                                                <div>
+                                                    <span class="trip-status trip-status-confirmed">Favori</span>
+                                                    <h3 class="trip-title">{{ favorite.destination_name|default('Voyage EasyTravel') }}</h3>
+                                                    <p class="trip-destination">
+                                                        {{ favorite.country|default('') }}
+                                                        {% if favorite.country|default('') and favorite.continent|default('') %} - {% endif %}
+                                                        {{ favorite.continent|default('') }}
+                                                    </p>
+                                                </div>
+                                                <strong class="favorite-trip-price" data-money data-money-base="{{ favorite.price_currency|default('TND') }}" data-money-amount="{{ favorite.price_amount|default(0) }}">
+                                                    {{ favorite.price_amount|default(0)|number_format(0, '.', ' ') }} {{ favorite.price_currency|default('TND') }}
+                                                </strong>
+                                            </div>
+                                            <p class="trip-copy">{{ favorite.description|default('Destination sauvegardee depuis la page Destinations.')|slice(0, 170) }}</p>
+                                            <div class="trip-meta-grid">
+                                                <div class="trip-meta-item">
+                                                    <span>Duree</span>
+                                                    <strong>{{ favorite.duration_label|default('A definir') }}</strong>
+                                                </div>
+                                                <div class="trip-meta-item">
+                                                    <span>Ajoute le</span>
+                                                    <strong>{{ favorite.created_at|default(null) ? favorite.created_at|date('d/m/Y') : 'Recemment' }}</strong>
+                                                </div>
+                                            </div>
+                                            <div class="trip-card-actions">
+                                                <a href="{{ favorite.destination_url|default('/destinations') }}" class="card-button card-button-primary">Voir le voyage</a>
+                                                <a href="/paiement?destination={{ (favorite.destination_name|default('Voyage') ~ ', ' ~ favorite.country|default(''))|url_encode }}&montant={{ favorite.price_amount|default(0) }}" class="card-button card-button-outline">Reserver</a>
+                                            </div>
+                                        </div>
+                                    </article>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="tab-section" id="reclamations-section" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-heading">Mes reclamations</h2>
+                            <p class="section-copy">Suivez vos demandes au support et consultez les reponses envoyees par l'administration.</p>
+                        </div>
+                        <div class="document-panel">
+                            {% if supportSnapshot.reclamations is empty %}
+                                <div class="dashboard-empty-card">
+                                    <h3 class="dashboard-empty-title">Aucune reclamation envoyee pour le moment.</h3>
+                                    <p class="dashboard-empty-copy">Vous pouvez utiliser la page Contact pour ouvrir une demande au support.</p>
+                                    <a href="/contact" class="card-button card-button-primary">Ouvrir la page contact</a>
+                                </div>
+                            {% else %}
+                                {% for reclamation in supportSnapshot.reclamations %}
+                                    {% include 'dashboard/partials/reclamation-card.html.twig' with {reclamation: reclamation, responses: supportSnapshot.responses_by_reclamation[reclamation.id]|default([])} %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="tab-section" id="documents-section" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-heading">Mes factures</h2>
+                            <p class="section-copy">Retrouvez toutes vos factures envoyees par l'agence. Vous pouvez les consulter et les telecharger a tout moment.</p>
+                        </div>
+                        <div class="document-panel">
+                            {% if factures is empty %}
+                                <div class="dashboard-empty-card">
+                                    <h3 class="dashboard-empty-title">Aucune facture recue pour le moment</h3>
+                                    <p class="dashboard-empty-copy">Les factures envoyees par l'agence apparaitront ici.</p>
+                                </div>
+                            {% else %}
+                                {% for facture in factures %}
+                                    {% include 'dashboard/partials/facture-row.html.twig' with {facture: facture} %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-footer-wrap">
+                <div class="dashboard-footer">
+                    <div class="footer-cta">
+                        <h2 class="footer-cta-title">Pret pour l'aventure ?</h2>
+                        <p class="footer-cta-subtitle">Contactez-nous pour creer votre voyage sur mesure</p>
+                        <a href="/" class="cta-button">Commencer mon voyage</a>
+                    </div>
+
+                    <div class="footer-content">
+                        <div class="footer-column">
+                            <h3 class="footer-brand">EasyTravel</h3>
+                            <p class="footer-brand-text">Createur d'experiences de voyage uniques avec l'intelligence artificielle depuis 2024.</p>
+                            <div class="footer-social">
+                                <button class="social-button" type="button">f</button>
+                                <button class="social-button" type="button">&#128247;</button>
+                                <button class="social-button" type="button">&#128038;</button>
+                            </div>
+                        </div>
+
+                        <div class="footer-column">
+                            <h4 class="footer-heading">Liens rapides</h4>
+                            <a href="/destinations" class="footer-link">Destinations</a>
+                            <a href="#" class="footer-link">Nos services</a>
+                            <a href="#" class="footer-link">Offres speciales</a>
+                            <a href="/about" class="footer-link">A propos</a>
+                            <a href="#" class="footer-link">Blog</a>
+                        </div>
+
+                        <div class="footer-column">
+                            <h4 class="footer-heading">Support</h4>
+                            <a href="#" class="footer-link">FAQ</a>
+                            <a href="/contact" class="footer-link">Contact</a>
+                            <a href="#" class="footer-link">Conditions generales</a>
+                            <a href="#" class="footer-link">Politique de confidentialite</a>
+                            <a href="#" class="footer-link">Mentions legales</a>
+                        </div>
+
+                        <div class="footer-column">
+                            <h4 class="footer-heading">Newsletter</h4>
+                            <p class="footer-newsletter-text">Recevez nos meilleures offres</p>
+                            <input type="email" class="footer-newsletter-input" placeholder="Votre email">
+                            <button class="cta-button" type="button">S'abonner</button>
+                        </div>
+                    </div>
+
+                    <div class="footer-contact">
+                        <div class="footer-contact-item">
+                            <span class="footer-contact-icon">&#9993;</span>
+                            <span class="footer-contact-text">contact@easytravel.com</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <span class="footer-contact-icon">&#9742;</span>
+                            <span class="footer-contact-text">+33 1 23 45 67 89</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <span class="footer-contact-icon">&#128205;</span>
+                            <span class="footer-contact-text">Paris, France</span>
+                        </div>
+                    </div>
+
+                    <div class="footer-bottom">
+                        <p class="footer-copyright">© 2024 EasyTravel - Tous droits reserves</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-search-overlay" id="dashboardSearchOverlay" style="display: none;">
+    <div class="dashboard-search-panel">
+        <div class="dashboard-search-panel-header">
+            <div>
+                <strong>Recherche rapide</strong>
+                <small>Filtre les voyages, reclamations et documents du dashboard.</small>
+            </div>
+            <button type="button" class="dashboard-search-close" id="dashboardSearchClose">Fermer</button>
+        </div>
+        <div class="dashboard-search-input-row">
+            <input
+                type="search"
+                id="dashboardSearchInput"
+                class="dashboard-search-input"
+                placeholder="Ex: Tokyo, facture, reservation, support..."
+                autocomplete="off"
+            >
+            <button type="button" class="dashboard-search-clear" id="dashboardSearchClear">Effacer</button>
+        </div>
+        <p class="dashboard-search-summary" id="dashboardSearchSummary">Tapez pour filtrer les cartes visibles du dashboard.</p>
+    </div>
+</div>
+<script src="/custom-cursor.js"></script>
+</body>
+</html>

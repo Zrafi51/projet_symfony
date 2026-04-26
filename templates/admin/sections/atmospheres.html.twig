@@ -1,0 +1,186 @@
+{% set atmosphereCount = atmosphereEntries|length %}
+
+<section class="admin-atmosphere-shell">
+    <section class="admin-panel-card admin-atmosphere-hero">
+        <div class="admin-atmosphere-hero-head">
+            <div>
+                <h2>Atmospheres Home</h2>
+                <p>Section liee directement aux 4 cartes atmospheres de la page Home.</p>
+            </div>
+            <form method="post" action="/admin/atmospheres/generate-ai">
+                <input type="hidden" name="section" value="atmospheres">
+                <button class="admin-primary-button" type="submit">Generer depuis IA</button>
+            </form>
+        </div>
+
+        <div class="admin-atmosphere-mini-grid">
+            <article class="admin-atmosphere-mini-card">
+                <span>Total</span>
+                <strong>{{ atmosphereCount }}</strong>
+            </article>
+            <article class="admin-atmosphere-mini-card">
+                <span>Actives</span>
+                <strong>{{ atmosphereActiveCount }}</strong>
+            </article>
+            <article class="admin-atmosphere-mini-card">
+                <span>Sync Home</span>
+                <strong>{{ atmosphereSyncLabel }}</strong>
+            </article>
+        </div>
+    </section>
+
+    <form class="admin-panel-card admin-atmosphere-card admin-atmosphere-create-card" method="post" action="/admin/atmospheres/create">
+        <input type="hidden" name="section" value="atmospheres">
+
+        <div class="admin-atmosphere-chip-row">
+            <span class="admin-status-pill admin-atmosphere-type-pill admin-atmosphere-type-green">Nouvelle ambiance</span>
+            <span class="admin-status-pill admin-atmosphere-order-pill">Sync Home</span>
+        </div>
+
+        <div class="admin-atmosphere-form-grid admin-atmosphere-form-grid-2">
+            <label class="admin-atmosphere-field-stack">
+                <span>Type</span>
+                <input class="admin-atmosphere-input" type="text" name="atmosphere_type" placeholder="EX: DESERT, LUXE, FAMILLE">
+            </label>
+            <label class="admin-atmosphere-field-stack">
+                <span>Titre</span>
+                <input class="admin-atmosphere-input" type="text" name="title" placeholder="Nom affiche sur la Home">
+            </label>
+        </div>
+
+        <div class="admin-atmosphere-form-grid admin-atmosphere-form-grid-2">
+            <label class="admin-atmosphere-field-stack">
+                <span>Video</span>
+                <input class="admin-atmosphere-input" type="text" name="video_path" placeholder="Nom fichier dans /assets/java ou URL">
+            </label>
+            <label class="admin-atmosphere-field-stack">
+                <span>Tags IA</span>
+                <input class="admin-atmosphere-input" type="text" name="ai_interest_tags" placeholder="aventure,luxe,culture">
+            </label>
+        </div>
+
+        <label class="admin-atmosphere-field-stack">
+            <span>Description</span>
+            <textarea class="admin-atmosphere-textarea" name="description" rows="3" placeholder="Texte utilise pour la logique IA et la preview admin"></textarea>
+        </label>
+
+        <div class="admin-atmosphere-actions">
+            <label class="admin-atmosphere-checkbox">
+                <input type="hidden" name="is_active" value="0">
+                <input type="checkbox" name="is_active" value="1" checked>
+                <span>Visible sur la Home</span>
+            </label>
+            <button class="admin-card-action admin-card-action-green" type="submit">Ajouter atmosphere</button>
+        </div>
+    </form>
+
+    {% if atmosphereEntries is empty %}
+        <section class="admin-panel-card">
+            <p class="admin-empty-copy">Aucune atmosphere disponible pour le moment.</p>
+        </section>
+    {% else %}
+        {% for atmosphereEntry in atmosphereEntries %}
+            {% set atmosphereId = atmosphereEntry.id|default(0) %}
+            {% set atmosphereActive = atmosphereEntry.is_active|default(false) %}
+            {% set typeTone = atmosphereEntry.type_tone|default('blue') %}
+            <form class="admin-panel-card admin-atmosphere-card" method="post" action="/admin/atmospheres/{{ atmosphereId }}/save">
+                <input type="hidden" name="section" value="atmospheres">
+                <input type="hidden" name="display_order" value="{{ atmosphereEntry.display_order|default(loop.index) }}">
+
+                <div class="admin-atmosphere-chip-row">
+                    <span class="admin-status-pill admin-atmosphere-type-pill admin-atmosphere-type-{{ typeTone }}">
+                        {{ atmosphereEntry.atmosphere_type|default('ATMOSPHERE') }}
+                    </span>
+                    <span class="admin-status-pill admin-atmosphere-order-pill">
+                        {{ atmosphereEntry.order_label|default('Ordre #' ~ loop.index) }}
+                    </span>
+                    <span class="admin-status-pill {{ atmosphereActive ? 'admin-status-pill-green' : 'admin-status-pill-orange' }}">
+                        {{ atmosphereEntry.visibility_label|default(atmosphereActive ? 'Visible sur Home' : 'Masquee') }}
+                    </span>
+                </div>
+
+                <div class="admin-atmosphere-form-grid admin-atmosphere-form-grid-2">
+                    <label class="admin-atmosphere-field-stack">
+                        <span>Titre</span>
+                        <input class="admin-atmosphere-input" type="text" name="title" value="{{ atmosphereEntry.title|default('') }}">
+                    </label>
+                    <label class="admin-atmosphere-field-stack">
+                        <span>Video</span>
+                        <input class="admin-atmosphere-input" type="text" name="video_path" value="{{ atmosphereEntry.video_path|default('') }}">
+                    </label>
+                </div>
+
+                <label class="admin-atmosphere-field-stack">
+                    <span>Description</span>
+                    <textarea class="admin-atmosphere-textarea" name="description" rows="3">{{ atmosphereEntry.description|default('') }}</textarea>
+                </label>
+
+                <div class="admin-atmosphere-form-grid admin-atmosphere-form-grid-state">
+                    <label class="admin-atmosphere-field-stack">
+                        <span>Tags IA</span>
+                        <input class="admin-atmosphere-input" type="text" name="ai_interest_tags" value="{{ atmosphereEntry.ai_interest_tags|default('') }}">
+                    </label>
+
+                    <div class="admin-atmosphere-toggle-box">
+                        <span>Etat</span>
+                        <label class="admin-atmosphere-checkbox">
+                            <input type="hidden" name="is_active" value="0">
+                            <input type="checkbox" name="is_active" value="1" {{ atmosphereActive ? 'checked' : '' }}>
+                            <span>Activer sur la page Home</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="admin-atmosphere-preview-wrap">
+                    <span class="admin-atmosphere-preview-title">Suggestion Flask / IA</span>
+                    <article class="admin-atmosphere-preview-card">
+                        <strong class="admin-atmosphere-preview-lead">
+                            Destinations: {{ atmosphereEntry.preview_destinations|default('Aucune suggestion visible') }}
+                        </strong>
+                        <span class="admin-atmosphere-preview-meta">
+                            Pays: {{ atmosphereEntry.preview_countries|default('Non renseignes') }}
+                            | Continents: {{ atmosphereEntry.preview_continents|default('Non renseignes') }}
+                        </span>
+                        <span class="admin-atmosphere-preview-meta">
+                            {{ atmosphereEntry.preview_score_text|default('Score IA indisponible') }}
+                            | {{ atmosphereEntry.preview_price_text|default('Prix moyen indisponible') }}
+                            | {{ atmosphereEntry.preview_update_text|default('MAJ en attente') }}
+                        </span>
+                    </article>
+                </div>
+
+                <div class="admin-atmosphere-actions">
+                    <button class="admin-card-action admin-card-action-green" type="submit">Sauvegarder</button>
+                    <button
+                        class="admin-card-action admin-card-action-blue"
+                        type="submit"
+                        formaction="/admin/atmospheres/{{ atmosphereId }}/move"
+                        name="direction"
+                        value="up"
+                        {{ loop.first ? 'disabled' : '' }}
+                    >
+                        Monter
+                    </button>
+                    <button
+                        class="admin-card-action admin-card-action-orange"
+                        type="submit"
+                        formaction="/admin/atmospheres/{{ atmosphereId }}/move"
+                        name="direction"
+                        value="down"
+                        {{ loop.last ? 'disabled' : '' }}
+                    >
+                        Descendre
+                    </button>
+                    <button
+                        class="admin-card-action admin-card-action-red"
+                        type="submit"
+                        formaction="/admin/atmospheres/{{ atmosphereId }}/delete"
+                        onclick="return confirm('Supprimer cette atmosphere de la Home ?');"
+                    >
+                        Supprimer
+                    </button>
+                </div>
+            </form>
+        {% endfor %}
+    {% endif %}
+</section>

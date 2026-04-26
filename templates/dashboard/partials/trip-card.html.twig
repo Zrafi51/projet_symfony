@@ -1,0 +1,38 @@
+{# Carte de voyage (à venir ou historique) #}
+<div class="trip-card">
+    <div class="trip-image-shell">
+        <img src="/assets/java/bali-1-1679062958.profileImage.2x-1536x884.webp" alt="{{ trip.destination|default('Voyage') }}" class="trip-image">
+        <div class="trip-image-shade"></div>
+        <div class="trip-image-overlay">
+            <span class="trip-image-eyebrow">{{ isHistory ? 'Souvenir client' : 'À venir' }}</span>
+            <h3 class="trip-image-title">{{ trip.destination|default('Destination') }}</h3>
+            <p class="trip-image-subtitle">{{ trip.type_voyage|default('Voyage') }} | {{ trip.date_paiement|date('d/m/Y') }}</p>
+        </div>
+        <span class="status-badge status-{{ isHistory ? 'neutral' : 'success' }}">
+            {{ isHistory ? 'TERMINÉ' : 'CONFIRMÉ' }}
+        </span>
+        {% if not isHistory %}
+            <span class="trip-countdown-badge">Bientôt</span>
+        {% endif %}
+    </div>
+    <div class="trip-card-body">
+        <h3 class="section-card-title">{{ isHistory ? 'Carnet de voyage archivé' : 'Votre prochaine escapade premium' }}</h3>
+        <p class="trip-summary-text">
+            {{ isHistory 
+                ? 'Retrouvez les détails de ' ~ trip.destination ~ ' et partagez vos souvenirs sur le forum quand vous le souhaitez.'
+                : 'Suivez votre prochain voyage avec une carte claire, imagée et facile à relire avant le départ.'
+            }}
+        </p>
+        <div class="trip-pill-row">
+            <span class="trip-info-pill trip-info-pill-accent">{{ trip.date_paiement|date('d/m/Y') }}</span>
+            <span class="trip-info-pill trip-info-pill-soft">1 voyageur</span>
+        </div>
+        <p class="section-card-text">
+            {{ trip.date_paiement|date('d/m/Y') }} | 1 voyageur | {{ trip.montant|number_format(0, '.', ' ') }} €
+        </p>
+        <div class="trip-actions">
+            <button class="card-button card-button-primary">{{ isHistory ? 'Voir destination' : 'Voir détails' }}</button>
+            <button class="card-button card-button-outline">{{ isHistory ? 'Partager au forum' : 'Rechercher plus' }}</button>
+        </div>
+    </div>
+</div>

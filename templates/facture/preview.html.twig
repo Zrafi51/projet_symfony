@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facture {{ facture.numero_facture|default('') }} - EasyTravel</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/facture.css">
+</head>
+<body class="facture-preview-body">
+    <div class="facture-preview-container">
+        <div class="facture-preview-scroll">
+            <div class="facture-preview-content">
+
+                <!-- Header avec logo -->
+                <div class="facture-preview-header">
+                    <div class="facture-preview-logo">
+                        <img src="/assets/java/trans_bg.png" alt="EasyTravel Logo" class="facture-logo-img">
+                    </div>
+                    <div class="facture-preview-company">
+                        <h1>EASY TRAVEL</h1>
+                        <p class="company-subtitle">Agence de Voyages Premium</p>
+                        <p class="company-address">123 Avenue Habib Bourguiba, Tunis 1000, Tunisie</p>
+                        <p class="company-contact">Tél: +216 71 123 456 | Email: contact@easytravel.tn</p>
+                    </div>
+                </div>
+
+                <div class="facture-preview-separator"></div>
+
+                <!-- Titre FACTURE -->
+                <div class="facture-preview-title-section">
+                    <div class="facture-preview-title-box">
+                        <h2>FACTURE</h2>
+                        <p>N° {{ facture.numero_facture|default('FAC-2024-000000') }}</p>
+                    </div>
+                </div>
+
+                <!-- Informations Client et Date -->
+                <div class="facture-preview-info-grid">
+                    <!-- Client -->
+                    <div class="facture-preview-info-box facture-info-client">
+                        <label>FACTURÉ À</label>
+                        <h3>{{ facture.client_nom|default('Client') }}</h3>
+                        <p>{{ facture.client_email|default('') }}</p>
+                        <p>{{ facture.client_adresse|default('') }}</p>
+                    </div>
+
+                    <!-- Informations -->
+                    <div class="facture-preview-info-box facture-info-details">
+                        <label>INFORMATIONS</label>
+                        <div class="info-row">
+                            <span>Date d'émission:</span>
+                            <strong>{{ facture.date_emission|default('now')|date('d/m/Y') }}</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Destination:</span>
+                            <strong>{{ facture.destination|default('') }}</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Période:</span>
+                            <strong>{{ facture.date_debut|default('') }} - {{ facture.date_fin|default('') }}</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Voyageurs:</span>
+                            <strong>{{ facture.nb_personnes|default(1) }} personne{{ facture.nb_personnes|default(1) > 1 ? 's' : '' }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des services -->
+                <div class="facture-preview-table">
+                    <!-- Header -->
+                    <div class="facture-table-header">
+                        <div class="table-col-description">DESCRIPTION</div>
+                        <div class="table-col-amount">MONTANT (€)</div>
+                    </div>
+
+                    <!-- Lignes -->
+                    <div class="facture-table-body">
+                        <!-- Transport -->
+                        <div class="facture-table-row">
+                            <div class="table-col-description">
+                                <strong>🛫 Transport</strong>
+                                <span>Vol aller-retour, taxes incluses</span>
+                            </div>
+                            <div class="table-col-amount">
+                                {{ facture.montant_transport|default(0)|number_format(2, '.', ' ') }} €
+                            </div>
+                        </div>
+
+                        <!-- Hébergement -->
+                        <div class="facture-table-row">
+                            <div class="table-col-description">
+                                <strong>🏨 Hébergement</strong>
+                                <span>Hôtel 4 étoiles, petit-déjeuner inclus</span>
+                            </div>
+                            <div class="table-col-amount">
+                                {{ facture.montant_hebergement|default(0)|number_format(2, '.', ' ') }} €
+                            </div>
+                        </div>
+
+                        <!-- Activités -->
+                        <div class="facture-table-row">
+                            <div class="table-col-description">
+                                <strong>🎯 Activités et Excursions</strong>
+                                <span>Visites guidées, entrées aux monuments</span>
+                            </div>
+                            <div class="table-col-amount">
+                                {{ facture.montant_activites|default(0)|number_format(2, '.', ' ') }} €
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="facture-table-total">
+                        <div class="table-col-description">
+                            <strong>MONTANT TOTAL À PAYER</strong>
+                        </div>
+                        <div class="table-col-amount">
+                            <strong>{{ facture.montant_total|default(0)|number_format(2, '.', ' ') }} €</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="facture-preview-notes">
+                    <h3>📝 Notes</h3>
+                    <ul>
+                        <li>• Paiement effectué avec succès</li>
+                        <li>• Cette facture est valable comme justificatif de paiement</li>
+                        <li>• Pour toute question, contactez-nous au +216 71 123 456</li>
+                    </ul>
+                </div>
+
+                <div class="facture-preview-separator"></div>
+
+                <!-- Footer avec cachet et signature -->
+                <div class="facture-preview-footer">
+                    <!-- Cachet -->
+                    <div class="facture-stamp">
+                        <div class="stamp-circle">
+                            <div class="stamp-content">
+                                <div>EASY</div>
+                                <div>TRAVEL</div>
+                                <div class="stamp-line"></div>
+                                <div class="stamp-country">TUNISIE</div>
+                                <div class="stamp-year">{{ 'now'|date('Y') }}</div>
+                            </div>
+                        </div>
+                        <p>Cachet de l'entreprise</p>
+                    </div>
+
+                    <!-- Signature -->
+                    <div class="facture-signature">
+                        <div class="signature-content">
+                            <p class="signature-title">Directeur Général</p>
+                            <p class="signature-name">Mehdi Zrafi</p>
+                            <div class="signature-line">Mehdi Zrafi</div>
+                            <div class="signature-underline">_________________</div>
+                            <p class="signature-label">Signature numérique</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="facture-preview-actions">
+                    {% if isAdmin|default(false) %}
+                        <form method="post" action="/factures/{{ facture.id }}/envoyer" style="display: inline;">
+                            <button type="submit" class="facture-action-btn facture-btn-send">
+                                📧 Envoyer au Client
+                            </button>
+                        </form>
+                    {% endif %}
+                    <button type="button" class="facture-action-btn facture-btn-print" onclick="window.print()">
+                        🖨 Imprimer
+                    </button>
+                    <button type="button" class="facture-action-btn facture-btn-pdf" onclick="window.print()">
+                        📥 Télécharger PDF
+                    </button>
+                    <button type="button" class="facture-action-btn facture-btn-close" onclick="window.close()">
+                        ✖ Fermer
+                    </button>
+                </div>
+
+                <!-- Footer final -->
+                <div class="facture-preview-final-footer">
+                    <div class="final-footer-separator"></div>
+                    <p class="final-footer-thanks">Merci de votre confiance !</p>
+                    <p class="final-footer-tagline">EASY TRAVEL - Votre partenaire voyage de confiance</p>
+                    <p class="final-footer-contact">www.easytravel.tn | contact@easytravel.tn</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

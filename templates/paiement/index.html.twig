@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default('Paiement securise') }}</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/currency.css">
+    <link rel="stylesheet" href="/billing.css">
+</head>
+<body class="payment-page-body">
+    {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-floating', currencySwitcherId: 'paymentCurrencySwitcher'} %}
+    <main class="payment-page">
+        <section class="payment-shell">
+            <header class="payment-hero">
+                <div class="payment-hero-icon">💳</div>
+                <div>
+                    <h1>Paiement Securise</h1>
+                    <p>Finalisez votre reservation comme dans l'ecran Java EasyTravel.</p>
+                </div>
+            </header>
+
+            {% if savedPayment|default(null) %}
+                <article class="payment-success-card">
+                    <span class="payment-success-icon">✓</span>
+                    <div>
+                        <strong>Votre reservation est confirmee</strong>
+                        <p>Reference: {{ savedPayment.reference_transaction|default('PAY') }}. Vous pouvez maintenant generer la facture du voyage.</p>
+                    </div>
+                    <a href="/factures" class="payment-success-link">Generer facture</a>
+                </article>
+            {% endif %}
+
+            {% if errorMessage|default(null) %}
+                <div class="payment-error">⚠ {{ errorMessage }}</div>
+            {% endif %}
+
+            <form method="post" action="/paiement" class="payment-form" data-payment-form>
+                <input type="hidden" name="client_nom" value="{{ formData.client_nom|default('') }}">
+                <input type="hidden" name="client_email" value="{{ formData.client_email|default('') }}">
+                <input type="hidden" name="destination" value="{{ formData.destination|default('') }}">
+                <input type="hidden" name="montant" value="{{ formData.montant|default(0) }}">
+                <input type="hidden" name="package_id" value="{{ formData.package_id|default(0) }}">
+                <input type="hidden" name="type_voyage" value="{{ formData.type_voyage|default('Aventure') }}">
+
+                <aside class="payment-recap">
+                    <h2>📋 Recapitulatif de votre voyage</h2>
+                    <div class="payment-recap-row">
+                        <span class="payment-recap-icon">🌍</span>
+                        <div>
+                            <small>Destination</small>
+                            <strong>{{ formData.destination|default('Paris, France') }}</strong>
+                        </div>
+                    </div>
+                    <div class="payment-recap-row">
+                        <span class="payment-recap-icon">👤</span>
+                        <div>
+                            <small>Client</small>
+                            <strong>{{ formData.client_nom|default('Voyageur') ?: 'Voyageur' }}</strong>
+                        </div>
+                    </div>
+                    <div class="payment-total">
+                        <small>Montant Total</small>
+                        <strong data-money data-money-base="TND" data-money-amount="{{ formData.montant|default(0) }}">{{ formData.montant|default(0)|number_format(2, '.', ' ') }} TND</strong>
+                    </div>
+                    <div class="payment-secure-note">🔒 Paiement 100% securise et chiffre</div>
+                </aside>
+
+                <section class="payment-card-form">
+                    <h2>💳 Informations de paiement</h2>
+
+                    <label class="payment-field">
+                        <span>Numero de carte</span>
+                        <input type="text" name="numero_carte" id="numeroCarteField" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" value="{{ formData.numero_carte|default('') }}" required>
+                    </label>
+
+                    <label class="payment-field">
+                        <span>Nom du titulaire</span>
+                        <input type="text" name="nom_titulaire" id="nomTitulaireField" autocomplete="cc-name" placeholder="AHMED BEN ALI" value="{{ formData.nom_titulaire|default('') }}" required>
+                    </label>
+
+                    <div class="payment-field-grid">
+                        <label class="payment-field">
+                            <span>Date d'expiration</span>
+                            <input type="text" name="expiration" id="expirationField" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AA" value="{{ formData.expiration|default('') }}" required>
+                        </label>
+                        <label class="payment-field">
+                            <span>CVV</span>
+                            <input type="text" name="cvv" id="cvvField" inputmode="numeric" autocomplete="cc-csc" placeholder="123" value="{{ formData.cvv|default('') }}" required>
+                        </label>
+                    </div>
+
+                    <div class="payment-actions">
+                        <a href="/destinations" class="payment-button payment-button-secondary">Annuler</a>
+                        <button type="submit" class="payment-button payment-button-primary">Payer <span data-money data-money-base="TND" data-money-amount="{{ formData.montant|default(0) }}">{{ formData.montant|default(0)|number_format(2, '.', ' ') }} TND</span></button>
+                    </div>
+                </section>
+            </form>
+        </section>
+    </main>
+    <script src="/currency.js"></script>
+    <script src="/billing.js"></script>
+</body>
+</html>
