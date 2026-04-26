@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 26, 2026 at 07:18 PM
+-- Generation Time: Apr 26, 2026 at 08:14 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -817,9 +817,7 @@ CREATE TABLE `reclamation` (
 
 INSERT INTO `reclamation` (`id`, `user_id`, `sujet`, `description`, `statut`, `created_at`) VALUES
 (1, 14, 'dfdqssf', 'sdjqss;llkkjjqsdjkqsdsfdsqddsfsdsqsqdf', 'RESOLUE', '2026-04-01 00:56:31'),
-(2, 15, 'szmzmzmzzz', 'sqfsfdsdfffddfssqdf', 'RESOLUE', '2026-04-02 14:54:19'),
-(3, 13, 'ftftytf', 'sssreesrers', 'EN_ATTENTE', '2026-04-13 12:01:15'),
-(4, 15, 'bvbvvbbv', 'cvvbvvb bv ljlkjk', 'EN_ATTENTE', '2026-04-18 06:21:47');
+(3, 13, 'ftftytf', 'sssreesrers', 'EN_ATTENTE', '2026-04-13 12:01:15');
 
 -- --------------------------------------------------------
 
@@ -840,8 +838,7 @@ CREATE TABLE `reponse` (
 --
 
 INSERT INTO `reponse` (`id`, `reclamation_id`, `admin_id`, `contenu`, `created_at`) VALUES
-(1, 1, 13, 'cdssqdsdqsddsddssqdqsdsqd', '2026-04-01 00:57:38'),
-(2, 2, 13, 'qsdfdsfsdqfdfsqfzddsq', '2026-04-02 14:55:44');
+(1, 1, 13, 'cdssqdsdqsddsddssqdqsdsqd', '2026-04-01 00:57:38');
 
 -- --------------------------------------------------------
 
@@ -1023,10 +1020,19 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `nom`, `prenom`, `email`, `password`, `telephone`, `adresse`, `date_naissance`, `role`, `photo_url`, `is_active`, `is_validated`, `validated_at`, `date_inscription`, `created_at`, `updated_at`) VALUES
-(13, 'Zrafi', 'Mehdi', 'zrafimehdi5@gmail.com', 'i7DPbrmxfQ99IrRW8SElfcElTh8BZlNwR2OD6ndt9BQ=', '51418902', 'RUE N° 6', NULL, 'ADMIN', NULL, 1, 1, NULL, '2026-02-22', '2026-02-22 09:12:53', '2026-04-26 17:12:56'),
-(14, 'aaaa', 'yassmine', 'yassmine@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', '', 'kairouan', '2016-03-05', 'ADMIN', NULL, 1, 1, '2026-03-31 02:29:38', '2026-03-31', '2026-03-30 23:15:19', '2026-04-02 14:24:58'),
-(15, 'aaa', 'wassim', 'wassim@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', NULL, NULL, NULL, 'USER', NULL, 1, 1, '2026-04-02 14:24:27', '2026-04-02', '2026-04-02 14:22:57', '2026-04-02 14:25:12'),
-(16, 'Zrafi', 'Mehdi', 'zrafimehdi@gmail.com', 'v3BGi7hyZdrY9m6r9LlPeba2RFBdwI5vPgzOa3iL5Mk=', '+21651418902', 'Rue 6 N°436\r\nSuite', '2003-07-14', 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426190746-5e934ccb.png', 1, 1, NULL, '2026-04-26', '2026-04-26 16:25:32', '2026-04-26 17:07:46');
+(13, 'Zrafi', 'Mehdi', 'zrafimehdi5@gmail.com', 'i7DPbrmxfQ99IrRW8SElfcElTh8BZlNwR2OD6ndt9BQ=', '51418902', 'RUE N° 6', NULL, 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426193523-3e829752.jpg', 1, 1, NULL, '2026-02-22', '2026-02-22 09:12:53', '2026-04-26 17:38:11'),
+(14, 'aaaa', 'yassmine', 'yassmine@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', '', 'kairouan', '2016-03-05', 'ADMIN', '/uploads/profile-photos/yassmine-gmail-com-20260426190746-5e934ccb.png.jpg', 1, 1, '2026-03-31 02:29:38', '2026-03-31', '2026-03-30 23:15:19', '2026-04-26 17:39:45'),
+(16, 'Zrafi', 'Mehdi', 'zrafimehdi@gmail.com', 'v3BGi7hyZdrY9m6r9LlPeba2RFBdwI5vPgzOa3iL5Mk=', '+21651418902', 'Rue 6 N°436\r\nSuite', '2003-07-14', 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426193618-0368fe5b.jpg', 1, 1, NULL, '2026-04-26', '2026-04-26 16:25:32', '2026-04-26 17:36:18'),
+(42, 'Admin', 'System', 'admin@easytravel.local', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33123456789', '123 Admin Street, Paris', '1985-05-15', 'ADMIN', '/uploads/profile-photos/fixture_92068d1bd458bae170e1f7f0726e97f4.jpg', 1, 1, '2026-04-26 19:03:52', '2026-04-26', '2026-04-26 18:03:52', '2026-04-26 18:03:52'),
+(43, 'Dupont', 'Jean', 'jean.dupont@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33612345678', '45 Avenue des Champs, Paris', '1990-08-22', 'USER', '/uploads/profile-photos/fixture_ac915d2c8b99a634c0f4037498214e2d.jpg', 1, 1, '2026-04-26 19:03:53', '2026-04-26', '2026-04-26 18:03:53', '2026-04-26 18:03:53'),
+(44, 'Martin', 'Sophie', 'sophie.martin@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33698765432', '12 Rue de la Paix, Lyon', '1995-12-05', 'USER', '/uploads/profile-photos/fixture_bbbd3c055a9275535116491b898e04d3.jpg', 1, 1, '2026-04-26 19:03:54', '2026-04-26', '2026-04-26 18:03:54', '2026-04-26 18:03:54'),
+(45, 'Lefevre', 'Luc', 'luc.lefevre@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33711223344', '78 Boulevard Saint-Michel, Marseille', '1988-03-30', 'USER', '/uploads/profile-photos/fixture_89e9203c9256e888923e1cc88098fa32.jpg', 1, 0, NULL, '2026-04-26', '2026-04-26 18:03:55', '2026-04-26 18:03:55'),
+(46, 'Moreau', 'Alice', 'alice.moreau@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33755667788', '8 Place du Capitole, Toulouse', '1992-07-14', 'USER', '/uploads/profile-photos/fixture_04a3c4bc8125c724c81eb8287f2305d2.jpg', 0, 1, '2026-04-26 19:03:55', '2026-04-26', '2026-04-26 18:03:55', '2026-04-26 18:03:55'),
+(47, 'Moreau', 'Julie', 'julie.moreau_19633@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33625442841', '3 Rue de Marseille', '1979-04-02', 'USER', '/uploads/profile-photos/fixture_8acbda119e9c80cb9f0b4f60f8cd0fb9.jpg', 1, 1, '2026-04-26 19:06:55', '2026-04-26', '2026-04-26 18:06:55', '2026-04-26 18:06:55'),
+(48, 'Roux', 'Camille', 'camille.roux_a2638@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33676899209', '13 Rue de Lyon', '1995-03-24', 'USER', '/uploads/profile-photos/fixture_ff5e03d3680dc3fe541541e52026bb07.jpg', 1, 1, '2026-04-26 19:06:56', '2026-04-26', '2026-04-26 18:06:56', '2026-04-26 18:06:56'),
+(49, 'Michel', 'Luc', 'luc.michel_c2f2a@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33665073739', '42 Rue de Paris', '1980-02-03', 'USER', '/uploads/profile-photos/fixture_467d2c24ef3768066a136c7fafef1b6f.jpg', 1, 1, '2026-04-26 19:06:56', '2026-04-26', '2026-04-26 18:06:56', '2026-04-26 18:06:56'),
+(50, 'Durand', 'Julien', 'julien.durand_124cc@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33734878861', '120 Rue de Montpellier', '1999-02-14', 'USER', '/uploads/profile-photos/fixture_18eb8d2b8ba04379604a0bd48f51af10.jpg', 1, 1, '2026-04-26 19:06:57', '2026-04-26', '2026-04-26 18:06:57', '2026-04-26 18:06:57'),
+(51, 'Bernard', 'Chloe', 'chloe.bernard_3b4dc@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33611550886', '120 Rue de Strasbourg', '1988-01-30', 'ADMIN', '/uploads/profile-photos/fixture_dfcde8183b86b0cfb49081af76c5af87.jpg', 1, 1, '2026-04-26 19:06:58', '2026-04-26', '2026-04-26 18:06:58', '2026-04-26 18:06:58');
 
 -- --------------------------------------------------------
 
@@ -1082,13 +1088,18 @@ INSERT INTO `user_notifications` (`id`, `recipient_email`, `sender_email`, `send
 (29, 'zrafimehdi@gmail.com', 'system@easytravel.local', 'SYSTEM', 'ACCOUNT', 'Compte cree en attente de validation', 'Bienvenue Mehdi, votre compte EasyTravel a ete cree et attend maintenant la validation d\'un administrateur.', 1, '2026-04-26 16:25:32'),
 (30, 'yassmine@gmail.com', 'zrafimehdi@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-04-26 16:25:32'),
 (31, 'zrafimehdi5@gmail.com', 'zrafimehdi@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-04-26 16:25:32'),
-(32, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 16:32:41'),
-(33, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 16:33:04'),
-(34, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 16:34:20'),
-(35, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 16:37:14'),
-(36, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 17:07:46'),
-(37, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 17:07:50'),
-(38, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 17:07:55');
+(32, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 1, '2026-04-26 16:32:41'),
+(33, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 16:33:04'),
+(34, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 16:34:20'),
+(35, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 1, '2026-04-26 16:37:14'),
+(36, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 1, '2026-04-26 17:07:46'),
+(37, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 17:07:50'),
+(38, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 17:07:55'),
+(39, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 17:35:15'),
+(40, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 1, '2026-04-26 17:35:23'),
+(41, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 17:35:26'),
+(42, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 1, '2026-04-26 17:36:18'),
+(43, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 17:36:22');
 
 -- --------------------------------------------------------
 
@@ -1116,7 +1127,8 @@ INSERT INTO `user_notification_preferences` (`id`, `user_email`, `user_role`, `n
 (1, 'zrafimehdi5@gmail.com', 'ADMIN', 1, 1, 1, 0, '2026-03-31 01:30:47', '2026-03-31 01:30:47'),
 (2, 'yassmine@gmail.com', 'USER', 1, 1, 1, 0, '2026-03-31 02:29:39', '2026-03-31 02:29:39'),
 (3, 'wassim@gmail.com', 'USER', 1, 1, 1, 0, '2026-04-02 14:22:57', '2026-04-02 14:22:57'),
-(11, 'zrafimehdi@gmail.com', 'ADMIN', 1, 1, 1, 0, '2026-04-26 16:25:32', '2026-04-26 16:32:41');
+(11, 'zrafimehdi@gmail.com', 'ADMIN', 1, 1, 1, 0, '2026-04-26 16:25:32', '2026-04-26 16:32:41'),
+(25, 'sophie.martin@example.com', 'USER', 1, 1, 1, 0, '2026-04-26 17:50:06', '2026-04-26 17:50:06');
 
 -- --------------------------------------------------------
 
@@ -1151,6 +1163,8 @@ INSERT INTO `user_remember_me` (`id`, `device_key`, `user_email`, `encrypted_pas
 
 CREATE TABLE `voyage` (
   `idVoyage` int(11) NOT NULL,
+  `client_nom` varchar(150) NOT NULL DEFAULT '',
+  `client_email` varchar(190) DEFAULT NULL,
   `destination` varchar(100) DEFAULT NULL,
   `pays` varchar(100) DEFAULT NULL,
   `dateDepart` varchar(50) DEFAULT NULL,
@@ -1159,22 +1173,26 @@ CREATE TABLE `voyage` (
   `moyenTransport` varchar(50) DEFAULT NULL,
   `hotel` varchar(100) DEFAULT NULL,
   `nbPlaces` int(11) DEFAULT NULL,
-  `disponible` tinyint(1) DEFAULT NULL
+  `disponible` tinyint(1) DEFAULT NULL,
+  `type_voyage` varchar(80) DEFAULT NULL,
+  `package_id` int(11) NOT NULL DEFAULT 0,
+  `payment_reference` varchar(120) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `voyage`
 --
 
-INSERT INTO `voyage` (`idVoyage`, `destination`, `pays`, `dateDepart`, `dateRetour`, `prix`, `moyenTransport`, `hotel`, `nbPlaces`, `disponible`) VALUES
-(1, 'Addis Ababa', 'Éthiopie', '2026-12-01', '2026-12-20', 23520.6, 'Avion', 'Hotel Standard', 9, 1),
-(2, 'Shanghai', 'Chine', '2026-06-04', '2026-06-30', 11498.220000000001, 'Avion', 'Hotel Standard', 2, 1),
-(3, 'Berlin', 'Allemagne', '2026-02-10', '2026-03-01', 22052.4, 'Avion', 'Hotel Standard', 6, 1),
-(4, 'Toronto', 'Canada', '2026-02-24', '2026-03-03', 6786.56, 'Avion', 'Hotel Standard', 4, 1),
-(5, 'Algiers', 'Algérie', '2026-05-01', '2026-05-09', 6139.84, 'Avion', 'Hotel Standard', 2, 1),
-(6, 'Rio de Janeiro', 'Brésil', '2026-05-01', '2026-05-09', 1917.28, 'Avion', 'Hotel Standard', 2, 1),
-(7, 'Casablanca', 'Maroc', '2026-04-01', '2026-04-30', 20676, 'Avion', 'Hotel Standard', 5, 1),
-(8, 'Algiers', 'Algérie', '2026-05-02', '2026-05-10', 6139.84, 'Avion', 'Hotel Standard', 2, 1);
+INSERT INTO `voyage` (`idVoyage`, `client_nom`, `client_email`, `destination`, `pays`, `dateDepart`, `dateRetour`, `prix`, `moyenTransport`, `hotel`, `nbPlaces`, `disponible`, `type_voyage`, `package_id`, `payment_reference`, `created_at`) VALUES
+(1, '', NULL, 'Addis Ababa', 'Éthiopie', '2026-12-01', '2026-12-20', 23520.6, 'Avion', 'Hotel Standard', 9, 1, NULL, 0, NULL, '2026-04-26 17:49:52'),
+(2, '', NULL, 'Shanghai', 'Chine', '2026-06-04', '2026-06-30', 11498.220000000001, 'Avion', 'Hotel Standard', 2, 1, NULL, 0, NULL, '2026-04-26 17:49:52'),
+(3, '', NULL, 'Berlin', 'Allemagne', '2026-02-10', '2026-03-01', 22052.4, 'Avion', 'Hotel Standard', 6, 1, NULL, 0, NULL, '2026-04-26 17:49:52'),
+(4, '', NULL, 'Toronto', 'Canada', '2026-02-24', '2026-03-03', 6786.56, 'Avion', 'Hotel Standard', 4, 1, NULL, 0, NULL, '2026-04-26 17:49:52'),
+(5, '', NULL, 'Algiers', 'Algérie', '2026-05-01', '2026-05-09', 6139.84, 'Avion', 'Hotel Standard', 2, 1, NULL, 0, NULL, '2026-04-26 17:49:52'),
+(6, '', NULL, 'Rio de Janeiro', 'Brésil', '2026-05-01', '2026-05-09', 1917.28, 'Avion', 'Hotel Standard', 2, 1, NULL, 0, NULL, '2026-04-26 17:49:52'),
+(7, '', NULL, 'Casablanca', 'Maroc', '2026-04-01', '2026-04-30', 20676, 'Avion', 'Hotel Standard', 5, 1, NULL, 0, NULL, '2026-04-26 17:49:52'),
+(8, '', NULL, 'Algiers', 'Algérie', '2026-05-02', '2026-05-10', 6139.84, 'Avion', 'Hotel Standard', 2, 1, NULL, 0, NULL, '2026-04-26 17:49:52');
 
 --
 -- Indexes for dumped tables
@@ -1456,7 +1474,7 @@ ALTER TABLE `activites`
 -- AUTO_INCREMENT for table `admin_profile_preferences`
 --
 ALTER TABLE `admin_profile_preferences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `atmosphere_destinations`
@@ -1600,19 +1618,19 @@ ALTER TABLE `travel_packages`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `user_notifications`
 --
 ALTER TABLE `user_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `user_notification_preferences`
 --
 ALTER TABLE `user_notification_preferences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `user_remember_me`
