@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeCard = null;
     let flaskTimer = null;
     let flaskAbortController = null;
+    let lastRecommendationSignature = '';
+    let inFlightRecommendationSignature = '';
 
     const normalize = (value) => (value || '')
         .toString()
@@ -264,6 +266,16 @@ document.addEventListener('DOMContentLoaded', () => {
         interets: selectedInterestLabels(),
     });
 
+    const buildRecommendationSignature = (payload) => JSON.stringify({
+        ...payload,
+        search: normalize(payload.search || ''),
+        continent: normalize(payload.continent || ''),
+        type_voyage: normalize(payload.type_voyage || ''),
+        interets: Array.isArray(payload.interets)
+            ? payload.interets.map(normalize).sort()
+            : [],
+    });
+
     const matchesCard = (card, tripLength, invalidDates) => {
         const payload = getFilterPayload();
         const searchTerm = normalize(payload.search);
@@ -283,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const travelType = normalize(payload.type_voyage);
-        if (travelType && travelType !== normalize('Tous les profils') && !card.audienceKeys.includes(travelType)) {
+        if (travelType && !['tous les profils', 'tous'].includes(travelType) && !card.audienceKeys.includes(travelType)) {
             return false;
         }
 
@@ -299,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (!invalidDates && tripLength !== null && tripLength < card.durationDays) {
+        if (!invalidDates && tripLength !== null && card.durationDays > tripLength) {
             return false;
         }
 
@@ -341,6 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let visibleIndex = 0;
         const visibleCards = [];
 
+        console.log('applyFilters: filtrage de', cardModels.length, 'cartes avec tripLength=', tripLength, 'invalidDates=', invalidDates);
+
         cardModels.forEach((card) => {
             const isVisible = !invalidDates && matchesCard(card, tripLength, invalidDates);
             card.element.classList.toggle('is-hidden', !isVisible);
@@ -352,6 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 visibleIndex += 1;
             }
         });
+
+        console.log('applyFilters: ', visibleCards.length, 'cartes visibles sur', cardModels.length);
 
         if (visibleCount) {
             visibleCount.textContent = formatCount(visibleCards.length);
@@ -792,14 +808,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderCards = (cards, message, isError = false) => {
         if (!grid || !Array.isArray(cards)) {
+            console.error('renderCards: grid manquant ou cards invalide', { grid, cards });
             return;
         }
 
+        console.log('renderCards: rendu de', cards.length, 'cartes');
+        console.log('renderCards: première carte:', cards[0]);
         grid.innerHTML = cards.map(renderCard).join('');
         hydrateCardModels();
         wireCardDetails();
         wireCardFavorites();
-        applyFilters({ syncWithFlask: false, keepMessage: true });
+        console.log('renderCards: après hydratation, cardModels.length=', cardModels.length);
+        
+        // Afficher toutes les cartes Flask sans filtrage local
+        cardModels.forEach((card, index) => {
+            card.element.classList.remove('is-hidden');
+            card.element.hidden = false;
+            card.element.style.setProperty('--destinations-order', String(index));
+        });
+        
+        if (visibleCount) {
+            visibleCount.textContent = formatCount(cardModels.length);
+        }
+        
+        if (summaryCopy) {
+            summaryCopy.textContent = `${cardModels.length} destination${cardModels.length > 1 ? 's' : ''} visible${cardModels.length > 1 ? 's' : ''} depuis Flask IA.`;
+        }
+        
+        if (emptyState) {
+            emptyState.hidden = cardModels.length > 0;
+        }
+        
         setFeedback(message, isError);
         if (window.EasyTravelCurrency) {
             window.EasyTravelCurrency.refresh();
@@ -811,11 +850,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const payload = getFilterPayload();
+        const signature = buildRecommendationSignature(payload);
+        if (signature === lastRecommendationSignature || signature === inFlightRecommendationSignature) {
+            return;
+        }
+
         if (flaskAbortController) {
             flaskAbortController.abort();
         }
 
         flaskAbortController = new AbortController();
+        inFlightRecommendationSignature = signature;
         setFeedback('Connexion Flask en cours pour recalculer les recommandations IA...', false);
 
         try {
@@ -825,7 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify(getFilterPayload()),
+                body: JSON.stringify(payload),
                 signal: flaskAbortController.signal,
             });
 
@@ -838,7 +884,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Reponse Flask invalide');
             }
 
+            lastRecommendationSignature = signature;
             const sourceLabel = data.source === 'flask' ? 'Flask IA' : 'base de donnees';
+            console.log('syncWithFlask: reçu', data.cards.length, 'cartes depuis', sourceLabel);
             renderCards(data.cards, data.message || `Resultats mis a jour depuis ${sourceLabel}.`, data.ok === false && data.source !== 'database');
         } catch (error) {
             if (error.name === 'AbortError') {
@@ -846,6 +894,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             setFeedback('Flask ne repond pas pour le moment, les filtres locaux restent actifs.', true);
+        } finally {
+            if (inFlightRecommendationSignature === signature) {
+                inFlightRecommendationSignature = '';
+            }
         }
     };
 
@@ -954,5 +1006,5 @@ document.addEventListener('DOMContentLoaded', () => {
     wireCardDetails();
     wireCardFavorites();
     bindFilters();
-    applyFilters();
+    applyFilters({ syncWithFlask: false });
 });

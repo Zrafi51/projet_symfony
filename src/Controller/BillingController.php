@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Repository\FactureRepository;
 use App\Repository\PaiementRepository;
 use App\Repository\VoyageRepository;
+use App\Service\InvoiceDeliveryService;
+use App\Validation\LegacyValidator;
 use App\View\PhpTemplateRenderer;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +22,7 @@ final class BillingController extends AbstractController
         private readonly PaiementRepository $paiementRepository,
         private readonly FactureRepository $factureRepository,
         private readonly VoyageRepository $voyageRepository,
+        private readonly InvoiceDeliveryService $invoiceDeliveryService,
     ) {
     }
 
@@ -206,19 +209,31 @@ final class BillingController extends AbstractController
         }
 
         $intent = trim((string) $request->request->get('intent', 'save'));
-        if ($intent === 'send') {
-            $formData['statut'] = 'ENVOYEE';
-        } elseif (trim((string) ($formData['statut'] ?? '')) === '') {
+        if (trim((string) ($formData['statut'] ?? '')) === '') {
             $formData['statut'] = 'GENEREE';
         }
 
         $invoiceId = (int) ($formData['id'] ?? 0);
         if ($invoiceId > 0) {
             $this->factureRepository->update($invoiceId, $formData);
-            $request->getSession()->getFlashBag()->add('success', $intent === 'send' ? 'Facture envoyee au client.' : 'Facture mise a jour.');
+            if ($intent !== 'send') {
+                $request->getSession()->getFlashBag()->add('success', 'Facture mise a jour.');
+            }
         } else {
             $invoiceId = $this->factureRepository->create($formData);
-            $request->getSession()->getFlashBag()->add('success', $intent === 'send' ? 'Facture creee et marquee comme envoyee.' : 'Facture generee avec succes.');
+            if ($intent !== 'send') {
+                $request->getSession()->getFlashBag()->add('success', 'Facture generee avec succes.');
+            }
+        }
+
+        if ($intent === 'send') {
+            $invoice = $this->factureRepository->find($invoiceId);
+            if ($invoice === null) {
+                $request->getSession()->getFlashBag()->add('error', 'Facture introuvable apres sauvegarde.');
+            } else {
+                $result = $this->invoiceDeliveryService->deliver($invoice);
+                $request->getSession()->getFlashBag()->add($result['ok'] ? 'success' : 'error', $result['message']);
+            }
         }
 
         return $this->redirectToRoute('app_admin_factures_show', ['id' => $invoiceId]);
@@ -239,6 +254,26 @@ final class BillingController extends AbstractController
         }
 
         return $this->renderInvoicePreview($request, $this->buildInvoiceFormDataFromRecord($invoice), true);
+    }
+
+    #[Route('/admin/factures/{id}/send', name: 'app_admin_factures_send', methods: ['POST'])]
+    public function sendInvoice(int $id, Request $request): RedirectResponse
+    {
+        if ($redirect = $this->ensureAdminAccess($request)) {
+            return $redirect;
+        }
+
+        $invoice = $this->factureRepository->find($id);
+        if ($invoice === null) {
+            $request->getSession()->getFlashBag()->add('error', 'Facture introuvable.');
+
+            return $this->redirectToRoute('app_admin_factures');
+        }
+
+        $result = $this->invoiceDeliveryService->deliver($invoice);
+        $request->getSession()->getFlashBag()->add($result['ok'] ? 'success' : 'error', $result['message']);
+
+        return $this->redirectToRoute('app_admin_factures_show', ['id' => $id]);
     }
 
     #[Route('/admin/factures/{id}/delete', name: 'app_admin_factures_delete', methods: ['POST'])]
@@ -329,6 +364,10 @@ final class BillingController extends AbstractController
             'facture' => $formData,
             'previewPayload' => $formData,
             'isPersisted' => $isPersisted,
+            'canSend' => $isPersisted
+                && max(0, (int) ($formData['id'] ?? 0)) > 0
+                && strtoupper(trim((string) ($formData['statut'] ?? 'GENEREE'))) !== 'ENVOYEE',
+            'invoiceMailtoUrl' => $this->invoiceDeliveryService->buildMailtoUrl($formData),
             'statusMessage' => $this->consumeFlash($request, 'success') ?? $this->consumeFlash($request, 'info'),
             'errorMessage' => $this->consumeFlash($request, 'error'),
         ]));
@@ -678,6 +717,10 @@ final class BillingController extends AbstractController
 
         if (trim((string) ($formData['client_email'] ?? '')) === '') {
             return 'Veuillez entrer l email du client.';
+        }
+
+        if (!LegacyValidator::isValidEmail((string) ($formData['client_email'] ?? ''))) {
+            return 'Veuillez entrer un email client valide.';
         }
 
         if (trim((string) ($formData['destination'] ?? '')) === '') {

@@ -123,11 +123,12 @@ final class DestinationController extends AbstractController
         }
 
         if (!$this->flaskRecommendationService->verifierAPI()) {
+            $filteredCards = $this->filterCardsForRequest($localCards, $filters);
             return $this->json([
-                'ok' => false,
+                'ok' => $filteredCards !== [],
                 'source' => 'database',
                 'message' => 'Flask est indisponible, affichage avec les destinations de la base.',
-                'cards' => $this->filterCardsForRequest($localCards, $filters),
+                'cards' => $filteredCards !== [] ? $filteredCards : $localCards,
             ]);
         }
 
@@ -160,11 +161,12 @@ final class DestinationController extends AbstractController
         }
 
         if ($cards === []) {
+            $filteredCards = $this->filterCardsForRequest($localCards, $filters);
             return $this->json([
-                'ok' => false,
+                'ok' => $filteredCards !== [],
                 'source' => 'database',
                 'message' => 'Flask n a renvoye aucune recommandation, affichage avec les destinations de la base.',
-                'cards' => $this->filterCardsForRequest($localCards, $filters),
+                'cards' => $filteredCards !== [] ? $filteredCards : $localCards,
             ]);
         }
 
@@ -833,7 +835,7 @@ final class DestinationController extends AbstractController
         $durationDays = max(1, (int) $this->firstNonBlank($recommendation, ['duree', 'duration_days', 'days'], '7'));
         $interests = $this->extractRecommendationInterests($recommendation, $fallbackInterests);
         $travelMood = $this->prettifyTravelType($this->firstNonBlank($recommendation, ['type_voyage', 'travel_type', 'type'], $interests[0] ?? 'Voyage'));
-        $maxTravelers = max(2, (int) $this->firstNonBlank($recommendation, ['max_travelers', 'capacite_max', 'capacity'], '6'));
+        $maxTravelers = max(2, (int) $this->firstNonBlank($recommendation, ['max_travelers', 'capacite_max', 'capacity'], '10'));
         $imagePath = $this->resolveRecommendationImagePath($recommendation, $name, $continent);
         $bestPeriod = $this->resolveBestPeriod($continent);
 
@@ -950,7 +952,9 @@ final class DestinationController extends AbstractController
 
     private function filterCardsForRequest(array $cards, array $filters): array
     {
-        $requestedDays = max(1, (int) ceil((strtotime($filters['date_fin']) - strtotime($filters['date_debut'])) / 86400));
+        $requestedDays = $filters['has_explicit_dates'] 
+            ? max(1, (int) ceil((strtotime($filters['date_fin']) - strtotime($filters['date_debut'])) / 86400))
+            : null;
         $travelers = max(1, (int) $filters['nb_adultes'] + (int) $filters['nb_enfants']);
         $search = $this->normalizeValue((string) $filters['search']);
         $continent = $this->normalizeValue((string) $filters['continent']);
@@ -984,7 +988,7 @@ final class DestinationController extends AbstractController
                 }
             }
 
-            return !$filters['has_explicit_dates'] || (int) ($card['duration_days'] ?? 1) <= $requestedDays;
+            return $requestedDays === null || (int) ($card['duration_days'] ?? 1) <= $requestedDays;
         }));
     }
 
@@ -1330,13 +1334,13 @@ final class DestinationController extends AbstractController
     private function resolveMaxTravelers(array $audiences, string $travelMood): int
     {
         if (in_array('Famille', $audiences, true)) {
-            return $travelMood === 'Plage' ? 5 : 6;
+            return $travelMood === 'Plage' ? 8 : 10;
         }
         if (in_array('Business', $audiences, true)) {
             return 3;
         }
 
-        return 2;
+        return 4;
     }
 
     private function resolveBestPeriod(string $continent): string

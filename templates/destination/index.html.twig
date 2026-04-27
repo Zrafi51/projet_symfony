@@ -20,7 +20,7 @@
 <section
     class="destinations-page"
     data-destinations-page
-    data-flask-enabled="1"
+    data-flask-enabled="{{ destinationFlaskAvailable|default(false) ? '1' : '0' }}"
     data-recommendation-endpoint="{{ destinationRecommendationEndpoint|default('/destinations/recommendations')|e('html_attr') }}"
     data-package-details-endpoint="{{ destinationPackageDetailsEndpoint|default('/destinations/package-details')|e('html_attr') }}"
     data-initial-search="{{ destinationInitialFilters.search|default('')|e('html_attr') }}"
@@ -150,7 +150,7 @@
                         <span class="destinations-filter-label">&#128118; Enfants</span>
                         <span class="destinations-filter-control">
                             <select id="destinationsChildrenFilter" class="destinations-filter-input">
-                                {% for number in 0..4 %}
+                                {% for number in 0..8 %}
                                     <option value="{{ number }}">{{ number }} {{ number <= 1 ? 'enfant' : 'enfants' }}</option>
                                 {% endfor %}
                             </select>

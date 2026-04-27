@@ -7,9 +7,11 @@ use App\Repository\FactureRepository;
 use App\Repository\PaiementRepository;
 use App\Repository\SupportRepository;
 use App\Repository\UserRepository;
+use App\Service\InvoiceDeliveryService;
 use App\Service\ProfilePhotoStorageService;
 use App\Service\SponsorLogoStorageService;
 use App\Service\UserNotificationService;
+use App\Validation\LegacyValidator;
 use App\Util\UploadedFileMimeTypeGuesser;
 use App\View\PhpTemplateRenderer;
 use DateTimeImmutable;
@@ -28,6 +30,7 @@ final class AdminDashboardController extends AbstractController
         private readonly FactureRepository $factureRepository,
         private readonly SupportRepository $supportRepository,
         private readonly UserRepository $userRepository,
+        private readonly InvoiceDeliveryService $invoiceDeliveryService,
         private readonly ProfilePhotoStorageService $profilePhotoStorageService,
         private readonly SponsorLogoStorageService $sponsorLogoStorageService,
         private readonly UserNotificationService $notificationService,
@@ -1094,20 +1097,18 @@ final class AdminDashboardController extends AbstractController
         }
 
         $intent = trim((string) $request->request->get('intent', 'save'));
-        if ($intent === 'send') {
-            $payload['statut'] = 'ENVOYEE';
-        } elseif (trim((string) ($payload['statut'] ?? '')) === '') {
+        if (trim((string) ($payload['statut'] ?? '')) === '') {
             $payload['statut'] = 'GENEREE';
         }
 
         $invoiceId = (int) ($payload['id'] ?? 0);
         if ($invoiceId > 0) {
             $saved = $this->factureRepository->update($invoiceId, $payload);
-            $successMessage = $intent === 'send' ? 'Facture mise a jour et marquee comme envoyee.' : 'Facture mise a jour.';
+            $successMessage = 'Facture mise a jour.';
         } else {
             $invoiceId = $this->factureRepository->create($payload);
             $saved = $invoiceId > 0;
-            $successMessage = $intent === 'send' ? 'Facture creee et marquee comme envoyee.' : 'Facture generee avec succes.';
+            $successMessage = 'Facture generee avec succes.';
         }
 
         if (!$saved) {
@@ -1123,7 +1124,19 @@ final class AdminDashboardController extends AbstractController
             );
         }
 
-        $request->getSession()->getFlashBag()->add('success', $successMessage);
+        if ($intent !== 'send') {
+            $request->getSession()->getFlashBag()->add('success', $successMessage);
+        }
+
+        if ($intent === 'send') {
+            $invoice = $this->factureRepository->find($invoiceId);
+            if ($invoice === null) {
+                $request->getSession()->getFlashBag()->add('error', 'Facture introuvable apres sauvegarde.');
+            } else {
+                $result = $this->invoiceDeliveryService->deliver($invoice);
+                $request->getSession()->getFlashBag()->add($result['ok'] ? 'success' : 'error', $result['message']);
+            }
+        }
 
         return $this->redirectBackToDashboard(
             $request,
@@ -1149,14 +1162,9 @@ final class AdminDashboardController extends AbstractController
             return $this->redirectBackToDashboard($request, 'paiements');
         }
 
-        $payload = [
-            ...$invoice,
-            'statut' => 'ENVOYEE',
-        ];
-        unset($payload['id']);
-
-        if (!$this->factureRepository->update($id, $payload)) {
-            $request->getSession()->getFlashBag()->add('error', 'Impossible d envoyer cette facture pour le moment.');
+        $result = $this->invoiceDeliveryService->deliver($invoice);
+        if (!$result['ok']) {
+            $request->getSession()->getFlashBag()->add('error', $result['message']);
 
             return $this->redirectBackToDashboard(
                 $request,
@@ -1168,7 +1176,7 @@ final class AdminDashboardController extends AbstractController
             );
         }
 
-        $request->getSession()->getFlashBag()->add('success', 'La facture a ete marquee comme envoyee.');
+        $request->getSession()->getFlashBag()->add('success', $result['message']);
 
         return $this->redirectBackToDashboard(
             $request,
@@ -1819,6 +1827,10 @@ final class AdminDashboardController extends AbstractController
 
         if (trim((string) ($payload['client_email'] ?? '')) === '') {
             return 'Veuillez entrer l email du client.';
+        }
+
+        if (!LegacyValidator::isValidEmail((string) ($payload['client_email'] ?? ''))) {
+            return 'Veuillez entrer un email client valide.';
         }
 
         if (trim((string) ($payload['destination'] ?? '')) === '') {
