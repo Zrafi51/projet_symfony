@@ -10,16 +10,24 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\UX\Map\InfoWindow;
+use Symfony\UX\Map\Map;
+use Symfony\UX\Map\Marker;
+use Symfony\UX\Map\Point;
 
 /**
- * Instagram-style "Carte" — a shared map showing pins from the people you
- * follow + your own pin. Pins expire after the user-chosen duration (1h/4h/
- * 8h/24h). Uses Leaflet.js (OpenStreetMap tiles) — free, no API key.
+ * Carte style Instagram — alimentée par le bundle officiel Symfony UX Map
+ * (avec le bridge Leaflet + tuiles OpenStreetMap, gratuit et sans clé API).
  *
- * Routes:
- *   - GET  /map          → map page
- *   - POST /map/pin      → create/update my pin (lat,lng,ttlHours)
- *   - POST /map/unpin    → remove my pin
+ * Le controller construit un objet Symfony\UX\Map\Map côté serveur en y
+ * ajoutant un Marker (avec InfoWindow) pour chaque pin actif. Le rendu HTML
+ * est ensuite délégué à la fonction Twig {{ ux_map(map: map) }} fournie par
+ * le bundle.
+ *
+ * Routes :
+ *   - GET  /social/map         → page carte
+ *   - POST /social/map/pin     → crée/met à jour mon pin (lat,lng,ttlHours)
+ *   - POST /social/map/unpin   → supprime mon pin
  */
 class MapController extends AbstractController
 {
@@ -35,38 +43,58 @@ class MapController extends AbstractController
         }
         $me = $user->getUserIdentifier();
 
-        // Opportunistic cleanup so stale rows don't linger forever.
+        // Nettoyage opportuniste pour que les lignes obsolètes ne traînent pas.
         $pins->purgeExpired();
 
-        // Friends = people I follow + me. Self is included so my own pin
-        // renders on the map too.
+        // Amis = personnes que je suis + moi (mon pin doit aussi apparaître).
         $following = $follows->getFollowingUsernames($me);
         $scope = array_values(array_unique(array_merge($following, [$me])));
-
         $active = $pins->findActiveForUsers($scope);
 
-        // Build a lightweight JSON-able list for the Leaflet JS bootstrap.
+        // Map photos pour les info windows.
         $photoMap = $users->getPhotoMapByUsernames(array_map(
             fn ($p) => $p->getUsername(), $active
         ));
-        $markers = [];
-        foreach ($active as $p) {
-            $markers[] = [
-                'username'  => $p->getUsername(),
-                'lat'       => $p->getLatitude(),
-                'lng'       => $p->getLongitude(),
-                'label'     => $p->getLabel(),
-                'photo'     => $photoMap[$p->getUsername()] ?? null,
-                'expiresAt' => $p->getExpiresAt()->format(\DateTimeInterface::ATOM),
-                'isMine'    => $p->getUsername() === $me,
-            ];
+
+        // ─── Construction de la carte avec le bundle Symfony UX Map ───
+        // Centre par défaut = Tunisie (mêmes valeurs qu'avant).
+        $defaultCenter = new Point(34.0, 9.5);
+        $defaultZoom = 6;
+
+        // Si j'ai déjà un pin, on centre dessus.
+        $mine = $pins->findActiveFor($me);
+        if ($mine) {
+            $defaultCenter = new Point($mine->getLatitude(), $mine->getLongitude());
+            $defaultZoom = 10;
         }
 
-        $mine = $pins->findActiveFor($me);
+        $map = (new Map())
+            ->center($defaultCenter)
+            ->zoom($defaultZoom);
+
+        // Ajout d'un Marker (avec InfoWindow) par pin actif.
+        foreach ($active as $p) {
+            $isMine = $p->getUsername() === $me;
+            $expiresHHMM = $p->getExpiresAt()->format('H:i');
+            $photoHtml = isset($photoMap[$p->getUsername()])
+                ? '<img src="/uploads/profiles/' . htmlspecialchars($photoMap[$p->getUsername()]) . '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid ' . ($isMine ? '#dc3545' : '#1877f2') . ';"><br>'
+                : '';
+            $labelHtml = $p->getLabel() ? '<div style="font-style:italic;color:#666;">' . htmlspecialchars($p->getLabel()) . '</div>' : '';
+
+            $map->addMarker(new Marker(
+                position: new Point($p->getLatitude(), $p->getLongitude()),
+                title: $p->getUsername(),
+                infoWindow: new InfoWindow(
+                    headerContent: '<strong>' . htmlspecialchars($p->getUsername()) . '</strong>',
+                    content: $photoHtml . $labelHtml . '<div style="font-size:0.85em;color:#666;">Visible jusqu\'à ' . $expiresHHMM . '</div>',
+                ),
+                extra: ['isMine' => $isMine, 'username' => $p->getUsername()],
+            ));
+        }
 
         return $this->render('social/map/index.html.twig', [
-            'markers' => $markers,
-            'mine'    => $mine,
+            'map'  => $map,   // ← objet Symfony\UX\Map\Map du bundle
+            'mine' => $mine,
         ]);
     }
 
@@ -86,7 +114,6 @@ class MapController extends AbstractController
         $label = trim((string) $req->request->get('label', ''));
         $label = $label !== '' ? mb_substr($label, 0, 120) : null;
 
-        // Sanity check — valid WGS84 range; fallback to 4h if ttl is off.
         if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
             return new JsonResponse(['ok' => false, 'error' => 'coords'], 400);
         }
