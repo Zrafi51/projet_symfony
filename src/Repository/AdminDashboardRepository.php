@@ -1050,9 +1050,10 @@ final class AdminDashboardRepository
         try {
             $this->ensureSponsorSchema();
             $statement = $this->connectionFactory->getConnection()->prepare(
-                'INSERT INTO sponsor (nom, logo_url, logo_blob, logo_mime_type, description, site_web, type, montant_sponsoring, date_debut, date_fin, est_actif)
-                 VALUES (:nom, :logo_url, :logo_blob, :logo_mime_type, :description, :site_web, :type, :montant_sponsoring, :date_debut, :date_fin, :est_actif)'
+                'INSERT INTO sponsor (sponsor_uid, nom, logo_url, logo_blob, logo_mime_type, description, site_web, type, montant_sponsoring, date_debut, date_fin, est_actif)
+                 VALUES (:sponsor_uid, :nom, :logo_url, :logo_blob, :logo_mime_type, :description, :site_web, :type, :montant_sponsoring, :date_debut, :date_fin, :est_actif)'
             );
+            $statement->bindValue('sponsor_uid', $this->generateSponsorUid());
             $statement->bindValue('nom', $name);
             $statement->bindValue('logo_url', trim((string) ($payload['logo_url'] ?? '')));
             $statement->bindValue('logo_blob', $payload['logo_blob'] ?? null, \PDO::PARAM_LOB);
@@ -1071,16 +1072,18 @@ final class AdminDashboardRepository
         }
     }
 
-    public function deleteSponsor(int $id): bool
+    public function deleteSponsorByUid(string $uid): bool
     {
-        if ($id < 0) {
+        $uid = trim($uid);
+        if ($uid === '') {
             return false;
         }
 
         try {
-            $statement = $this->connectionFactory->getConnection()->prepare('DELETE FROM sponsor WHERE id = :id');
+            $this->ensureSponsorSchema();
+            $statement = $this->connectionFactory->getConnection()->prepare('DELETE FROM sponsor WHERE sponsor_uid = :uid LIMIT 1');
 
-            return $statement->execute(['id' => $id]);
+            return $statement->execute(['uid' => $uid]);
         } catch (Throwable) {
             return false;
         }
@@ -5118,6 +5121,26 @@ final class AdminDashboardRepository
         }
 
         $connection = $this->connectionFactory->getConnection();
+        $connection->exec(
+            'CREATE TABLE IF NOT EXISTS sponsor (
+                id INT NOT NULL,
+                nom VARCHAR(100) NOT NULL,
+                logo_url VARCHAR(255) DEFAULT NULL,
+                description TEXT DEFAULT NULL,
+                site_web VARCHAR(255) DEFAULT NULL,
+                type VARCHAR(50) DEFAULT NULL,
+                montant_sponsoring DECIMAL(10,2) DEFAULT NULL,
+                date_debut DATE DEFAULT NULL,
+                date_fin DATE DEFAULT NULL,
+                est_actif TINYINT(1) DEFAULT 1,
+                nombre_clics INT DEFAULT 0
+            )'
+        );
+        $this->addSponsorColumnIfMissing(
+            $connection,
+            'sponsor_uid',
+            'ALTER TABLE sponsor ADD COLUMN sponsor_uid VARCHAR(36) NULL AFTER id'
+        );
         $this->addSponsorColumnIfMissing(
             $connection,
             'logo_blob',
@@ -5128,6 +5151,7 @@ final class AdminDashboardRepository
             'logo_mime_type',
             'ALTER TABLE sponsor ADD COLUMN logo_mime_type VARCHAR(100) NULL AFTER logo_blob'
         );
+        $connection->exec("UPDATE sponsor SET sponsor_uid = UUID() WHERE sponsor_uid IS NULL OR sponsor_uid = ''");
 
         $this->sponsorSchemaEnsured = true;
     }
@@ -5156,5 +5180,20 @@ final class AdminDashboardRepository
         }
 
         return trim((string) ($sponsor['logo_url'] ?? ''));
+    }
+
+    private function generateSponsorUid(): string
+    {
+        $bytes = random_bytes(16);
+        $hex = bin2hex($bytes);
+
+        return sprintf(
+            '%s-%s-%s-%s-%s',
+            substr($hex, 0, 8),
+            substr($hex, 8, 4),
+            substr($hex, 12, 4),
+            substr($hex, 16, 4),
+            substr($hex, 20, 12)
+        );
     }
 }

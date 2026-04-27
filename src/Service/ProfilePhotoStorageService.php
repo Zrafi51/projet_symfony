@@ -16,7 +16,7 @@ final class ProfilePhotoStorageService
 
     public function store(UploadedFile $file, string $accountKey): string
     {
-        $directory = $this->getTargetDirectory();
+        $directory = $this->getLegacyDirectory();
         if (!is_dir($directory)) {
             mkdir($directory, 0777, true);
         }
@@ -29,7 +29,7 @@ final class ProfilePhotoStorageService
 
         $file->move($directory, $fileName);
 
-        return self::PUBLIC_PREFIX.$fileName;
+        return $this->buildFileUri($directory.DIRECTORY_SEPARATOR.$fileName);
     }
 
     public function delete(?string $photoPath): void

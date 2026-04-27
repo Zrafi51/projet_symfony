@@ -2,12 +2,14 @@
 
 namespace App\Controller;
 
+use App\Service\DestinationWorkflowManager;
 use App\Repository\DestinationRepository;
 use App\Repository\FavoriteRepository;
 use App\Repository\NewsletterRepository;
 use App\Service\FlaskRecommendationService;
 use App\Validation\LegacyValidator;
 use App\View\PhpTemplateRenderer;
+use Knp\Component\Pager\PaginatorInterface;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,6 +26,8 @@ final class DestinationController extends AbstractController
         private readonly FavoriteRepository $favoriteRepository,
         private readonly NewsletterRepository $newsletterRepository,
         private readonly FlaskRecommendationService $flaskRecommendationService,
+        private readonly DestinationWorkflowManager $destinationWorkflowManager,
+        private readonly PaginatorInterface $paginator,
         private readonly PhpTemplateRenderer $renderer,
     ) {
     }
@@ -119,11 +123,12 @@ final class DestinationController extends AbstractController
         }
 
         if (!$this->flaskRecommendationService->verifierAPI()) {
+            $filteredCards = $this->filterCardsForRequest($localCards, $filters);
             return $this->json([
-                'ok' => false,
+                'ok' => $filteredCards !== [],
                 'source' => 'database',
                 'message' => 'Flask est indisponible, affichage avec les destinations de la base.',
-                'cards' => $this->filterCardsForRequest($localCards, $filters),
+                'cards' => $filteredCards !== [] ? $filteredCards : $localCards,
             ]);
         }
 
@@ -156,11 +161,12 @@ final class DestinationController extends AbstractController
         }
 
         if ($cards === []) {
+            $filteredCards = $this->filterCardsForRequest($localCards, $filters);
             return $this->json([
-                'ok' => false,
+                'ok' => $filteredCards !== [],
                 'source' => 'database',
                 'message' => 'Flask n a renvoye aucune recommandation, affichage avec les destinations de la base.',
-                'cards' => $this->filterCardsForRequest($localCards, $filters),
+                'cards' => $filteredCards !== [] ? $filteredCards : $localCards,
             ]);
         }
 
@@ -223,18 +229,42 @@ final class DestinationController extends AbstractController
     #[Route('/new', name: 'app_destination_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
-        $payload = $this->extractPayload($request);
+        $payload = $request->isMethod('POST')
+            ? array_merge($this->defaultDestinationPayload(), $this->extractPayload($request))
+            : $this->defaultDestinationPayload();
         $errors = [];
         $databaseError = null;
+        $transition = trim((string) $request->request->get('workflow_transition', ''));
 
         if ($request->isMethod('POST')) {
             $errors = $this->validatePayload($payload);
+            $errors = [...$errors, ...$this->destinationWorkflowManager->validateTransitionReadiness($payload, $transition)];
 
             if ($errors === []) {
                 try {
-                    $this->destinationRepository->create($payload);
+                    $destinationId = $this->destinationRepository->create($payload);
 
-                    return $this->redirectToRoute('app_destination_index', ['status' => 'created']);
+                    if ($transition !== '') {
+                        try {
+                            $newPlace = $this->destinationWorkflowManager->applyTransition(
+                                (string) ($payload['workflow_place'] ?? 'draft'),
+                                $transition
+                            );
+                            $this->destinationRepository->updateWorkflowPlace($destinationId, $newPlace);
+
+                            return $this->redirectToRoute('app_destination_edit', [
+                                'id' => $destinationId,
+                                'status' => $this->transitionStatusCode($transition),
+                            ]);
+                        } catch (\Throwable $exception) {
+                            $request->getSession()->getFlashBag()->add('error', $exception->getMessage());
+                        }
+                    }
+
+                    return $this->redirectToRoute('app_destination_edit', [
+                        'id' => $destinationId,
+                        'status' => 'created',
+                    ]);
                 } catch (RuntimeException $exception) {
                     $databaseError = $exception->getMessage();
                 }
@@ -243,12 +273,20 @@ final class DestinationController extends AbstractController
 
         return new Response($this->renderer->render('destination/form', [
             'title' => 'Nouvelle destination',
+            'showPageHeading' => false,
             'databaseError' => $databaseError,
+            'errorMessage' => $this->consumeFlash($request, 'error'),
+            'statusMessage' => $this->statusMessage($request->query->get('status')),
             'errors' => $errors,
             'destination' => $payload,
             'formTitle' => 'Ajouter une destination',
-            'submitLabel' => 'Enregistrer',
+            'submitLabel' => 'Enregistrer le brouillon',
             'action' => $this->generateUrl('app_destination_new'),
+            'workflowMeta' => $this->destinationWorkflowManager->getPlaceMeta($payload),
+            'workflowTransitions' => $this->destinationWorkflowManager->getEnabledTransitions($payload),
+            'readiness' => $this->destinationWorkflowManager->buildReadiness($payload),
+            'managementCatalog' => $this->buildManagementCatalog($request),
+            'currentDestinationId' => 0,
         ]));
     }
 
@@ -270,40 +308,73 @@ final class DestinationController extends AbstractController
         if ($destination === null && $databaseError !== null) {
             return new Response($this->renderer->render('destination/form', [
                 'title' => 'Modifier une destination',
+                'showPageHeading' => false,
                 'databaseError' => $databaseError,
                 'errors' => [],
-                'destination' => $this->extractPayload($request),
+                'destination' => array_merge($this->defaultDestinationPayload(), $this->extractPayload($request)),
                 'formTitle' => 'Modifier une destination',
                 'submitLabel' => 'Mettre a jour',
                 'action' => $this->generateUrl('app_destination_edit', ['id' => $id]),
+                'workflowMeta' => $this->destinationWorkflowManager->getPlaceMeta('draft'),
+                'workflowTransitions' => [],
+                'readiness' => $this->destinationWorkflowManager->buildReadiness($this->extractPayload($request)),
+                'managementCatalog' => $this->buildManagementCatalog($request, $id),
+                'currentDestinationId' => $id,
             ]));
         }
 
-        $payload = $request->isMethod('POST') ? $this->extractPayload($request) : $destination;
+        $payload = $request->isMethod('POST')
+            ? array_merge($destination ?? [], $this->extractPayload($request))
+            : $destination;
         $errors = [];
+        $transition = trim((string) $request->request->get('workflow_transition', ''));
 
         if ($request->isMethod('POST')) {
             $errors = $this->validatePayload($payload);
+            $errors = [...$errors, ...$this->destinationWorkflowManager->validateTransitionReadiness($payload, $transition)];
 
             if ($errors === []) {
                 try {
                     $this->destinationRepository->update($id, $payload);
 
-                    return $this->redirectToRoute('app_destination_index', ['status' => 'updated']);
+                    if ($transition !== '') {
+                        $newPlace = $this->destinationWorkflowManager->applyTransition(
+                            (string) ($destination['workflow_place'] ?? 'draft'),
+                            $transition
+                        );
+                        $this->destinationRepository->updateWorkflowPlace($id, $newPlace);
+
+                        return $this->redirectToRoute('app_destination_edit', [
+                            'id' => $id,
+                            'status' => $this->transitionStatusCode($transition),
+                        ]);
+                    }
+
+                    return $this->redirectToRoute('app_destination_edit', ['id' => $id, 'status' => 'updated']);
                 } catch (RuntimeException $exception) {
                     $databaseError = $exception->getMessage();
+                } catch (\Throwable $exception) {
+                    $errors[] = $exception->getMessage();
                 }
             }
         }
 
         return new Response($this->renderer->render('destination/form', [
             'title' => 'Modifier une destination',
+            'showPageHeading' => false,
             'databaseError' => $databaseError,
+            'errorMessage' => $this->consumeFlash($request, 'error'),
+            'statusMessage' => $this->statusMessage($request->query->get('status')),
             'errors' => $errors,
             'destination' => $payload,
             'formTitle' => 'Modifier une destination',
             'submitLabel' => 'Mettre a jour',
             'action' => $this->generateUrl('app_destination_edit', ['id' => $id]),
+            'workflowMeta' => $this->destinationWorkflowManager->getPlaceMeta($payload),
+            'workflowTransitions' => $this->destinationWorkflowManager->getEnabledTransitions($payload),
+            'readiness' => $this->destinationWorkflowManager->buildReadiness($payload),
+            'managementCatalog' => $this->buildManagementCatalog($request, $id),
+            'currentDestinationId' => $id,
         ]));
     }
 
@@ -313,9 +384,9 @@ final class DestinationController extends AbstractController
         try {
             $this->destinationRepository->delete($id);
 
-            return $this->redirectToRoute('app_destination_index', ['status' => 'deleted']);
+            return $this->redirectToRoute('app_destination_new', ['status' => 'deleted']);
         } catch (RuntimeException) {
-            return $this->redirectToRoute('app_destination_index', ['status' => 'db-error']);
+            return $this->redirectToRoute('app_destination_new', ['status' => 'db-error']);
         }
     }
 
@@ -323,10 +394,45 @@ final class DestinationController extends AbstractController
     {
         return [
             'nom' => trim((string) $request->request->get('nom', '')),
+            'slug' => trim((string) $request->request->get('slug', '')),
             'pays' => trim((string) $request->request->get('pays', '')),
             'continent' => trim((string) $request->request->get('continent', '')),
             'prix_base' => (float) str_replace(',', '.', (string) $request->request->get('prix_base', '0')),
             'description' => trim((string) $request->request->get('description', '')),
+            'cover_image_path' => trim((string) $request->request->get('cover_image_path', '')),
+            'hero_video_path' => trim((string) $request->request->get('hero_video_path', '')),
+            'travel_mood' => trim((string) $request->request->get('travel_mood', '')),
+            'best_period' => trim((string) $request->request->get('best_period', '')),
+            'duration_days' => max(1, (int) $request->request->get('duration_days', 7)),
+            'max_travelers' => max(1, (int) $request->request->get('max_travelers', 4)),
+            'interest_tags' => trim((string) $request->request->get('interest_tags', '')),
+            'audience_tags' => trim((string) $request->request->get('audience_tags', '')),
+            'catalog_priority' => max(0, (int) $request->request->get('catalog_priority', 50)),
+            'workflow_place' => trim((string) $request->request->get('workflow_place', 'draft')),
+        ];
+    }
+
+    private function defaultDestinationPayload(): array
+    {
+        return [
+            'nom' => '',
+            'slug' => '',
+            'pays' => '',
+            'continent' => '',
+            'prix_base' => 0.0,
+            'description' => '',
+            'cover_image_path' => '',
+            'hero_video_path' => '',
+            'travel_mood' => '',
+            'best_period' => '',
+            'duration_days' => 7,
+            'max_travelers' => 4,
+            'interest_tags' => '',
+            'interest_tags_list' => [],
+            'audience_tags' => '',
+            'audience_tags_list' => [],
+            'catalog_priority' => 50,
+            'workflow_place' => 'draft',
         ];
     }
 
@@ -350,7 +456,105 @@ final class DestinationController extends AbstractController
             $errors[] = 'Le prix de base ne peut pas etre negatif.';
         }
 
+        if (mb_strlen((string) ($payload['description'] ?? '')) > 0 && mb_strlen((string) ($payload['description'] ?? '')) < 20) {
+            $errors[] = 'La description doit contenir au moins 20 caracteres.';
+        }
+
+        if ($this->isInvalidMediaUrl((string) ($payload['cover_image_path'] ?? ''), ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'])) {
+            $errors[] = 'Le lien image doit pointer vers un visuel valide ou un chemin local /assets ou /uploads.';
+        }
+
+        if ($this->isInvalidMediaUrl((string) ($payload['hero_video_path'] ?? ''), ['mp4', 'webm', 'ogg'])) {
+            $errors[] = 'Le lien video doit pointer vers un fichier mp4, webm ou ogg.';
+        }
+
         return $errors;
+    }
+
+    private function isInvalidMediaUrl(string $value, array $extensions): bool
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return false;
+        }
+
+        $extensionsPattern = implode('|', array_map('preg_quote', $extensions));
+
+        if (preg_match('#^(https?://).+\.('.$extensionsPattern.')(\?.*)?$#i', $value) === 1) {
+            return false;
+        }
+
+        if (preg_match('#^/(assets|uploads)/.+\.('.$extensionsPattern.')$#i', $value) === 1) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function buildManagementCatalog(Request $request, ?int $currentDestinationId = null): array
+    {
+        try {
+            $page = max(1, (int) $request->query->get('catalog_page', 1));
+            $pagination = $this->paginator->paginate(
+                $this->destinationRepository->findAllForManagement(),
+                $page,
+                6,
+                ['pageParameterName' => 'catalog_page']
+            );
+        } catch (RuntimeException) {
+            return [
+                'items' => [],
+                'current_page' => 1,
+                'page_count' => 1,
+                'total_count' => 0,
+                'previous_page' => 1,
+                'next_page' => 1,
+                'has_previous' => false,
+                'has_next' => false,
+            ];
+        }
+
+        $items = [];
+        foreach ($pagination->getItems() as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $items[] = [
+                ...$entry,
+                'workflow_meta' => $this->destinationWorkflowManager->getPlaceMeta($entry),
+                'is_current' => $currentDestinationId !== null && (int) ($entry['id'] ?? 0) === $currentDestinationId,
+            ];
+        }
+
+        $perPage = max(1, $pagination->getItemNumberPerPage());
+        $totalCount = max(0, $pagination->getTotalItemCount());
+        $pageCount = max(1, (int) ceil($totalCount / $perPage));
+        $currentPage = max(1, min($pagination->getCurrentPageNumber(), $pageCount));
+
+        return [
+            'items' => $items,
+            'current_page' => $currentPage,
+            'page_count' => $pageCount,
+            'total_count' => $totalCount,
+            'previous_page' => max(1, $currentPage - 1),
+            'next_page' => min($pageCount, $currentPage + 1),
+            'has_previous' => $currentPage > 1,
+            'has_next' => $currentPage < $pageCount,
+        ];
+    }
+
+    private function transitionStatusCode(string $transition): string
+    {
+        return match ($transition) {
+            'submit_review' => 'submitted-review',
+            'reject' => 'rejected',
+            'rework' => 'reworked',
+            'publish' => 'published',
+            'archive' => 'archived',
+            'unpublish' => 'unpublished',
+            default => 'updated',
+        };
     }
 
     private function statusMessage(?string $status): ?string
@@ -359,6 +563,12 @@ final class DestinationController extends AbstractController
             'created' => 'Destination ajoutee avec succes.',
             'updated' => 'Destination mise a jour avec succes.',
             'deleted' => 'Destination supprimee avec succes.',
+            'submitted-review' => 'La destination a ete envoyee en revue.',
+            'rejected' => 'La destination a ete marquee a retravailler.',
+            'reworked' => 'La destination est revenue en brouillon.',
+            'published' => 'La destination est maintenant visible sur le catalogue public.',
+            'archived' => 'La destination a ete archivee.',
+            'unpublished' => 'La destination a ete retiree du catalogue public.',
             'db-error' => 'Operation impossible: verifie la connexion MySQL.',
             default => null,
         };
@@ -625,7 +835,7 @@ final class DestinationController extends AbstractController
         $durationDays = max(1, (int) $this->firstNonBlank($recommendation, ['duree', 'duration_days', 'days'], '7'));
         $interests = $this->extractRecommendationInterests($recommendation, $fallbackInterests);
         $travelMood = $this->prettifyTravelType($this->firstNonBlank($recommendation, ['type_voyage', 'travel_type', 'type'], $interests[0] ?? 'Voyage'));
-        $maxTravelers = max(2, (int) $this->firstNonBlank($recommendation, ['max_travelers', 'capacite_max', 'capacity'], '6'));
+        $maxTravelers = max(2, (int) $this->firstNonBlank($recommendation, ['max_travelers', 'capacite_max', 'capacity'], '10'));
         $imagePath = $this->resolveRecommendationImagePath($recommendation, $name, $continent);
         $bestPeriod = $this->resolveBestPeriod($continent);
 
@@ -742,7 +952,9 @@ final class DestinationController extends AbstractController
 
     private function filterCardsForRequest(array $cards, array $filters): array
     {
-        $requestedDays = max(1, (int) ceil((strtotime($filters['date_fin']) - strtotime($filters['date_debut'])) / 86400));
+        $requestedDays = $filters['has_explicit_dates'] 
+            ? max(1, (int) ceil((strtotime($filters['date_fin']) - strtotime($filters['date_debut'])) / 86400))
+            : null;
         $travelers = max(1, (int) $filters['nb_adultes'] + (int) $filters['nb_enfants']);
         $search = $this->normalizeValue((string) $filters['search']);
         $continent = $this->normalizeValue((string) $filters['continent']);
@@ -776,7 +988,7 @@ final class DestinationController extends AbstractController
                 }
             }
 
-            return !$filters['has_explicit_dates'] || (int) ($card['duration_days'] ?? 1) <= $requestedDays;
+            return $requestedDays === null || (int) ($card['duration_days'] ?? 1) <= $requestedDays;
         }));
     }
 
@@ -950,14 +1162,41 @@ final class DestinationController extends AbstractController
             $priceAmount = 1290.0;
         }
 
-        $travelMood = $this->resolveTravelMood($normalized, $continent);
-        $durationDays = $this->resolveDurationDays($normalized, $continent, $priceAmount);
-        $audiences = $this->resolveAudienceProfiles($normalized, $travelMood);
-        $interests = $this->resolveInterests($normalized, $travelMood, $continent);
-        $maxTravelers = $this->resolveMaxTravelers($audiences, $travelMood);
-        $bestPeriod = $this->resolveBestPeriod($continent);
+        $travelMood = trim((string) ($destination['travel_mood'] ?? ''));
+        if ($travelMood === '') {
+            $travelMood = $this->resolveTravelMood($normalized, $continent);
+        }
+
+        $durationDays = max(0, (int) ($destination['duration_days'] ?? 0));
+        if ($durationDays <= 0) {
+            $durationDays = $this->resolveDurationDays($normalized, $continent, $priceAmount);
+        }
+
+        $audiences = $this->parseStringList($destination['audience_tags_list'] ?? $destination['audience_tags'] ?? []);
+        if ($audiences === []) {
+            $audiences = $this->resolveAudienceProfiles($normalized, $travelMood);
+        }
+
+        $interests = $this->parseStringList($destination['interest_tags_list'] ?? $destination['interest_tags'] ?? []);
+        if ($interests === []) {
+            $interests = $this->resolveInterests($normalized, $travelMood, $continent);
+        }
+
+        $maxTravelers = max(0, (int) ($destination['max_travelers'] ?? 0));
+        if ($maxTravelers <= 0) {
+            $maxTravelers = $this->resolveMaxTravelers($audiences, $travelMood);
+        }
+
+        $bestPeriod = trim((string) ($destination['best_period'] ?? ''));
+        if ($bestPeriod === '') {
+            $bestPeriod = $this->resolveBestPeriod($continent);
+        }
+
         $highlights = $this->resolveHighlights($name, $country, $travelMood, $interests);
-        $imagePath = $this->resolveDestinationImagePath($normalized, $continent);
+        $imagePath = trim((string) ($destination['cover_image_path'] ?? ''));
+        if ($imagePath === '') {
+            $imagePath = $this->resolveDestinationImagePath($normalized, $continent);
+        }
 
         return [
             ...$destination,
@@ -982,6 +1221,8 @@ final class DestinationController extends AbstractController
             'payment_path' => '/paiement',
             'contact_path' => '/contact',
             'search_blob' => $this->normalizeValue($name.' '.$country.' '.$continent.' '.$description.' '.implode(' ', $interests)),
+            'workflow_place' => (string) ($destination['workflow_place'] ?? 'published'),
+            'quality_score' => (float) ($destination['quality_score'] ?? 0),
         ];
     }
 
@@ -1093,13 +1334,13 @@ final class DestinationController extends AbstractController
     private function resolveMaxTravelers(array $audiences, string $travelMood): int
     {
         if (in_array('Famille', $audiences, true)) {
-            return $travelMood === 'Plage' ? 5 : 6;
+            return $travelMood === 'Plage' ? 8 : 10;
         }
         if (in_array('Business', $audiences, true)) {
             return 3;
         }
 
-        return 2;
+        return 4;
     }
 
     private function resolveBestPeriod(string $continent): string

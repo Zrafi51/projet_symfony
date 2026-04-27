@@ -37,6 +37,7 @@
                 <p>Destination: <strong>{{ facture.destination|default('') }}</strong></p>
                 <p>Periode: <strong>{{ facture.date_debut|default('') }} - {{ facture.date_fin|default('') }}</strong></p>
                 <p>Voyageurs: <strong>{{ facture.nb_personnes|default(1) }}</strong></p>
+                <p>Statut: <strong>{{ facture.statut|default('GENEREE') }}</strong></p>
             </div>
         </section>
 
@@ -50,7 +51,7 @@
 
         <section class="invoice-notes">
             <h3>Notes</h3>
-            <p>Paiement effectue avec succes. Cette facture est valable comme justificatif de paiement.</p>
+            <p>Cette vue sert a la validation finale avant envoi. Si le client possede un compte actif avec le meme email, la facture apparaitra aussi dans son dashboard.</p>
         </section>
 
         <footer class="invoice-preview-footer">
@@ -63,6 +64,14 @@
     </article>
 
     <div class="invoice-preview-actions">
+        {% if canSend|default(false) and facture.id|default(0) > 0 %}
+            <form method="post" action="/admin/factures/{{ facture.id }}/send" style="display: inline;">
+                <button type="submit" class="payment-button payment-button-green">Envoyer au client</button>
+            </form>
+        {% endif %}
+        {% if invoiceMailtoUrl is not empty %}
+            <a href="{{ invoiceMailtoUrl }}" class="payment-button payment-button-blue">Ouvrir l email</a>
+        {% endif %}
         <button type="button" onclick="window.print()" class="payment-button payment-button-primary">Imprimer / PDF</button>
         <a href="/admin/factures" class="payment-button payment-button-secondary">Retour</a>
     </div>
