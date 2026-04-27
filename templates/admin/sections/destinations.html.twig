@@ -134,6 +134,7 @@
                 {% for sponsor in sponsors %}
                     {% set sponsorName = sponsor.nom|default('Sponsor')|trim %}
                     {% set sponsorActive = sponsor.est_actif|default(1) == 1 %}
+                    {% set sponsorUid = sponsor.sponsor_uid|default('')|trim %}
                     {% set sponsorLogoUrl = sponsor.logo_display_url|default(sponsor.logo_url|default(''))|trim %}
                     {% set sponsorLogoStorageCopy = sponsor.logo_mime_type|default('')|trim is not empty ? 'image stockee en base' : (sponsorLogoUrl is not empty ? sponsorLogoUrl : 'logo indisponible') %}
                     <article class="admin-destinations-sponsor-row">
@@ -153,10 +154,14 @@
                             <span class="admin-status-pill {{ sponsorActive ? 'admin-status-pill-green' : 'admin-status-pill-orange' }}">
                                 {{ sponsorActive ? 'ACTIF' : 'INACTIF' }}
                             </span>
-                            <form method="post" action="/admin/destinations/sponsors/{{ sponsor.id|default(0) }}/delete" onsubmit="return confirm('Supprimer ce sponsor de la Home ?');">
-                                <input type="hidden" name="section" value="destinations">
-                                <button class="admin-card-action admin-card-action-red" type="submit">Supprimer</button>
-                            </form>
+                            {% if sponsorUid is not empty %}
+                                <form method="post" action="/admin/destinations/sponsors/{{ sponsorUid }}/delete" onsubmit="return confirm('Supprimer ce sponsor de la Home ?');">
+                                    <input type="hidden" name="section" value="destinations">
+                                    <button class="admin-card-action admin-card-action-red" type="submit">Supprimer</button>
+                                </form>
+                            {% else %}
+                                <button class="admin-card-action admin-card-action-red" type="button" disabled>ID sponsor manquant</button>
+                            {% endif %}
                         </div>
                     </article>
                 {% endfor %}

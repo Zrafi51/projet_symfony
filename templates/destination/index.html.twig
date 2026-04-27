@@ -6,6 +6,8 @@
 
 {% block content %}
 {% set visibleCount = '%02d'|format(destinations|length) %}
+{% set topDestination = destinations|first %}
+{% set topQualityScore = topDestination.quality_score|default(0) %}
 {% set interestOptions = [
     {name: 'Plage', icon: '&#127958;'},
     {name: 'Aventure', icon: '&#9968;'},
@@ -102,6 +104,34 @@
                         <input type="date" id="destinationsReturnFilter" class="destinations-filter-input">
                     </label>
 
+                    <label class="destinations-filter-group destinations-filter-group-travel-type">
+                        <span class="destinations-filter-label">&#129523; Type de voyage</span>
+                        <span class="destinations-filter-control">
+                            <select id="destinationsTravelTypeFilter" class="destinations-filter-input">
+                                {% for travelType in destinationFilterMeta.travel_types|default(['Tous les profils', 'Famille', 'Couple', 'Solo', 'Business']) %}
+                                    <option value="{{ travelType }}">
+                                        {% if travelType == 'Tous les profils' %}
+                                            &#128100; {{ travelType }}
+                                        {% elseif travelType == 'Famille' %}
+                                            &#128104;&#8205;&#128105;&#8205;&#128103;&#8205;&#128102; {{ travelType }}
+                                        {% elseif travelType == 'Couple' %}
+                                            &#128145; {{ travelType }}
+                                        {% elseif travelType == 'Solo' %}
+                                            &#129489; {{ travelType }}
+                                        {% elseif travelType == 'Business' %}
+                                            &#128188; {{ travelType }}
+                                        {% else %}
+                                            {{ travelType }}
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <span class="destinations-select-chevron" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
+                        </span>
+                    </label>
+
                     <label class="destinations-filter-group destinations-filter-group-travelers">
                         <span class="destinations-filter-label">&#128101; Adultes</span>
                         <span class="destinations-filter-control">
@@ -151,15 +181,39 @@
         </div>
 
         <section class="destinations-showcase about-scroll-reveal about-scroll-reveal-right" data-scroll-reveal>
+            <div class="destinations-architecture-strip">
+                <article class="destinations-architecture-card">
+                    <span class="destinations-architecture-kicker">Bundle</span>
+                    <strong>Workflow Symfony</strong>
+                    <p>Le catalogue client n'affiche que les destinations publiees via le workflow.</p>
+                </article>
+                <article class="destinations-architecture-card">
+                    <span class="destinations-architecture-kicker">Metier</span>
+                    <strong>Score qualite {{ topQualityScore }}/100</strong>
+                    <p>Les cartes sont triees par priorite catalogue puis par qualite metier.</p>
+                </article>
+                <article class="destinations-architecture-card">
+                    <span class="destinations-architecture-kicker">Profils</span>
+                    <strong>{{ destinationFilterMeta.travel_types|default([])|length - 1 }} types de voyage</strong>
+                    <p>Famille, Couple, Solo et Business pilotent les voyageurs et la selection.</p>
+                </article>
+                <article class="destinations-architecture-card">
+                    <span class="destinations-architecture-kicker">Bundle</span>
+                    <strong>KNP Paginator</strong>
+                    <p>Visible dans l'ecran de gestion des destinations pour paginer le catalogue.</p>
+                </article>
+            </div>
+
             <div class="destinations-showcase-header">
                 <div class="destinations-showcase-copy-wrap">
                     <p class="destinations-showcase-kicker">Collections Signature</p>
                     <h2 class="destinations-showcase-title">Tous vos packs visibles d'un seul regard</h2>
-                    <p class="destinations-showcase-copy" id="destinationsSummaryCopy">Explorez l'ensemble des offres premium sans carousel ni bloc cache, avec les memes grands reperes visuels que la page Java.</p>
+                    <p class="destinations-showcase-copy" id="destinationsSummaryCopy">Explorez l'ensemble des offres premium sans carousel ni bloc cache, avec workflow de publication, score qualite et profils voyageurs visibles comme preuves du metier avance.</p>
                     <div class="destinations-showcase-pills">
-                        <span class="destinations-showcase-pill">Affichage complet</span>
-                        <span class="destinations-showcase-pill">Prix transparents</span>
-                        <span class="destinations-showcase-pill">IA sur mesure</span>
+                        <span class="destinations-showcase-pill">Workflow publie</span>
+                        <span class="destinations-showcase-pill">Score qualite</span>
+                        <span class="destinations-showcase-pill">Profils voyageurs</span>
+                        <span class="destinations-showcase-pill">IA Flask</span>
                     </div>
                 </div>
                 <div class="destinations-showcase-badge">
@@ -210,7 +264,11 @@
                                 <span aria-hidden="true">&#9829;</span>
                             </button>
                             <div class="destinations-card-headline">
-                                <span class="destinations-card-badge">{{ destination.travel_mood }}</span>
+                                <div class="destinations-card-badge-row">
+                                    <span class="destinations-card-badge">{{ destination.travel_mood }}</span>
+                                    <span class="destinations-card-badge destinations-card-badge-alt">Publiee</span>
+                                    <span class="destinations-card-badge destinations-card-badge-score">Score {{ destination.quality_score|default(0) }}/100</span>
+                                </div>
                                 <h3 class="destinations-card-title">{{ destination.destination_name }}</h3>
                                 <p class="destinations-card-subtitle">{{ destination.subtitle }}</p>
                             </div>
@@ -226,6 +284,14 @@
                                 <div class="destinations-card-meta-right">
                                     <span class="destinations-card-label">Duree</span>
                                     <strong class="destinations-card-duration">{{ destination.duration_label }}</strong>
+                                </div>
+                            </div>
+                            <div class="destinations-card-audience">
+                                <span class="destinations-card-label">Profils</span>
+                                <div class="destinations-card-tags destinations-card-tags-audience">
+                                    {% for audience in destination.audiences|default([])|slice(0, 3) %}
+                                        <span class="destinations-card-tag destinations-card-tag-audience">{{ audience }}</span>
+                                    {% endfor %}
                                 </div>
                             </div>
                             <div class="destinations-card-tags">

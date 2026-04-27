@@ -1,0 +1,238 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ title|default(formTitle|default('Destination')) }}{% endblock %}
+
+{% block content %}
+    {% set workflowMeta = workflowMeta|default({label: 'Brouillon', description: 'Destination en preparation.', tone: 'info'}) %}
+    {% set readiness = readiness|default({score: 0, label: 'Fiche a enrichir', blockers: [], strengths: []}) %}
+    {% set managementCatalog = managementCatalog|default({items: [], current_page: 1, page_count: 1, has_previous: false, has_next: false, previous_page: 1, next_page: 1, total_count: 0}) %}
+    {% set currentDestinationId = currentDestinationId|default(0) %}
+    {% set pagerBasePath = currentDestinationId > 0 ? path('app_destination_edit', {'id': currentDestinationId}) : path('app_destination_new') %}
+
+    <section class="crud-hero crud-hero--editor">
+        <div>
+            <p class="hero-kicker">Destination Workflow</p>
+            <h2>{{ formTitle|default('Destination') }}</h2>
+            <p>Symfony Workflow pilote maintenant le cycle de vie de la destination, et KnpPaginatorBundle aide a naviguer dans le catalogue de gestion sans casser ton architecture PDO.</p>
+        </div>
+        <div class="crud-hero__aside">
+            <a class="button button-outline-light" href="/destinations">Voir le catalogue public</a>
+        </div>
+    </section>
+
+    <section class="editor-panel">
+        <div class="section-head">
+            <div>
+                <h3>Etat metier</h3>
+                <p>{{ workflowMeta.description|default('Cycle de vie destination.') }}</p>
+            </div>
+            <div class="tag-pill">
+                <span>{{ workflowMeta.label|default('Brouillon') }}</span>
+                <strong>{{ readiness.score|default(0) }}/100</strong>
+            </div>
+        </div>
+
+        <div class="stack">
+            <div class="module-card">
+                <h3>Readiness</h3>
+                <p>{{ readiness.label|default('Fiche a enrichir') }}</p>
+
+                {% if readiness.blockers|default([]) is not empty %}
+                    <div class="alert alert-error">
+                        {% for blocker in readiness.blockers %}
+                            <p>{{ blocker }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if readiness.strengths|default([]) is not empty %}
+                    <div class="alert alert-success">
+                        {% for strength in readiness.strengths %}
+                            <p>{{ strength }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if errors|default([]) is not empty %}
+                <div class="alert alert-error">
+                    {% for error in errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form class="stack" method="post" action="{{ action|default('') }}">
+                <input type="hidden" name="workflow_place" value="{{ destination.workflow_place|default('draft') }}">
+
+                <div class="form-grid">
+                    <label>
+                        <span>Nom</span>
+                        <input type="text" name="nom" value="{{ destination.nom|default('') }}" required>
+                    </label>
+
+                    <label>
+                        <span>Slug</span>
+                        <input type="text" name="slug" value="{{ destination.slug|default('') }}" placeholder="genere automatiquement si vide">
+                    </label>
+                </div>
+
+                <div class="form-grid">
+                    <label>
+                        <span>Pays</span>
+                        <input type="text" name="pays" value="{{ destination.pays|default('') }}" required>
+                    </label>
+
+                    <label>
+                        <span>Continent</span>
+                        <input type="text" name="continent" value="{{ destination.continent|default('') }}" required>
+                    </label>
+                </div>
+
+                <div class="form-grid">
+                    <label>
+                        <span>Prix de base</span>
+                        <input type="number" step="0.01" min="0" name="prix_base" value="{{ destination.prix_base|default(0) }}" required>
+                    </label>
+
+                    <label>
+                        <span>Priorite catalogue</span>
+                        <input type="number" min="0" max="100" name="catalog_priority" value="{{ destination.catalog_priority|default(50) }}">
+                    </label>
+                </div>
+
+                <div class="form-grid">
+                    <label>
+                        <span>Ambiance voyage</span>
+                        <input type="text" name="travel_mood" value="{{ destination.travel_mood|default('') }}" placeholder="Plage, Aventure, City Trip...">
+                    </label>
+
+                    <label>
+                        <span>Meilleure periode</span>
+                        <input type="text" name="best_period" value="{{ destination.best_period|default('') }}" placeholder="Avril a octobre">
+                    </label>
+                </div>
+
+                <div class="form-grid">
+                    <label>
+                        <span>Duree (jours)</span>
+                        <input type="number" min="1" name="duration_days" value="{{ destination.duration_days|default(7) }}">
+                    </label>
+
+                    <label>
+                        <span>Capacite max voyageurs</span>
+                        <input type="number" min="1" name="max_travelers" value="{{ destination.max_travelers|default(4) }}">
+                    </label>
+                </div>
+
+                <div class="form-grid">
+                    <label>
+                        <span>Image couverture</span>
+                        <input type="text" name="cover_image_path" value="{{ destination.cover_image_path|default('') }}" placeholder="/assets/... ou https://...">
+                    </label>
+
+                    <label>
+                        <span>Video hero</span>
+                        <input type="text" name="hero_video_path" value="{{ destination.hero_video_path|default('') }}" placeholder="/assets/...mp4 ou https://...">
+                    </label>
+                </div>
+
+                <div class="form-grid">
+                    <label>
+                        <span>Tags interets</span>
+                        <input type="text" name="interest_tags" value="{{ destination.interest_tags|default('') }}" placeholder="Plage, Nature, Gastronomie">
+                    </label>
+
+                    <label>
+                        <span>Profils voyageurs</span>
+                        <input type="text" name="audience_tags" value="{{ destination.audience_tags|default('') }}" placeholder="Famille, Couple, Solo">
+                    </label>
+                </div>
+
+                <label>
+                    <span>Description</span>
+                    <textarea name="description" rows="7">{{ destination.description|default('') }}</textarea>
+                </label>
+
+                <div class="section-head">
+                    <div>
+                        <h3>Actions</h3>
+                        <p>Enregistre d'abord, puis utilise les transitions disponibles selon l'etat courant.</p>
+                    </div>
+                </div>
+
+                <div class="stack">
+                    <button class="button" type="submit">{{ submitLabel|default('Enregistrer') }}</button>
+
+                    {% for transition in workflowTransitions|default([]) %}
+                        <button class="button {{ transition.tone == 'danger' ? 'button-danger' : '' }}" type="submit" name="workflow_transition" value="{{ transition.name }}">
+                            {{ transition.label }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </form>
+
+            {% if currentDestinationId > 0 %}
+                <form method="post" action="{{ path('app_destination_delete', {'id': currentDestinationId}) }}" onsubmit="return confirm('Supprimer cette destination ?');">
+                    <button class="button button-danger" type="submit">Supprimer la destination</button>
+                </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="editor-panel">
+        <div class="section-head">
+            <div>
+                <h3>Catalogue de gestion</h3>
+                <p>{{ managementCatalog.total_count|default(0) }} destination(s) chargee(s). Les plus urgentes apparaissent en haut grace a la priorite et au workflow.</p>
+            </div>
+            <div class="tag-pill">
+                <span>Page {{ managementCatalog.current_page|default(1) }}</span>
+                <strong>/ {{ managementCatalog.page_count|default(1) }}</strong>
+            </div>
+        </div>
+
+        {% if managementCatalog.items|default([]) is empty %}
+            <div class="empty-panel">
+                <h3>Aucune destination</h3>
+                <p>Commence par creer une premiere fiche destination.</p>
+            </div>
+        {% else %}
+            <div class="stack">
+                {% for entry in managementCatalog.items %}
+                    <article class="module-card {{ entry.is_current|default(false) ? 'module-card--dark' : '' }}">
+                        <div class="section-head {{ entry.is_current|default(false) ? 'section-head--light' : '' }}">
+                            <div>
+                                <h3>{{ entry.nom|default('Destination') }}</h3>
+                                <p>{{ entry.pays|default('Pays') }}{% if entry.continent|default('') %} - {{ entry.continent }}{% endif %}</p>
+                            </div>
+                            <div class="tag-pill">
+                                <span>{{ entry.workflow_meta.label|default('Brouillon') }}</span>
+                                <strong>{{ entry.quality_score|default(0) }}/100</strong>
+                            </div>
+                        </div>
+
+                        <p>Prix: {{ entry.prix_base|default(0) }} TND | Priorite: {{ entry.catalog_priority|default(50) }} | Voyageurs max: {{ entry.max_travelers|default(4) }}</p>
+
+                        <div class="stack">
+                            <a class="button {{ entry.is_current|default(false) ? 'button-outline-light' : '' }}" href="{{ path('app_destination_edit', {'id': entry.id}) }}?catalog_page={{ managementCatalog.current_page|default(1) }}">
+                                {{ entry.is_current|default(false) ? 'En cours d edition' : 'Editer' }}
+                            </a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+
+            <div class="section-head">
+                <div class="stack">
+                    {% if managementCatalog.has_previous|default(false) %}
+                        <a class="button" href="{{ pagerBasePath }}?catalog_page={{ managementCatalog.previous_page|default(1) }}">Page precedente</a>
+                    {% endif %}
+                    {% if managementCatalog.has_next|default(false) %}
+                        <a class="button" href="{{ pagerBasePath }}?catalog_page={{ managementCatalog.next_page|default(1) }}">Page suivante</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

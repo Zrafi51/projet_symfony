@@ -876,14 +876,14 @@ final class AdminDashboardController extends AbstractController
         return $this->redirectBackToDashboard($request, 'destinations');
     }
 
-    #[Route('/admin/destinations/sponsors/{id}/delete', name: 'app_admin_destinations_sponsor_delete', methods: ['POST'])]
-    public function deleteDestinationsSponsor(int $id, Request $request): RedirectResponse
+    #[Route('/admin/destinations/sponsors/{uid}/delete', name: 'app_admin_destinations_sponsor_delete', methods: ['POST'])]
+    public function deleteDestinationsSponsor(string $uid, Request $request): RedirectResponse
     {
         if ($redirect = $this->ensureAdminAccess($request)) {
             return $redirect;
         }
 
-        if (!$this->adminDashboardRepository->deleteSponsor($id)) {
+        if (!$this->adminDashboardRepository->deleteSponsorByUid($uid)) {
             $request->getSession()->getFlashBag()->add('error', 'Impossible de supprimer ce sponsor.');
 
             return $this->redirectBackToDashboard($request, 'destinations');
