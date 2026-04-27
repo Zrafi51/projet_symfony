@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title|default('Projet Symfony') }}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/about.css">
+    <link rel="stylesheet" href="/currency.css">
+    {% for stylesheet in stylesheets|default([]) %}
+        <link rel="stylesheet" href="{{ stylesheet }}">
+    {% endfor %}
+</head>
+{% set currentPath = path|default('/') %}
+{% set databaseError = databaseError|default(null) %}
+{% set statusMessage = statusMessage|default(null) %}
+{% set errorMessage = errorMessage|default(null) %}
+{% set currentUser = current_user(currentUser|default(null)) %}
+{% set photoUrl = currentUser.photo_display_url|default(currentUser.photo_url|default(''))|trim %}
+{% set fullName = (currentUser.prenom|default('') ~ ' ' ~ currentUser.nom|default(''))|trim %}
+{% set displayName = currentUser.display_name|default(fullName) %}
+{% if displayName == '' %}
+    {% set displayName = currentUser.email|default('Voyageur') %}
+{% endif %}
+{% set accountButtonName = currentUser.prenom|default('')|trim %}
+{% if accountButtonName == '' %}
+    {% set accountButtonName = currentUser.nom|default('')|trim %}
+{% endif %}
+{% if accountButtonName == '' %}
+    {% set accountButtonName = displayName %}
+{% endif %}
+{% if '@' in accountButtonName %}
+    {% set accountButtonName = accountButtonName|split('@')|first %}
+{% endif %}
+{% set userInitial = (currentUser.prenom|default(displayName)|slice(0, 1))|upper %}
+{% set userRole = currentUser.role|default('USER')|upper %}
+{% set isAdminUser = userRole == 'ADMIN' %}
+{% set accountDashboardPath = isAdminUser ? '/admin/dashboard' : '/dashboard' %}
+{% set accountProfilePath = isAdminUser ? '/admin/settings' : '/profile' %}
+{% set accountProfileTitle = isAdminUser ? 'Parametres admin' : 'Gerer profil' %}
+{% set accountProfileSubtitle = isAdminUser ? 'Securite et informations du compte' : 'Vos informations personnelles' %}
+{% set accountDashboardTitle = isAdminUser ? 'Dashboard admin' : 'Dashboard' %}
+{% set accountDashboardSubtitle = isAdminUser ? 'Piloter la plateforme' : 'Votre espace client' %}
+<body class="home-page-body">
+    <div class="home-noise" aria-hidden="true"></div>
+
+    <header class="about-navbar-shell" id="aboutNavbar">
+        <div class="about-navbar">
+            <div class="about-navbar-brand">
+                <a href="/" class="about-logo-shell" aria-label="Retour a l accueil">
+                    <canvas id="aboutLogoCanvas" width="200" height="60"></canvas>
+                </a>
+            </div>
+
+            <nav class="about-navbar-links" aria-label="Navigation principale">
+                <a href="/" class="about-nav-button {% if currentPath == '/' %}about-nav-button-active{% endif %}">Accueil</a>
+                <a href="/destinations" class="about-nav-button {% if currentPath starts with '/destinations' %}about-nav-button-active{% endif %}">Destinations</a>
+                <a href="/about" class="about-nav-button {% if currentPath starts with '/about' %}about-nav-button-active{% endif %}">A propos</a>
+                <a href="/forum" class="about-nav-button {% if currentPath starts with '/forum' %}about-nav-button-active{% endif %}">Forum</a>
+                <a href="/weather" class="about-nav-button {% if currentPath starts with '/weather' %}about-nav-button-active{% endif %}">Météo</a>
+                <a href="/contact" class="about-nav-button {% if currentPath starts with '/contact' %}about-nav-button-active{% endif %}">Contact</a>
+            </nav>
+
+            <div class="about-navbar-actions">
+                <button type="button" class="about-search-button" id="aboutSearchToggle" aria-label="Ouvrir la recherche">&#128269;</button>
+                {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'homeCurrencySwitcher'} %}
+            {% if currentUser %}
+                <div class="account-menu-wrapper" data-account-menu-wrapper>
+                    <button class="connexion-button account-button account-button-logged-in" type="button" data-account-menu-button aria-controls="homeAccountMenu" aria-expanded="false">
+                        <div class="account-button-content">
+                            <div class="account-button-avatar">
+                                {% if photoUrl %}
+                                    <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-avatar-image">
+                                {% else %}
+                                    <span class="account-button-avatar-label">{{ userInitial }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="account-button-name">{{ accountButtonName }}</span>
+                            <span class="account-button-arrow">&#9662;</span>
+                        </div>
+                    </button>
+                    <div class="navbar-account-menu" id="homeAccountMenu" data-account-menu hidden>
+                        <div class="account-menu-header">
+                            <div class="account-menu-header-avatar">
+                                {% if photoUrl %}
+                                    <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-menu-avatar-image">
+                                {% else %}
+                                    <span class="account-menu-header-avatar-label">{{ userInitial }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="account-menu-header-text">
+                                <div class="account-menu-header-name">{{ displayName }}</div>
+                                <div class="account-menu-header-email">{{ currentUser.email|default('Compte utilisateur') }}</div>
+                            </div>
+                        </div>
+                        <div class="account-menu-separator"></div>
+                        <a href="{{ accountProfilePath }}" class="account-menu-item">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-profile"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">{{ accountProfileTitle }}</div>
+                                <div class="account-menu-subtitle">{{ accountProfileSubtitle }}</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="/weather" class="account-menu-item {% if currentPath starts with '/weather' %}menu-active{% endif %}">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-weather">🌤️</div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Météo</div>
+                                <div class="account-menu-subtitle">Prévisions météo mondiales</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="/forum" class="account-menu-item">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-forum"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Forum</div>
+                                <div class="account-menu-subtitle">Discussions voyageurs</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="{{ accountDashboardPath }}" class="account-menu-item">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-dashboard"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">{{ accountDashboardTitle }}</div>
+                                <div class="account-menu-subtitle">{{ accountDashboardSubtitle }}</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <div class="account-menu-separator"></div>
+                        <a href="/logout" class="account-menu-item account-menu-item-danger">
+                            <div class="account-menu-icon-shell account-menu-icon-shell-danger"><div class="account-menu-icon-shape account-menu-icon-shape-danger account-menu-icon-logout"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title account-menu-title-danger">Deconnexion</div>
+                                <div class="account-menu-subtitle account-menu-subtitle-danger">Fermer la session active</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <a class="connexion-button" href="/login">Connexion</a>
+            {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="about-search-overlay" id="aboutSearchOverlay" style="display: none;" aria-hidden="true">
+        <div class="about-search-panel" id="aboutSearchPanel" role="dialog" aria-modal="true" aria-labelledby="aboutSearchTitle">
+            <div class="about-search-header">
+                <div>
+                    <h2 id="aboutSearchTitle">Rechercher votre voyage</h2>
+                    <p>Retrouvez une destination, une date et le nombre de voyageurs en quelques clics.</p>
+                </div>
+                <button type="button" class="about-search-close" id="aboutSearchClose" aria-label="Fermer la recherche">&#10005;</button>
+            </div>
+
+            <div class="about-search-grid">
+                <label class="about-search-field">
+                    <span>Destination</span>
+                    <input type="search" id="aboutSearchDestination" placeholder="Ou voulez-vous aller ?">
+                </label>
+                <label class="about-search-field">
+                    <span>Date</span>
+                    <input type="date" id="aboutSearchDate">
+                </label>
+                <label class="about-search-field">
+                    <span>Voyageurs</span>
+                    <select id="aboutSearchTravelers">
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="about-search-popular">
+                <span>Destinations populaires :</span>
+                <button type="button" class="about-search-chip" data-destination="Bali">Bali</button>
+                <button type="button" class="about-search-chip" data-destination="Maldives">Maldives</button>
+                <button type="button" class="about-search-chip" data-destination="Tokyo">Tokyo</button>
+                <button type="button" class="about-search-chip" data-destination="Santorini">Santorini</button>
+            </div>
+
+            <p class="about-search-message" id="aboutSearchMessage"></p>
+            <button type="button" class="about-search-submit" id="aboutSearchSubmit">&#128269; Rechercher mon voyage</button>
+        </div>
+    </div>
+
+    <div class="page-backdrop"></div>
+    <div class="shell">
+
+        {% if databaseError is not empty %}
+            <div class="alert alert-error">{{ databaseError }}</div>
+        {% endif %}
+
+        {% if statusMessage is not empty %}
+            <div class="alert alert-success">{{ statusMessage }}</div>
+        {% endif %}
+
+        {% if errorMessage is not empty %}
+            <div class="alert alert-error">{{ errorMessage }}</div>
+        {% endif %}
+
+        <main class="page">
+            {% block content %}
+                {{ legacy_content|default('')|raw }}
+            {% endblock %}
+        </main>
+    </div>
+    <style>
+        /* Status dot improvements for weather page */
+        .status-dot-weather {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+        
+        .status-dot-weather::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        
+        /* Account menu improvements */
+        .account-menu-icon-shape {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .account-menu-item.menu-active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+            border-left: 3px solid #8B5CF6;
+        }
+        
+        .account-menu-item.menu-active .account-menu-icon-shape {
+            transform: scale(1.1);
+        }
+        
+        .account-menu-item-chevron {
+            transition: transform 0.3s ease;
+        }
+        
+        .account-menu-item:hover .account-menu-item-chevron {
+            transform: translateX(3px);
+        }
+    </style>
+    <script src="/app.js"></script>
+    <script src="/about.js"></script>
+    <script src="/currency.js"></script>
+</body>
+</html>
