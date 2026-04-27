@@ -1,0 +1,227 @@
+﻿{% extends 'social/base.html.twig' %}
+
+{% block title %}Nouvelle Story - Forum Voyage{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-1">
+                    <i class="fas fa-bolt me-2 text-warning"></i>Nouvelle Story
+                </h3>
+                <p class="small text-muted mb-4">
+                    Visible par vos abonné(e)s pendant 24&nbsp;heures puis supprimée automatiquement.
+                </p>
+
+                <form method="post" action="{{ path('forum_story_new') }}" enctype="multipart/form-data"
+                      class="story-new-form" novalidate>
+                    <input type="hidden" name="_token" value="{{ csrf_token('story_new') }}">
+
+                    {# ——— Media picker (image OR video) ——— #}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Image ou vidéo</label>
+                        <label for="storyMediaInput" class="upload-zone">
+                            <input type="file" id="storyMediaInput" name="media"
+                                   accept="image/*,video/*" class="d-none story-media-input">
+                            <div class="upload-zone-content story-media-placeholder">
+                                <i class="fas fa-cloud-upload-alt fa-2x mb-2 text-primary"></i>
+                                <p class="mb-1 fw-semibold small">Cliquez pour choisir</p>
+                                <small class="text-muted">JPEG/PNG/GIF/WebP (8 Mo max) ou MP4/WebM/MOV (50 Mo max)</small>
+                            </div>
+                        </label>
+                        <div class="story-preview mt-2"></div>
+                    </div>
+
+                    {# ——— Music picker (same playlist as posts) ——— #}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">
+                            <i class="fas fa-music me-1 text-success"></i>Musique de fond
+                            <span class="text-muted">(facultatif)</span>
+                        </label>
+                        <select name="music_id" class="form-select form-select-sm story-music-select">
+                            <option value="">Aucune musique</option>
+                            {% for m in musicTracks %}
+                                <option value="{{ m.id }}" data-url="{{ asset('uploads/music/' ~ m.filename) }}">
+                                    {{ m.displayName }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <audio controls preload="metadata" class="w-100 mt-2 d-none story-music-preview" style="height:36px;"></audio>
+
+                        {# Trim UI — appears only when a track is chosen. The slider
+                           picks the START of the clip; the clip length is fixed by
+                           the story kind (15 s for image, video duration otherwise). #}
+                        <div class="story-music-trim d-none mt-2 p-2 rounded bg-light border">
+                            <div class="small fw-semibold mb-1">
+                                <i class="fas fa-cut me-1 text-primary"></i>Choisir le passage
+                            </div>
+                            <div class="small text-muted mb-2 story-trim-help">
+                                Déplacez le curseur pour choisir le début de l'extrait.
+                            </div>
+                            <input type="range" min="0" max="0" step="0.1" value="0"
+                                   class="form-range story-trim-range" name="music_start">
+                            <div class="d-flex justify-content-between small text-muted mt-1">
+                                <span>Début : <strong class="story-trim-start">0:00</strong></span>
+                                <span>Fin : <strong class="story-trim-end">0:00</strong></span>
+                                <span>Durée : <strong class="story-trim-dur">—</strong></span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2 story-trim-play">
+                                <i class="fas fa-play me-1"></i>Écouter cet extrait
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger d-none mt-3 mb-0 py-2 px-3 story-submit-error" role="alert">
+                        <i class="fas fa-exclamation-circle me-1"></i><span></span>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary flex-fill fw-semibold">
+                            <i class="fas fa-paper-plane me-2"></i>Publier la story
+                        </button>
+                        <a href="{{ path('forum_forum') }}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var IMAGE_STORY_SECONDS = 15; // image stories display for 15 s
+
+    var form      = document.querySelector('.story-new-form');
+    if (!form) return;
+    var input     = form.querySelector('.story-media-input');
+    var preview   = form.querySelector('.story-preview');
+    var musicSel  = form.querySelector('.story-music-select');
+    var musicPrev = form.querySelector('.story-music-preview');
+    var errBox    = form.querySelector('.story-submit-error');
+
+    // Trim UI
+    var trimBox   = form.querySelector('.story-music-trim');
+    var trimRange = form.querySelector('.story-trim-range');
+    var trimStart = form.querySelector('.story-trim-start');
+    var trimEnd   = form.querySelector('.story-trim-end');
+    var trimDur   = form.querySelector('.story-trim-dur');
+    var trimPlay  = form.querySelector('.story-trim-play');
+
+    // Current story kind/duration — drives clip length.
+    var storyKind  = null;            // 'image' | 'video'
+    var storyDur   = IMAGE_STORY_SECONDS; // seconds
+    var trackDur   = 0;               // total length of the selected music track
+
+    function showError(msg) { errBox.querySelector('span').textContent = msg; errBox.classList.remove('d-none'); }
+    function clearError()   { errBox.classList.add('d-none'); }
+
+    function fmt(s) {
+        s = Math.max(0, Math.round(s));
+        var m = Math.floor(s / 60), r = s % 60;
+        return m + ':' + (r < 10 ? '0' : '') + r;
+    }
+
+    function refreshTrimLabels() {
+        var start = parseFloat(trimRange.value) || 0;
+        var end   = Math.min(trackDur, start + storyDur);
+        trimStart.textContent = fmt(start);
+        trimEnd.textContent   = fmt(end);
+        trimDur.textContent   = fmt(storyDur) + ' s';
+        // The max start is trackDur - storyDur (so the clip always fits).
+        var maxStart = Math.max(0, trackDur - storyDur);
+        trimRange.max = maxStart.toFixed(1);
+        if (parseFloat(trimRange.value) > maxStart) {
+            trimRange.value = maxStart.toFixed(1);
+        }
+    }
+
+    // ===== Media preview — also measures video duration =====
+    input.addEventListener('change', function () {
+        preview.innerHTML = '';
+        var f = this.files && this.files[0];
+        if (!f) return;
+        var url = URL.createObjectURL(f);
+        var el;
+        if (f.type.startsWith('video/')) {
+            storyKind = 'video';
+            el = document.createElement('video');
+            el.src = url; el.controls = true; el.playsInline = true;
+            el.style.maxWidth = '100%'; el.style.maxHeight = '360px'; el.style.borderRadius = '10px';
+            el.addEventListener('loadedmetadata', function () {
+                storyDur = Math.max(1, el.duration || IMAGE_STORY_SECONDS);
+                refreshTrimLabels();
+            });
+        } else {
+            storyKind = 'image';
+            storyDur = IMAGE_STORY_SECONDS;
+            el = document.createElement('img');
+            el.src = url;
+            el.style.maxWidth = '100%'; el.style.maxHeight = '360px'; el.style.borderRadius = '10px';
+            refreshTrimLabels();
+        }
+        preview.appendChild(el);
+    });
+
+    // ===== Music preview + trim =====
+    if (musicSel && musicPrev) {
+        musicSel.addEventListener('change', function () {
+            var opt = this.options[this.selectedIndex];
+            var url = opt ? opt.getAttribute('data-url') : null;
+            if (url) {
+                musicPrev.src = url;
+                musicPrev.classList.remove('d-none');
+                trimBox.classList.remove('d-none');
+                trimRange.value = 0;
+                // Wait for metadata so we know the full track length.
+                musicPrev.addEventListener('loadedmetadata', function once() {
+                    trackDur = musicPrev.duration || 0;
+                    refreshTrimLabels();
+                    musicPrev.removeEventListener('loadedmetadata', once);
+                });
+            } else {
+                musicPrev.pause(); musicPrev.removeAttribute('src');
+                musicPrev.classList.add('d-none');
+                trimBox.classList.add('d-none');
+                trackDur = 0;
+            }
+        });
+    }
+
+    if (trimRange) {
+        trimRange.addEventListener('input', refreshTrimLabels);
+    }
+
+    // "Écouter cet extrait" — plays from the chosen start for the story duration.
+    if (trimPlay && musicPrev) {
+        var stopper = null;
+        trimPlay.addEventListener('click', function () {
+            if (!musicPrev.src) return;
+            if (stopper) { clearTimeout(stopper); stopper = null; }
+            musicPrev.currentTime = parseFloat(trimRange.value) || 0;
+            musicPrev.play();
+            stopper = setTimeout(function () {
+                try { musicPrev.pause(); } catch (_) {}
+            }, Math.max(500, storyDur * 1000));
+        });
+    }
+
+    // ===== Submit validation — no media = no go =====
+    form.addEventListener('submit', function (e) {
+        clearError();
+        if (!input.files || input.files.length === 0) {
+            e.preventDefault();
+            showError('Veuillez choisir une image ou une vidéo.');
+            return;
+        }
+        // Blank `music_start` when no music is selected, so the server doesn't
+        // try to store an offset pointing at a non-existent track.
+        if (!musicSel.value) {
+            trimRange.name = ''; // drops it from the POST payload
+        } else {
+            trimRange.name = 'music_start';
+        }
+    });
+})();
+</script>
+{% endblock %}

@@ -7,6 +7,11 @@ parameters:
     app.templates_dir: '%kernel.project_dir%/templates'
     app.remember_me_cookie_name: 'easytravel_device_key'
     app.remember_me_duration_days: 30
+    posts_directory: '%kernel.project_dir%/public/uploads/posts'
+    profiles_directory: '%kernel.project_dir%/public/uploads/profiles'
+    videos_directory: '%kernel.project_dir%/public/uploads/videos'
+    music_directory: '%kernel.project_dir%/public/uploads/music'
+    stories_directory: '%kernel.project_dir%/public/uploads/stories'
 
 services:
     # default configuration for services in *this* file

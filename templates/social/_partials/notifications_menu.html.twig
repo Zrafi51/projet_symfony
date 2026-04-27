@@ -1,0 +1,159 @@
+{#
+    Navbar notification bell + dropdown — embedded via
+    {{ render(controller('App\\\\Controller\\\\NotificationController::menu')) }}
+    from base.html.twig.
+
+    The container <div> is the dropdown root. The button shows a red badge with the
+    count of actionable items (pending follow requests + non-self events).
+#}
+{% set totalCount = events|length %}
+{# Newest event timestamp — used client-side to decide whether the badge has
+   "new" items the current user hasn't opened yet. #}
+{% set newestTs = 0 %}
+{% for ev in events %}
+    {% if ev.when and ev.when.timestamp > newestTs %}
+        {% set newestTs = ev.when.timestamp %}
+    {% endif %}
+{% endfor %}
+<div class="dropdown" data-notif-root>
+    <button class="btn btn-outline-light btn-sm position-relative" type="button"
+            data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+            title="Notifications"
+            data-notif-bell
+            data-newest-ts="{{ newestTs }}">
+        <i class="fas fa-bell"></i>
+        {% if totalCount > 0 %}
+            <span class="badge bg-danger rounded-pill position-absolute notif-badge"
+                  style="top:2px;right:-4px;font-size:.6em;">
+                {{ totalCount > 99 ? '99+' : totalCount }}
+            </span>
+        {% endif %}
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 340px; max-height: 420px; overflow-y: auto;">
+        <li class="dropdown-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-bell me-2"></i>Notifications</span>
+            {% if pendingCount > 0 %}
+                <a href="{{ path('forum_follow_requests') }}" class="small text-decoration-none">
+                    {{ pendingCount }} demande{{ pendingCount > 1 ? 's' : '' }}
+                </a>
+            {% endif %}
+        </li>
+        <li><hr class="dropdown-divider my-1"></li>
+
+        {% if events is empty %}
+            <li><div class="dropdown-item-text text-muted small text-center py-3">
+                <i class="fas fa-inbox me-1"></i> Aucune notification
+            </div></li>
+        {% else %}
+            {% for ev in events %}
+                {% set photo = photoMap[ev.actor] ?? null %}
+                {% if ev.type == 'follow_request' %}
+                    {% set href = path('forum_follow_requests') %}
+                    {% set icon = 'fa-user-clock text-warning' %}
+                    {% set label = 'a demandé à vous suivre' %}
+                {% elseif ev.type == 'new_follower' %}
+                    {% set href = path('forum_user_profile', {username: ev.actor}) %}
+                    {% set icon = 'fa-user-plus text-primary' %}
+                    {% set label = 'a commencé à vous suivre' %}
+                {% elseif ev.type == 'like' %}
+                    {% set href = path('forum_post_show', {id: ev.postId}) %}
+                    {% set icon = 'fa-heart text-danger' %}
+                    {% set label = 'a aimé votre publication' %}
+                {% elseif ev.type == 'comment' %}
+                    {% set href = path('forum_post_show', {id: ev.postId}) %}
+                    {% set icon = 'fa-comment text-info' %}
+                    {% set label = 'a commenté votre publication' %}
+                {% elseif ev.type == 'reaction' %}
+                    {% set href = path('forum_post_show', {id: ev.postId}) %}
+                    {% set icon = 'fa-face-smile text-warning' %}
+                    {% set label = 'a réagi ' ~ (ev.emoji ?? '') ~ ' à votre publication' %}
+                {% elseif ev.type == 'new_post' %}
+                    {% set href = path('forum_post_show', {id: ev.postId}) %}
+                    {% set icon = 'fa-image text-success' %}
+                    {% set label = 'a publié une nouvelle publication' %}
+                {% elseif ev.type == 'story_view' %}
+                    {# Link to your own story viewer so you can re-open it
+                       and see the "Vues" footer grow over time. #}
+                    {% set href = path('forum_story_view', {username: app.user.username, return: 'profile'}) %}
+                    {% set icon = 'fa-eye text-info' %}
+                    {% set label = 'a vu votre story' %}
+                {% elseif ev.type == 'story_like' %}
+                    {% set href = path('forum_story_view', {username: app.user.username, return: 'profile'}) %}
+                    {% set icon = 'fa-heart text-danger' %}
+                    {% set label = 'a aimé votre story' %}
+                {% else %}
+                    {% set href = '#' %}
+                    {% set icon = 'fa-circle' %}
+                    {% set label = '' %}
+                {% endif %}
+                <li>
+                    <a href="{{ href }}" class="dropdown-item d-flex align-items-start gap-2 py-2">
+                        <div class="position-relative flex-shrink-0">
+                            {% if photo %}
+                                <img src="{{ asset('uploads/profiles/' ~ photo) }}"
+                                     class="rounded-circle" width="36" height="36"
+                                     style="object-fit:cover" alt="avatar">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
+                                     style="width:36px;height:36px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                            <span class="position-absolute bg-white rounded-circle d-flex align-items-center justify-content-center"
+                                  style="bottom:-2px;right:-2px;width:16px;height:16px;font-size:.6em;">
+                                <i class="fas {{ icon }}"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1" style="white-space: normal;">
+                            <div class="small">
+                                <strong>{{ ev.actor }}</strong> {{ label }}
+                            </div>
+                            {% if ev.preview is defined and ev.preview %}
+                                <div class="small text-muted fst-italic">« {{ ev.preview }} »</div>
+                            {% endif %}
+                            {% if ev.when %}
+                                <div class="small text-muted">
+                                    <i class="far fa-clock me-1"></i>{{ ev.when|date('d/m/Y H:i') }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                </li>
+            {% endfor %}
+        {% endif %}
+    </ul>
+</div>
+
+<script>
+(function () {
+    // Hide the red badge once the user has opened the dropdown and seen the
+    // events. "Seen" is tracked in localStorage as the unix timestamp of the
+    // newest event they've viewed — if a newer event comes in, the badge
+    // re-appears on next page load.
+    var root = document.currentScript.previousElementSibling;
+    while (root && !(root.hasAttribute && root.hasAttribute('data-notif-root'))) {
+        root = root.previousElementSibling;
+    }
+    if (!root) return;
+    var bell = root.querySelector('[data-notif-bell]');
+    var badge = root.querySelector('.notif-badge');
+    if (!bell) return;
+
+    var STORAGE_KEY = 'notifLastSeenTs';
+    var newest = parseInt(bell.getAttribute('data-newest-ts') || '0', 10);
+    var seen = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+
+    // If everything currently shown has already been seen, hide the badge now.
+    if (badge && newest > 0 && newest <= seen) {
+        badge.classList.add('d-none');
+    }
+
+    // On opening the dropdown, mark the newest event as seen and hide the badge.
+    bell.addEventListener('show.bs.dropdown', function () {
+        if (newest > 0) {
+            localStorage.setItem(STORAGE_KEY, String(newest));
+        }
+        if (badge) badge.classList.add('d-none');
+    });
+})();
+</script>

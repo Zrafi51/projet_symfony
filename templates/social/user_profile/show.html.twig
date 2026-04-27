@@ -1,0 +1,351 @@
+﻿{% extends 'social/base.html.twig' %}
+
+{% block title %}@{{ profileUser.username }} — Forum Voyage{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        {# =========== Profile header (Instagram-style) =========== #}
+        <div class="user-profile-header d-flex flex-column flex-md-row align-items-center gap-4 py-4 px-3 mb-4">
+            {# Back arrow — returns to where the user came from (feed, search
+               results, messages…). Falls back to the feed if there's no
+               referrer in the browser history. #}
+            <button type="button" id="profileBackBtn"
+                    class="btn btn-light rounded-circle shadow-sm align-self-start"
+                    style="width:42px;height:42px;" title="Retour">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+
+            {# Avatar — wrapped with a clickable gradient ring when the user
+               has an active story we're allowed to see (Instagram-style).
+               Clicking opens the same modal as on the feed (js-open-story). #}
+            <div class="user-profile-avatar-wrap flex-shrink-0">
+                {% set avatarInner %}
+                    {% if profileUser.profilePhotoPath %}
+                        <img src="{{ asset('uploads/profiles/' ~ profileUser.profilePhotoPath) }}"
+                             class="user-profile-avatar" alt="{{ profileUser.username }}">
+                    {% else %}
+                        <div class="user-profile-avatar bg-gradient d-flex align-items-center justify-content-center"
+                             style="background:linear-gradient(135deg,#667eea,#764ba2);">
+                            <span class="text-white fw-bold display-4">{{ profileUser.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                {% endset %}
+
+                {% if canSeeStory %}
+                    <a href="{{ path('forum_story_view', {username: profileUser.username, return: 'user'}) }}"
+                       class="js-open-story d-inline-block" title="Voir la story"
+                       style="padding:3px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">
+                        <span style="display:inline-block;padding:3px;border-radius:50%;background:#fff;">
+                            {{ avatarInner }}
+                        </span>
+                    </a>
+                {% else %}
+                    {{ avatarInner }}
+                {% endif %}
+            </div>
+
+            {# Info + stats + actions #}
+            <div class="flex-grow-1 text-center text-md-start">
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                    <h3 class="mb-0 fw-normal">
+                        {{ profileUser.username }}
+                        {% if profileUser.isPrivate %}
+                            <i class="fas fa-lock text-muted ms-1" style="font-size:0.75em;" title="Compte privé"></i>
+                        {% endif %}
+                    </h3>
+
+                    {% if isSelf %}
+                        <a href="{{ path('forum_profile_edit') }}" class="btn btn-light btn-sm fw-semibold">
+                            <i class="fas fa-pen me-1"></i>Modifier le profil
+                        </a>
+                    {% else %}
+                        <button type="button"
+                                class="btn btn-sm fw-semibold follow-toggle-btn
+                                       {% if followState == 'following' %}btn-light{% elseif followState == 'pending' %}btn-warning{% else %}btn-primary{% endif %}"
+                                data-username="{{ profileUser.username }}"
+                                data-state="{{ followState }}">
+                            {% if followState == 'following' %}
+                                <i class="fas fa-check me-1"></i>Suivi
+                            {% elseif followState == 'pending' %}
+                                <i class="fas fa-hourglass-half me-1"></i>En attente
+                            {% else %}
+                                <i class="fas fa-user-plus me-1"></i>{{ profileUser.isPrivate ? 'Demander à suivre' : 'Suivre' }}
+                            {% endif %}
+                        </button>
+                        {% if followState == 'following' %}
+                            <a href="{{ path('forum_messages_thread', {username: profileUser.username}) }}"
+                               class="btn btn-light btn-sm fw-semibold">
+                                <i class="fas fa-paper-plane me-1"></i>Message
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                {# Stats row — follower/following counts clickable to the
+                   full list (privacy is enforced server-side). #}
+                <div class="d-flex flex-wrap gap-4 mb-3 justify-content-center justify-content-md-start">
+                    <div><strong>{{ stats.posts }}</strong> <span class="text-muted">publications</span></div>
+                    <a href="{{ path('forum_follow_list', {username: profileUser.username, kind: 'followers'}) }}"
+                       class="text-decoration-none text-reset">
+                        <strong>{{ stats.followers }}</strong> <span class="text-muted">abonné(e)s</span>
+                    </a>
+                    <a href="{{ path('forum_follow_list', {username: profileUser.username, kind: 'following'}) }}"
+                       class="text-decoration-none text-reset">
+                        <strong>{{ stats.following }}</strong> <span class="text-muted">suivi(e)s</span>
+                    </a>
+                </div>
+
+                {# Bio — sits just under the stats row, ABOVE the privacy
+                   check so it's visible to visitors of a private account too
+                   (Instagram behaviour). #}
+                {% if profileUser.bio %}
+                    <p class="mb-2 fw-semibold" style="word-break:break-word;">
+                        {{ profileUser.bio }}
+                    </p>
+                {% endif %}
+
+                {% if profileUser.email %}
+                    <div class="text-muted small"><i class="far fa-envelope me-1"></i>{{ profileUser.email }}</div>
+                {% endif %}
+                <div class="text-muted small">
+                    <i class="far fa-calendar me-1"></i>Membre depuis {{ profileUser.createdAt|date('M Y') }}
+                </div>
+            </div>
+        </div>
+
+        {# =========== Posts grid =========== #}
+        {% if canSeePosts %}
+            {% if posts|length > 0 %}
+                <div class="user-profile-grid">
+                    {% for p in posts %}
+                        {% set firstMedia = null %}
+                        {% if p.cheminPhoto %}
+                            {% set firstMedia = {'type': 'image', 'url': asset('uploads/posts/' ~ p.cheminPhoto)} %}
+                        {% elseif p.videos|length > 0 %}
+                            {% set firstMedia = {'type': 'video', 'url': asset('uploads/videos/' ~ (p.videos|first).filename)} %}
+                        {% endif %}
+                        <button type="button"
+                                class="user-profile-tile position-relative p-0 border-0 bg-dark"
+                                data-post-id="{{ p.id }}"
+                                aria-label="Ouvrir la publication">
+                            {% if firstMedia %}
+                                {% if firstMedia.type == 'image' %}
+                                    <img src="{{ firstMedia.url }}" alt="" loading="lazy">
+                                {% else %}
+                                    <video src="{{ firstMedia.url }}" muted playsinline preload="metadata"></video>
+                                    <i class="fas fa-play-circle position-absolute top-50 start-50 translate-middle text-white" style="font-size:2.5rem;text-shadow:0 2px 10px rgba(0,0,0,.6);"></i>
+                                {% endif %}
+                            {% else %}
+                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-image text-muted fs-1"></i>
+                                </div>
+                            {% endif %}
+
+                            {# Multi-media indicator (top-right). #}
+                            {% set mediaCount = p.images|length + p.videos|length %}
+                            {% if mediaCount > 1 %}
+                                <i class="fas fa-clone position-absolute text-white" style="top:8px;right:8px;text-shadow:0 2px 6px rgba(0,0,0,.7);"></i>
+                            {% elseif p.videos|length == 1 and not p.cheminPhoto %}
+                                <i class="fas fa-video position-absolute text-white" style="top:8px;right:8px;text-shadow:0 2px 6px rgba(0,0,0,.7);"></i>
+                            {% endif %}
+
+                            {# Hover overlay: likes + comments. #}
+                            <div class="user-profile-tile-overlay d-flex align-items-center justify-content-center gap-3 text-white">
+                                <span><i class="fas fa-heart me-1"></i>{{ p.likes }}</span>
+                                <span><i class="fas fa-comment me-1"></i>{{ p.comments|length }}</span>
+                            </div>
+                        </button>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="far fa-images fs-1"></i>
+                    <p class="mt-3">Aucune publication pour le moment.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            {# Private + not followed: lock screen. #}
+            <div class="text-center py-5">
+                <i class="fas fa-lock fs-1 text-muted"></i>
+                <h5 class="mt-3 fw-bold">Ce compte est privé</h5>
+                <p class="text-muted">Suivez @{{ profileUser.username }} pour voir ses publications.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{# =========== Swipeable modal (Instagram-style) =========== #}
+<div class="modal fade user-post-modal" id="userPostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <button type="button" class="btn-close btn-close-white position-absolute"
+                    style="top:-2.5rem;right:0;z-index:10;" data-bs-dismiss="modal"></button>
+            <div class="row g-0">
+                <div class="col-md-7 bg-black d-flex align-items-center justify-content-center position-relative"
+                     style="min-height:60vh;">
+                    {# Media carousel injected by JS #}
+                    <div id="userPostMedia" class="w-100 position-relative"></div>
+                </div>
+                <div class="col-md-5 bg-white d-flex flex-column" style="max-height:85vh;">
+                    <div class="p-3 border-bottom d-flex align-items-center gap-2">
+                        {% if profileUser.profilePhotoPath %}
+                            <img src="{{ asset('uploads/profiles/' ~ profileUser.profilePhotoPath) }}"
+                                 class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">
+                        {% else %}
+                            <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
+                                  style="width:36px;height:36px;">{{ profileUser.username|first|upper }}</span>
+                        {% endif %}
+                        <strong>{{ profileUser.username }}</strong>
+                    </div>
+                    <div id="userPostDescription" class="p-3 border-bottom overflow-auto" style="max-height:35vh;"></div>
+                    <div class="mt-auto p-3 border-top d-flex align-items-center gap-3 text-muted">
+                        <span><i class="fas fa-heart text-danger me-1"></i><span id="userPostLikes">0</span></span>
+                        <span><i class="fas fa-comment text-info me-1"></i><span id="userPostComments">0</span></span>
+                        {# Just closes the modal — the profile page is already
+                           open behind it, so there's nowhere else to go. #}
+                        <button type="button" class="ms-auto btn btn-sm btn-outline-secondary"
+                                data-bs-dismiss="modal">
+                            <i class="fas fa-arrow-left me-1"></i>Retour
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function () {
+    // ===== Header back-arrow — returns to where the user came from =====
+    // If the browser has a meaningful referrer in THIS tab (history.length > 1)
+    // we use history.back(); otherwise fall back to the home feed.
+    var backBtn = document.getElementById('profileBackBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', function () {
+            if (window.history.length > 1 && document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = {{ path('forum_forum')|json_encode|raw }};
+            }
+        });
+    }
+
+    // ===== Follow toggle button =====
+    document.querySelectorAll('.follow-toggle-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (btn.dataset.busy === '1') return;
+            btn.dataset.busy = '1';
+            fetch('/social/u/' + encodeURIComponent(btn.dataset.username) + '/follow', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.error) { alert(data.error); return; }
+                btn.dataset.state = data.state;
+                var icon, label, cls;
+                if (data.state === 'following') {
+                    icon = 'fa-check'; label = 'Suivi'; cls = 'btn-light';
+                } else if (data.state === 'pending') {
+                    icon = 'fa-hourglass-half'; label = 'En attente'; cls = 'btn-warning';
+                } else {
+                    icon = 'fa-user-plus'; label = 'Suivre'; cls = 'btn-primary';
+                }
+                btn.className = 'btn btn-sm fw-semibold follow-toggle-btn ' + cls;
+                btn.innerHTML = '<i class="fas ' + icon + ' me-1"></i>' + label;
+                // Update the follower count on the stats row.
+                var stats = document.querySelectorAll('.d-flex.flex-wrap.gap-4 strong');
+                if (stats.length >= 2) { stats[1].textContent = data.followers; }
+            })
+            .finally(function () { btn.dataset.busy = '0'; });
+        });
+    });
+
+    // ===== Post modal (Instagram-style) =====
+    var allPosts = {{ posts|map(p => {
+        id: p.id,
+        description: p.description,
+        likes: p.likes,
+        comments: p.comments|length,
+        media: (p.images|map(i => {'type':'image','url':asset('uploads/posts/' ~ i.filename)})|merge(
+                p.videos|map(v => {'type':'video','url':asset('uploads/videos/' ~ v.filename)})))
+    })|json_encode|raw }};
+
+    var modalEl = document.getElementById('userPostModal');
+    if (!modalEl || allPosts.length === 0) return;
+    var bsModal = new bootstrap.Modal(modalEl);
+
+    function renderPost(idx) {
+        var post = allPosts[idx];
+        var media = post.media;
+        var mediaEl = document.getElementById('userPostMedia');
+        var html = '';
+        if (media.length === 0) {
+            html = '<div class="text-white text-center py-5"><i class="fas fa-image fs-1"></i></div>';
+        } else {
+            var carId = 'umCar' + idx;
+            html = '<div id="' + carId + '" class="carousel slide" data-bs-interval="false" data-bs-touch="true">';
+            html += '<div class="carousel-inner">';
+            media.forEach(function (m, i) {
+                html += '<div class="carousel-item ' + (i === 0 ? 'active' : '') + '">';
+                if (m.type === 'image') {
+                    html += '<img src="' + m.url + '" class="d-block w-100" style="max-height:85vh;object-fit:contain;background:#000;">';
+                } else {
+                    html += '<video src="' + m.url + '" class="d-block w-100" style="max-height:85vh;object-fit:contain;background:#000;pointer-events:none;" muted playsinline loop autoplay></video>';
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+            if (media.length > 1) {
+                html += '<button class="carousel-control-prev" type="button" data-bs-target="#' + carId + '" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>';
+                html += '<button class="carousel-control-next" type="button" data-bs-target="#' + carId + '" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>';
+            }
+            html += '</div>';
+        }
+        // Navigation between posts (prev/next post).
+        html += '<button class="um-post-prev" type="button" ' + (idx === 0 ? 'disabled' : '') + '><i class="fas fa-chevron-left"></i></button>';
+        html += '<button class="um-post-next" type="button" ' + (idx === allPosts.length - 1 ? 'disabled' : '') + '><i class="fas fa-chevron-right"></i></button>';
+        mediaEl.innerHTML = html;
+        document.getElementById('userPostDescription').textContent = post.description;
+        document.getElementById('userPostLikes').textContent = post.likes;
+        document.getElementById('userPostComments').textContent = post.comments;
+        // The "Retour" button inside the modal is now a pure close-button
+        // (data-bs-dismiss="modal") — no link to update here.
+
+        var prev = mediaEl.querySelector('.um-post-prev');
+        var next = mediaEl.querySelector('.um-post-next');
+        if (prev) prev.addEventListener('click', function () { if (idx > 0) renderPost(idx - 1); });
+        if (next) next.addEventListener('click', function () { if (idx < allPosts.length - 1) renderPost(idx + 1); });
+    }
+
+    document.querySelectorAll('.user-profile-tile').forEach(function (tile) {
+        tile.addEventListener('click', function () {
+            var pid = parseInt(tile.dataset.postId, 10);
+            var idx = allPosts.findIndex(function (p) { return p.id === pid; });
+            if (idx < 0) return;
+            renderPost(idx);
+            bsModal.show();
+        });
+    });
+
+    // Deep-link via ?post=X
+    {% if initialPostId %}
+        var targetId = {{ initialPostId|e('js') }};
+        var tid = parseInt(targetId, 10);
+        var idx = allPosts.findIndex(function (p) { return p.id === tid; });
+        if (idx >= 0) { renderPost(idx); bsModal.show(); }
+    {% endif %}
+
+    // Keyboard navigation inside the modal.
+    document.addEventListener('keydown', function (e) {
+        if (!modalEl.classList.contains('show')) return;
+        if (e.key === 'ArrowRight') { var n = modalEl.querySelector('.um-post-next'); if (n && !n.disabled) n.click(); }
+        if (e.key === 'ArrowLeft')  { var p = modalEl.querySelector('.um-post-prev'); if (p && !p.disabled) p.click(); }
+    });
+})();
+</script>
+{% endblock %}

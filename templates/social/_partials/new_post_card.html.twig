@@ -1,0 +1,432 @@
+﻿{# Reusable "Nouvelle Publication" card used by the home feed AND Mon Profil.
+   The body collapses; clicking the "+" header expands it.
+
+   Required context:
+     postForm      : the PostType form view
+     musicUrlsById : { id: '/uploads/music/filename' } for the music-picker preview
+     collapseId    : unique DOM id (so two includes on the same page don't clash)
+     returnTo      : 'forum' or 'profile' — where to bounce back after submit #}
+{% set collapseId = collapseId|default('newPostPanel') %}
+{% set returnTo   = returnTo|default('forum') %}
+
+<div class="card shadow-sm border-0 mb-4 new-post-card">
+    <div class="card-body p-0">
+        <button class="btn w-100 text-start d-flex align-items-center justify-content-between py-3 px-3 new-post-toggle"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#{{ collapseId }}"
+                aria-expanded="false"
+                aria-controls="{{ collapseId }}">
+            <span class="fw-bold d-flex align-items-center">
+                <span class="new-post-plus rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2"
+                      style="width:32px;height:32px;">
+                    <i class="fas fa-plus"></i>
+                </span>
+                Nouvelle Publication
+            </span>
+            <i class="fas fa-chevron-down new-post-chevron"></i>
+        </button>
+    </div>
+
+    <div class="collapse" id="{{ collapseId }}">
+        <div class="card-body pt-0 border-top">
+            <form action="{{ path('forum_post_new') }}" method="post" enctype="multipart/form-data"
+                  class="new-post-form" data-collapse-id="{{ collapseId }}" novalidate>
+                {# Tells the server whether to redirect to forum or profile. #}
+                <input type="hidden" name="return_to" value="{{ returnTo }}">
+
+                {{ form_row(postForm.description) }}
+                {# Inline error slot for client-side banned-word validation.
+                   The server still validates on submit (defense in depth). #}
+                <div class="alert alert-danger d-none mt-2 mb-0 py-2 px-3 new-post-desc-error" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i><span></span>
+                </div>
+
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-secondary ai-suggest-btn" type="button" data-type="description">
+                        <i class="fas fa-magic me-1"></i>Suggestion IA
+                    </button>
+
+                    {# Panneau de demande personnalisée — s'ouvre au clic sur le bouton ci-dessus.
+                       L'utilisateur décrit ce qu'il veut (sujet, ton, phrase à développer…)
+                       et l'IA rédige une description adaptée. #}
+                    <div class="ai-prompt-panel d-none mt-2 p-2 border rounded bg-light">
+                        <label class="form-label small fw-semibold mb-1 d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-robot me-1 text-primary"></i>Que veux-tu que l'IA écrive&nbsp;?</span>
+                            <button type="button" class="btn-close btn-close-sm ai-prompt-close" aria-label="Fermer" style="font-size:.65rem;"></button>
+                        </label>
+                        <textarea class="form-control form-control-sm ai-prompt-input" rows="2"
+                                  placeholder="Décris ton intention. Ex : « Développe ça en poétique », « Une phrase courte et drôle », « Corrige les fautes »…"></textarea>
+                        {# Keyword chips — tap to inject a tone/length keyword. The system prompt + server-side
+                           intent detection treat each one as an explicit style constraint. #}
+                        <div class="ai-prompt-chips d-flex flex-wrap gap-1 mt-2" data-ai-chips>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="poétique" title="Style imagé, sensoriel">✨ Poétique</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="court">📌 Court</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="long et détaillé">📖 Long</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="drôle">😄 Drôle</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="romantique">💞 Romantique</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="aventure">🧗 Aventure</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="nostalgique">🍂 Nostalgique</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="contemplatif">🌅 Contemplatif</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 ai-chip" data-chip="développe ça">➕ Développe</button>
+                            <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 ai-chip" data-chip="corrige les fautes" title="Ne change que les fautes, garde tes mots">✏️ Corriger</button>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary ai-prompt-cancel">
+                                Annuler
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary ai-prompt-generate">
+                                <i class="fas fa-magic me-1"></i>Générer
+                            </button>
+                        </div>
+                        <div class="small text-muted mt-1 ai-prompt-hint d-none">
+                            <i class="fas fa-spinner fa-spin me-1"></i>L'IA rédige ta description…
+                        </div>
+                    </div>
+                </div>
+
+                {# Modern upload zone — images #}
+                <div class="mb-2 mt-3">
+                    <label class="form-label fw-semibold small mb-1">Images</label>
+                    <label for="imageFilesInput-{{ collapseId }}" class="upload-zone new-post-upload-zone">
+                        <input type="file"
+                               id="imageFilesInput-{{ collapseId }}"
+                               name="{{ postForm.imageFiles.vars.full_name }}"
+                               multiple
+                               class="d-none new-post-image-input">
+                        <div class="upload-zone-content">
+                            <i class="fas fa-cloud-upload-alt fa-2x mb-2 text-primary"></i>
+                            <p class="mb-1 fw-semibold small">Cliquez ou glissez vos images ici</p>
+                            <small class="text-muted">Image(s) ou vidéo(s) — au moins un des deux (max 100 images)</small>
+                        </div>
+                    </label>
+                    <div class="upload-preview-grid mt-2 new-post-image-preview"></div>
+                </div>
+
+                {# Videos #}
+                <div class="mb-2 mt-3">
+                    <label class="form-label fw-semibold small mb-1">Vidéos <span class="text-muted">(facultatif)</span></label>
+                    <label for="videoFilesInput-{{ collapseId }}" class="upload-zone upload-zone-compact new-post-video-zone">
+                        <input type="file"
+                               id="videoFilesInput-{{ collapseId }}"
+                               name="{{ postForm.videoFiles.vars.full_name }}"
+                               multiple
+                               class="d-none new-post-video-input">
+                        <div class="upload-zone-content">
+                            <i class="fas fa-video fa-2x mb-2 text-danger"></i>
+                            <p class="mb-1 fw-semibold small">Ajouter des vidéos</p>
+                            <small class="text-muted">MP4, WebM, MOV (max 10, 50 MB chacune)</small>
+                        </div>
+                    </label>
+                    <div class="upload-preview-grid mt-2 new-post-video-preview"></div>
+                </div>
+
+                {# Music picker #}
+                <div class="mb-2 mt-3">
+                    <label class="form-label fw-semibold small mb-1">
+                        <i class="fas fa-music me-1 text-success"></i>Musique de fond <span class="text-muted">(facultatif)</span>
+                    </label>
+                    {{ form_widget(postForm.music, {'attr': {'class': 'form-select form-select-sm new-post-music-select'}}) }}
+                    <audio controls preload="none" class="w-100 mt-2 d-none new-post-music-preview" style="height:36px;"></audio>
+                </div>
+
+                <input type="hidden" name="post[_token]" value="{{ csrf_token('post') }}">
+
+                {# Submit-time error (missing media / missing description / etc.).
+                   Shown inline above the Publier button — no page refresh, no top-of-page flash. #}
+                <div class="alert alert-danger d-none mt-3 mb-0 py-2 px-3 new-post-submit-error" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i><span></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-3 fw-semibold new-post-submit-btn">
+                    <i class="fas fa-paper-plane me-2"></i>Publier
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var scope = document.currentScript.previousElementSibling; // .new-post-card
+    while (scope && !scope.classList.contains('new-post-card')) {
+        scope = scope.previousElementSibling;
+    }
+    if (!scope) return;
+
+    var form            = scope.querySelector('.new-post-form');
+    var descInput       = form ? form.querySelector('[id$="_description"], [name$="[description]"]') : null;
+    var descError       = form ? form.querySelector('.new-post-desc-error') : null;
+    var imageInput      = scope.querySelector('.new-post-image-input');
+    var imagePreview    = scope.querySelector('.new-post-image-preview');
+    var videoInput      = scope.querySelector('.new-post-video-input');
+    var videoPreview    = scope.querySelector('.new-post-video-preview');
+    var videoZone       = scope.querySelector('.new-post-video-zone');
+    var musicSelect     = scope.querySelector('.new-post-music-select');
+    var musicPreview    = scope.querySelector('.new-post-music-preview');
+    var toggleBtn       = scope.querySelector('.new-post-toggle');
+    var chevron         = scope.querySelector('.new-post-chevron');
+    var collapsePanel   = scope.querySelector('.collapse');
+
+    // Chevron rotates with the collapse state.
+    if (collapsePanel) {
+        collapsePanel.addEventListener('show.bs.collapse', function () {
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+        });
+        collapsePanel.addEventListener('hide.bs.collapse', function () {
+            if (chevron) chevron.style.transform = 'rotate(0deg)';
+        });
+    }
+
+    // ===== Client-side banned-words check — inline red message, no refresh =====
+    // The same list is enforced server-side by NoBannedWordsValidator — this is
+    // for UX only (instant feedback).
+    var BANNED_WORDS = {{ banned_words()|json_encode|raw }};
+
+    function findBanned(text) {
+        if (!text) return null;
+        var lower = text.toLowerCase();
+        for (var i = 0; i < BANNED_WORDS.length; i++) {
+            if (lower.indexOf(BANNED_WORDS[i].toLowerCase()) !== -1) {
+                return BANNED_WORDS[i];
+            }
+        }
+        return null;
+    }
+
+    function showDescError(msg) {
+        if (!descError) return;
+        descError.querySelector('span').textContent = msg;
+        descError.classList.remove('d-none');
+        if (descInput) descInput.classList.add('is-invalid');
+    }
+    function clearDescError() {
+        if (!descError) return;
+        descError.classList.add('d-none');
+        if (descInput) descInput.classList.remove('is-invalid');
+    }
+
+    // Live-check while typing — clears/sets the error immediately.
+    if (descInput) {
+        descInput.addEventListener('input', function () {
+            var hit = findBanned(descInput.value);
+            if (hit) {
+                showDescError('Mot interdit détecté : « ' + hit + ' ». Merci de reformuler.');
+            } else {
+                clearDescError();
+            }
+        });
+    }
+
+    var submitError = form ? form.querySelector('.new-post-submit-error') : null;
+
+    function showSubmitError(msg) {
+        if (!submitError) return;
+        submitError.querySelector('span').textContent = msg;
+        submitError.classList.remove('d-none');
+    }
+    function clearSubmitError() {
+        if (!submitError) return;
+        submitError.classList.add('d-none');
+    }
+
+    // ===== Tile manager: reorderable + removable previews =====
+    // Rather than relying on the browser's opaque FileList (which can't be
+    // reordered or have individual items removed), we keep our own ordered
+    // array per input and rebuild a DataTransfer right before submit. The
+    // server then receives files in the exact order the user chose — the
+    // position the <input> sees is the position Doctrine stores.
+    function makeTileManager(input, grid, kind) {
+        if (!input || !grid) return null;
+        var items = []; // { file, url }
+        var dragSrc = null;
+
+        function render() {
+            grid.innerHTML = '';
+            items.forEach(function (it, idx) {
+                var tile = document.createElement('div');
+                tile.className = 'upload-preview-tile position-relative';
+                tile.setAttribute('draggable', 'true');
+                tile.dataset.idx = idx;
+                tile.style.cursor = 'grab';
+
+                var media;
+                if (kind === 'image') {
+                    media =
+                        '<img src="' + it.url + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">';
+                } else {
+                    media =
+                        '<video src="' + it.url + '" muted playsinline style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></video>' +
+                        '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">' +
+                            '<i class="fas fa-play-circle text-white fs-3" style="text-shadow:0 2px 8px rgba(0,0,0,0.6);"></i>' +
+                        '</div>';
+                }
+
+                tile.innerHTML =
+                    media +
+                    // Order badge top-left — so the user can see what will be 1st / 2nd…
+                    '<span class="badge bg-primary position-absolute" style="top:4px;left:4px;">' + (idx + 1) + '</span>' +
+                    // Remove × top-right
+                    '<button type="button" class="btn btn-sm btn-danger position-absolute tile-remove"' +
+                        ' style="top:4px;right:4px;width:24px;height:24px;padding:0;line-height:1;border-radius:50%;"' +
+                        ' aria-label="Retirer">&times;</button>' +
+                    '<small class="d-block text-truncate mt-1">' + (it.file.name || '') + '</small>';
+
+                // Remove this tile.
+                tile.querySelector('.tile-remove').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    try { URL.revokeObjectURL(it.url); } catch (_) {}
+                    items.splice(idx, 1);
+                    syncInput();
+                    render();
+                });
+
+                // HTML5 drag-and-drop reorder.
+                tile.addEventListener('dragstart', function (e) {
+                    dragSrc = idx;
+                    tile.style.opacity = '0.4';
+                    try { e.dataTransfer.effectAllowed = 'move'; } catch (_) {}
+                });
+                tile.addEventListener('dragend', function () {
+                    tile.style.opacity = '';
+                    dragSrc = null;
+                });
+                tile.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    try { e.dataTransfer.dropEffect = 'move'; } catch (_) {}
+                });
+                tile.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (dragSrc === null || dragSrc === idx) return;
+                    var moved = items.splice(dragSrc, 1)[0];
+                    items.splice(idx, 0, moved);
+                    syncInput();
+                    render();
+                });
+
+                grid.appendChild(tile);
+            });
+        }
+
+        function syncInput() {
+            // Rebuild the FileList on the <input> so the server-side order
+            // matches what the user sees.
+            try {
+                var dt = new DataTransfer();
+                items.forEach(function (it) { dt.items.add(it.file); });
+                input.files = dt.files;
+            } catch (_) {}
+        }
+
+        function addFiles(fileList) {
+            Array.from(fileList || []).forEach(function (f) {
+                items.push({ file: f, url: URL.createObjectURL(f) });
+            });
+            syncInput();
+            render();
+        }
+
+        // When the user picks files via the input, append (don't replace) so a
+        // second "Choose files" click can add more, not wipe the existing
+        // selection. We clear the native selection afterwards so picking the
+        // same file again still fires 'change'.
+        input.addEventListener('change', function () {
+            var picked = Array.from(this.files || []);
+            if (!picked.length) return;
+            // Avoid double-add: if the input already holds exactly our current
+            // items (post-DataTransfer sync), only treat the extras as new.
+            if (picked.length === items.length &&
+                picked.every(function (f, i) { return f === items[i].file; })) {
+                return; // no new files (this was the post-syncInput reflection)
+            }
+            addFiles(this.files);
+        });
+
+        return {
+            count: function () { return items.length; },
+            addFiles: addFiles
+        };
+    }
+
+    var imageManager = makeTileManager(imageInput, imagePreview, 'image');
+    var videoManager = makeTileManager(videoInput, videoPreview, 'video');
+
+    // Drag-and-drop onto the video zone still works: route through the manager.
+    if (videoZone && videoManager) {
+        ['dragenter', 'dragover'].forEach(function (evt) {
+            videoZone.addEventListener(evt, function (e) { e.preventDefault(); videoZone.classList.add('drag-over'); });
+        });
+        ['dragleave', 'drop'].forEach(function (evt) {
+            videoZone.addEventListener(evt, function (e) { e.preventDefault(); videoZone.classList.remove('drag-over'); });
+        });
+        videoZone.addEventListener('drop', function (e) {
+            if (e.dataTransfer && e.dataTransfer.files.length) {
+                videoManager.addFiles(e.dataTransfer.files);
+            }
+        });
+    }
+
+    // ===== Submit-time validation (inline, no redirect) =====
+    // All validation rules run client-side BEFORE the form hits the server:
+    //   - description non-empty + no banned word
+    //   - at least one image OR one video selected
+    // This avoids the full-page redirect + top-of-page flash.
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            clearSubmitError();
+
+            // 1. Banned word (already live-checked, but re-verify on submit)
+            var hit = descInput ? findBanned(descInput.value) : null;
+            if (hit) {
+                e.preventDefault();
+                showDescError('Mot interdit détecté : « ' + hit + ' ». Merci de reformuler.');
+                if (descInput) descInput.focus();
+                return;
+            }
+
+            // 2. Description non-empty
+            var descVal = descInput ? (descInput.value || '').trim() : '';
+            if (!descVal) {
+                e.preventDefault();
+                showSubmitError('La description est obligatoire.');
+                if (descInput) descInput.focus();
+                return;
+            }
+            if (descVal.length < 5) {
+                e.preventDefault();
+                showSubmitError('La description doit contenir au moins 5 caractères.');
+                if (descInput) descInput.focus();
+                return;
+            }
+
+            // 3. At least one media item
+            var imgCount = imageManager ? imageManager.count() : (imageInput && imageInput.files ? imageInput.files.length : 0);
+            var vidCount = videoManager ? videoManager.count() : (videoInput && videoInput.files ? videoInput.files.length : 0);
+            if (imgCount === 0 && vidCount === 0) {
+                e.preventDefault();
+                showSubmitError('Veuillez ajouter au moins une image ou une vidéo.');
+                return;
+            }
+        });
+    }
+
+    // ===== Music preview =====
+    var musicUrls = {{ musicUrlsById|default({})|json_encode|raw }};
+    if (musicSelect && musicPreview) {
+        musicSelect.addEventListener('change', function () {
+            var id = this.value;
+            var url = id ? musicUrls[id] : null;
+            if (url) {
+                musicPreview.src = url;
+                musicPreview.classList.remove('d-none');
+            } else {
+                musicPreview.pause();
+                musicPreview.removeAttribute('src');
+                musicPreview.classList.add('d-none');
+            }
+        });
+    }
+})();
+</script>
