@@ -10,48 +10,29 @@ class MonumentRecognizer
 {
     private HttpClientInterface $httpClient;
     private LoggerInterface $logger;
-    private string $googleVisionApiKey;
-    private string $openaiApiKey;
+    private string $openrouterApiKey;
+    private string $openrouterModel;
 
     public function __construct(
         HttpClientInterface $httpClient,
         LoggerInterface $logger,
-        string $googleVisionApiKey = '',
-        string $openaiApiKey = ''
+        string $openrouterApiKey = '',
+        string $openrouterModel = ''
     ) {
         $this->httpClient = $httpClient;
         $this->logger = $logger;
-        $this->googleVisionApiKey = $googleVisionApiKey ?: $_ENV['GOOGLE_VISION_API_KEY'] ?? '';
-        $this->openaiApiKey = $openaiApiKey ?: $_ENV['OPENAI_API_KEY'] ?? '';
+        $this->openrouterApiKey = $openrouterApiKey ?: $_ENV['OPENROUTER_API_KEY'] ?? '';
+        $this->openrouterModel = $openrouterModel ?: $_ENV['OPENROUTER_MODEL'] ?? 'google/gemini-2-flash-lite-preview-02-05:free';
     }
 
     /**
-     * Recognize monument from image using Google Vision API with OpenAI fallback
+     * Recognize monument from image using FREE OpenRouter API
      */
     public function recognize(string $imagePath): array
     {
         try {
-            // First try Google Vision API
-            $result = $this->recognizeWithGoogleVision($imagePath);
-            
-            if ($result['confidence'] >= 0.7) {
-                return [
-                    'success' => true,
-                    'name' => $result['name'],
-                    'city' => $result['city'],
-                    'country' => $result['country'],
-                    'description' => $result['description'],
-                    'confidence' => $result['confidence'],
-                    'provider' => 'google_vision'
-                ];
-            }
-        } catch (Exception $e) {
-            $this->logger->warning('Google Vision API failed: ' . $e->getMessage());
-        }
-
-        // Fallback to OpenAI GPT-4 Vision
-        try {
-            $result = $this->recognizeWithOpenAI($imagePath);
+            // Use OpenRouter free vision model
+            $result = $this->recognizeWithOpenRouter($imagePath);
             
             if ($result['name'] !== '') {
                 return [
@@ -60,15 +41,15 @@ class MonumentRecognizer
                     'city' => $result['city'],
                     'country' => $result['country'],
                     'description' => $result['description'],
-                    'confidence' => $result['confidence'] ?? 0.6, // OpenAI confidence is estimated
-                    'provider' => 'openai'
+                    'confidence' => $result['confidence'] ?? 0.7,
+                    'provider' => 'openrouter_free'
                 ];
             }
         } catch (Exception $e) {
-            $this->logger->error('OpenAI API failed: ' . $e->getMessage());
+            $this->logger->error('OpenRouter API failed: ' . $e->getMessage());
         }
 
-        // Both APIs failed
+        // API failed
         return [
             'success' => false,
             'name' => '',
@@ -77,107 +58,17 @@ class MonumentRecognizer
             'description' => '',
             'confidence' => 0.0,
             'provider' => 'none',
-            'error' => 'Unable to recognize monument. Please try with a clearer photo.'
+            'error' => 'Impossible de reconnaître le monument. Veuillez essayer avec une photo plus claire.'
         ];
     }
 
     /**
-     * Recognize monument using Google Vision API Landmark Detection
+     * Recognize monument using FREE OpenRouter API
      */
-    private function recognizeWithGoogleVision(string $imagePath): array
+    private function recognizeWithOpenRouter(string $imagePath): array
     {
-        if (empty($this->googleVisionApiKey)) {
-            throw new Exception('Google Vision API key not configured');
-        }
-
-        // Read and encode image
-        $imageData = file_get_contents($imagePath);
-        if ($imageData === false) {
-            throw new Exception('Cannot read image file');
-        }
-
-        $base64Image = base64_encode($imageData);
-        
-        $payload = [
-            'requests' => [
-                [
-                    'image' => [
-                        'content' => $base64Image
-                    ],
-                    'features' => [
-                        [
-                            'type' => 'LANDMARK_DETECTION',
-                            'maxResults' => 3
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $response = $this->httpClient->request('POST', 'https://vision.googleapis.com/v1/images:annotate?key=' . $this->googleVisionApiKey, [
-            'json' => $payload,
-            'headers' => [
-                'Content-Type' => 'application/json'
-            ]
-        ]);
-
-        if ($response->getStatusCode() !== 200) {
-            throw new Exception('Google Vision API request failed: ' . $response->getStatusCode());
-        }
-
-        $data = $response->toArray();
-        
-        if (!isset($data['responses'][0]['landmarkAnnotations'])) {
-            return $this->createEmptyResult();
-        }
-
-        $landmarks = $data['responses'][0]['landmarkAnnotations'];
-        
-        if (empty($landmarks)) {
-            return $this->createEmptyResult();
-        }
-
-        // Get the most confident landmark
-        $landmark = $landmarks[0];
-        $confidence = $landmark['score'] ?? 0.0;
-        $name = $landmark['description'] ?? '';
-        
-        // Extract location information
-        $locations = $landmark['locations'] ?? [];
-        $city = '';
-        $country = '';
-        
-        if (!empty($locations)) {
-            $latLng = $locations[0]['latLng'] ?? [];
-            $lat = $latLng['latitude'] ?? null;
-            $lng = $latLng['longitude'] ?? null;
-            
-            if ($lat && $lng) {
-                $locationInfo = $this->getLocationFromCoordinates($lat, $lng);
-                $city = $locationInfo['city'];
-                $country = $locationInfo['country'];
-            }
-        }
-
-        // Generate description
-        $description = $this->generateMonumentDescription($name, $city, $country);
-
-        return [
-            'name' => $name,
-            'city' => $city,
-            'country' => $country,
-            'description' => $description,
-            'confidence' => $confidence
-        ];
-    }
-
-    /**
-     * Recognize monument using OpenAI GPT-4 Vision
-     */
-    private function recognizeWithOpenAI(string $imagePath): array
-    {
-        if (empty($this->openaiApiKey)) {
-            throw new Exception('OpenAI API key not configured');
+        if (empty($this->openrouterApiKey)) {
+            throw new Exception('OpenRouter API key not configured');
         }
 
         // Read and encode image
@@ -190,14 +81,14 @@ class MonumentRecognizer
         $mimeType = mime_content_type($imagePath) ?: 'image/jpeg';
 
         $payload = [
-            'model' => 'gpt-4-vision-preview',
+            'model' => $this->openrouterModel,
             'messages' => [
                 [
                     'role' => 'user',
                     'content' => [
                         [
                             'type' => 'text',
-                            'text' => 'Analyze this image and identify if it contains a monument, landmark, or historical building. If yes, provide the monument name, city, country, and a brief description. If not, respond with "No monument detected". Format your response as JSON: {"name": "...", "city": "...", "country": "...", "description": "..."}'
+                            'text' => 'Analysez cette image et identifiez si elle contient un monument, un lieu historique ou un bâtiment important. Si oui, fournissez le nom du monument, la ville, le pays et une brève description en français. Si non, répondez "Aucun monument détecté". Format de réponse JSON: {"nom": "...", "ville": "...", "pays": "...", "description": "..."}'
                         ],
                         [
                             'type' => 'image_url',
@@ -208,19 +99,21 @@ class MonumentRecognizer
                     ]
                 ]
             ],
-            'max_tokens' => 300
+            'max_tokens' => 500
         ];
 
-        $response = $this->httpClient->request('POST', 'https://api.openai.com/v1/chat/completions', [
+        $response = $this->httpClient->request('POST', 'https://openrouter.ai/api/v1/chat/completions', [
             'json' => $payload,
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $this->openaiApiKey
+                'Authorization' => 'Bearer ' . $this->openrouterApiKey,
+                'HTTP-Referer' => 'http://localhost:8000',
+                'X-Title' => 'EasyTravel Monument Recognition'
             ]
         ]);
 
         if ($response->getStatusCode() !== 200) {
-            throw new Exception('OpenAI API request failed: ' . $response->getStatusCode());
+            throw new Exception('OpenRouter API request failed: ' . $response->getStatusCode());
         }
 
         $data = $response->toArray();
@@ -236,80 +129,38 @@ class MonumentRecognizer
         
         if (json_last_error() !== JSON_ERROR_NONE) {
             // If JSON parsing fails, try to extract information from text
-            return $this->parseTextResponse($content);
+            return $this->parseFrenchTextResponse($content);
         }
 
-        if (!isset($result['name']) || $result['name'] === 'No monument detected') {
+        if (!isset($result['nom']) || $result['nom'] === 'Aucun monument détecté') {
             return $this->createEmptyResult();
         }
 
         return [
-            'name' => $result['name'] ?? '',
-            'city' => $result['city'] ?? '',
-            'country' => $result['country'] ?? '',
+            'name' => $result['nom'] ?? '',
+            'city' => $result['ville'] ?? '',
+            'country' => $result['pays'] ?? '',
             'description' => $result['description'] ?? '',
-            'confidence' => 0.6 // Estimated confidence for OpenAI
+            'confidence' => 0.8 // High confidence for OpenRouter free models
         ];
     }
 
     /**
-     * Get location information from coordinates (using reverse geocoding)
+     * Parse French text response when JSON parsing fails
      */
-    private function getLocationFromCoordinates(float $lat, float $lng): array
+    private function parseFrenchTextResponse(string $content): array
     {
-        try {
-            // Using Nominatim (OpenStreetMap) for reverse geocoding
-            $response = $this->httpClient->request('GET', 'https://nominatim.openstreetmap.org/reverse', [
-                'query' => [
-                    'format' => 'json',
-                    'lat' => $lat,
-                    'lon' => $lng,
-                    'zoom' => 10
-                ]
-            ]);
-
-            if ($response->getStatusCode() === 200) {
-                $data = $response->toArray();
-                $address = $data['address'] ?? [];
-                
-                return [
-                    'city' => $address['city'] ?? $address['town'] ?? $address['village'] ?? '',
-                    'country' => $address['country'] ?? ''
-                ];
-            }
-        } catch (Exception $e) {
-            $this->logger->warning('Reverse geocoding failed: ' . $e->getMessage());
-        }
-
-        return ['city' => '', 'country' => ''];
-    }
-
-    /**
-     * Generate a description for the monument
-     */
-    private function generateMonumentDescription(string $name, string $city, string $country): string
-    {
-        $location = $city && $country ? "in {$city}, {$country}" : ($country ?: '');
-        
-        return "The {$name} is a notable monument {$location}. This landmark represents an important cultural or historical significance and attracts visitors from around the world.";
-    }
-
-    /**
-     * Parse text response from OpenAI when JSON parsing fails
-     */
-    private function parseTextResponse(string $content): array
-    {
-        // Simple text parsing - you might want to enhance this
+        // Simple French text parsing
         $lines = explode("\n", $content);
         $result = ['name' => '', 'city' => '', 'country' => '', 'description' => ''];
         
         foreach ($lines as $line) {
-            if (stripos($line, 'name') !== false) {
-                $result['name'] = trim(str_replace(['Name:', 'name:'], '', $line));
-            } elseif (stripos($line, 'city') !== false) {
-                $result['city'] = trim(str_replace(['City:', 'city:'], '', $line));
-            } elseif (stripos($line, 'country') !== false) {
-                $result['country'] = trim(str_replace(['Country:', 'country:'], '', $line));
+            if (stripos($line, 'nom') !== false) {
+                $result['name'] = trim(str_replace(['Nom:', 'nom:'], '', $line));
+            } elseif (stripos($line, 'ville') !== false) {
+                $result['city'] = trim(str_replace(['Ville:', 'ville:'], '', $line));
+            } elseif (stripos($line, 'pays') !== false) {
+                $result['country'] = trim(str_replace(['Pays:', 'pays:'], '', $line));
             } elseif (stripos($line, 'description') !== false) {
                 $result['description'] = trim(str_replace(['Description:', 'description:'], '', $line));
             }
