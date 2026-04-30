@@ -61,6 +61,7 @@
                 <a class="{{ currentPath starts with '/activites' ? 'is-active' : '' }}" href="/activites">Activites</a>
                 <a class="{{ currentPath starts with '/contact' ? 'is-active' : '' }}" href="/contact">Contact</a>
                 <a class="{{ currentPath starts with '/weather' ? 'is-active' : '' }}" href="/weather">Météo</a>
+                <a class="{{ currentPath starts with '/monument' ? 'is-active' : '' }}" href="/monument/scan">Monuments</a>
             </nav>
 
             <div class="site-header-actions">
@@ -124,6 +125,16 @@
                                 <div class="account-menu-item-labels">
                                     <div class="account-menu-title">Météo</div>
                                     <div class="account-menu-subtitle">Prévisions météo mondiales</div>
+                                </div>
+                                <span class="account-menu-item-chevron">&#8250;</span>
+                            </a>
+                            <a href="/monument/scan" class="account-menu-item">
+                                <div class="account-menu-icon-shell">
+                                    <div class="account-menu-icon-shape account-menu-icon-monument">🏛️</div>
+                                </div>
+                                <div class="account-menu-item-labels">
+                                    <div class="account-menu-title">Monuments</div>
+                                    <div class="account-menu-subtitle">Reconnaissance IA de monuments</div>
                                 </div>
                                 <span class="account-menu-item-chevron">&#8250;</span>
                             </a>
