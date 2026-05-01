@@ -345,32 +345,6 @@
 
                     <div class="profile-features-row">
                         <div class="profile-feature-card">
-                            <div class="profile-card-header">
-                                <h2 class="profile-card-title">Changer le mot de passe</h2>
-                                <p class="profile-card-copy">Securisez votre compte avec un mot de passe plus fort.</p>
-                            </div>
-
-                            <form method="post" action="/profile/change-password" class="profile-password-form">
-                                <div class="profile-field">
-                                    <label class="profile-field-label">Mot de passe actuel</label>
-                                    <input type="password" name="current_password" class="profile-input" placeholder="Mot de passe actuel" required>
-                                </div>
-                                <div class="profile-field">
-                                    <label class="profile-field-label">Nouveau mot de passe</label>
-                                    <input type="password" name="new_password" class="profile-input" placeholder="Nouveau mot de passe" required>
-                                </div>
-                                <div class="profile-field">
-                                    <label class="profile-field-label">Confirmer le nouveau mot de passe</label>
-                                    <input type="password" name="confirm_password" class="profile-input" placeholder="Confirmer le mot de passe" required>
-                                </div>
-
-                                <div class="profile-form-actions-right">
-                                    <button type="submit" class="profile-primary-button">Changer le mot de passe</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="profile-feature-card">
                             <div class="profile-card-header profile-card-header-inline">
                                 <div>
                                     <h2 class="profile-card-title">Notifications du compte</h2>
@@ -414,23 +388,50 @@
                                 </div>
                             </form>
                         </div>
-
-                        <div class="profile-feature-card" id="faceIdCard">
-                            <div class="profile-card-header">
-                                <h2 class="profile-card-title">Configuration Face ID</h2>
-                                <p class="profile-card-copy">Utilisez votre visage pour vous connecter rapidement et en toute sécurité.</p>
-                            </div>
-
-                            <div class="face-id-setup-container">
-                                <div class="face-id-video-wrapper">
-                                    <video id="faceIdVideo" autoplay muted playsinline></video>
-                                    <canvas id="faceIdOverlay"></canvas>
-                                    <div class="face-id-status" id="faceIdStatus">Prêt pour la configuration</div>
+                        <div>
+                            <div class="profile-feature-card">
+                                <div class="profile-card-header">
+                                    <h2 class="profile-card-title">Changer le mot de passe</h2>
+                                    <p class="profile-card-copy">Securisez votre compte avec un mot de passe plus fort.</p>
                                 </div>
 
-                                <div class="profile-form-actions-center">
-                                    <button type="button" class="profile-primary-button" id="startFaceIdSetup">Activer la caméra</button>
-                                    <button type="button" class="profile-primary-button" id="captureFaceId" style="display:none;">Capturer mon visage</button>
+                                <form method="post" action="/profile/change-password" class="profile-password-form">
+                                    <div class="profile-field">
+                                        <label class="profile-field-label">Mot de passe actuel</label>
+                                        <input type="password" name="current_password" class="profile-input" placeholder="Mot de passe actuel" required>
+                                    </div>
+                                    <div class="profile-field">
+                                        <label class="profile-field-label">Nouveau mot de passe</label>
+                                        <input type="password" name="new_password" class="profile-input" placeholder="Nouveau mot de passe" required>
+                                    </div>
+                                    <div class="profile-field">
+                                        <label class="profile-field-label">Confirmer le nouveau mot de passe</label>
+                                        <input type="password" name="confirm_password" class="profile-input" placeholder="Confirmer le mot de passe" required>
+                                    </div>
+
+                                    <div class="profile-form-actions-right">
+                                        <button type="submit" class="profile-primary-button">Changer le mot de passe</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="profile-feature-card" id="faceIdCard">
+                                <div class="profile-card-header">
+                                    <h2 class="profile-card-title">Configuration Face ID</h2>
+                                    <p class="profile-card-copy">Utilisez votre visage pour vous connecter rapidement et en toute sécurité.</p>
+                                </div>
+
+                                <div class="face-id-setup-container">
+                                    <div class="face-id-video-wrapper">
+                                        <video id="faceIdVideo" autoplay muted playsinline></video>
+                                        <canvas id="faceIdOverlay"></canvas>
+                                        <div class="face-id-status" id="faceIdStatus">Prêt pour la configuration</div>
+                                    </div>
+
+                                    <div class="profile-form-actions-center">
+                                        <button type="button" class="profile-primary-button" id="startFaceIdSetup">Activer la caméra</button>
+                                        <button type="button" class="profile-primary-button" id="captureFaceId" style="display:none;">Capturer mon visage</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
