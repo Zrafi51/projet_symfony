@@ -32,15 +32,14 @@ class MonumentController extends AbstractController
         EntityManagerInterface $entityManager,
         MonumentScanRepository $monumentScanRepository,
         ValidatorInterface $validator,
-        LoggerInterface $logger,
-        string $projectDir
+        LoggerInterface $logger
     ) {
         $this->monumentRecognizer = $monumentRecognizer;
         $this->entityManager = $entityManager;
         $this->monumentScanRepository = $monumentScanRepository;
         $this->validator = $validator;
         $this->logger = $logger;
-        $this->uploadsDir = $projectDir . '/public/uploads/monuments';
+        $this->uploadsDir = __DIR__ . '/../../public/uploads/monuments';
         
         // Ensure uploads directory exists
         $this->ensureUploadsDirectory();
@@ -58,12 +57,8 @@ class MonumentController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // Get user's recent scans
-        $recentScans = $this->monumentScanRepository->findBy(
-            ['user' => $currentUser],
-            ['createdAt' => 'DESC'],
-            5
-        );
+        // For now, return empty recent scans since we're not using the database relationship
+        $recentScans = [];
 
         return $this->render('monument/scan.html.twig', [
             'currentUser' => $currentUser,
@@ -124,7 +119,7 @@ class MonumentController extends AbstractController
             $imagePath = $this->uploadsDir . '/' . $filename;
 
             // Create monument scan record
-            $monumentScan = new MonumentScan($currentUser);
+            $monumentScan = new MonumentScan($currentUser['id']);
             $monumentScan->setImageFilename($filename);
             $monumentScan->setScanStatus('pending');
             

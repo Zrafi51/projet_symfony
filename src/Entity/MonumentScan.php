@@ -15,9 +15,8 @@ class MonumentScan
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private User $user;
+    #[ORM\Column]
+    private int $userId;
 
     #[ORM\Column(length: 255)]
     private string $monumentName = '';
@@ -49,9 +48,9 @@ class MonumentScan
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $apiProvider = null; // google_vision, openai, fallback
 
-    public function __construct(User $user)
+    public function __construct(int $userId)
     {
-        $this->user = $user;
+        $this->userId = $userId;
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -60,14 +59,14 @@ class MonumentScan
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getUserId(): int
     {
-        return $this->user;
+        return $this->userId;
     }
 
-    public function setUser(User $user): static
+    public function setUserId(int $userId): static
     {
-        $this->user = $user;
+        $this->userId = $userId;
 
         return $this;
     }
