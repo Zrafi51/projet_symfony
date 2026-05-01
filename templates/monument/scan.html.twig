@@ -21,11 +21,19 @@
                     <p>Analyzing your image...</p>
                 </div>
                 
+                <span class="upload-icon">📷</span>
+                <div class="upload-title">Drop your photo here</div>
+                <p class="upload-subtitle">or click the button below to browse</p>
+                
                 <input type="file" id="monument_image" name="monument_image" accept="image/jpeg,image/png,image/webp" required>
                 
-                <button type="button" class="upload-button" id="browse-btn">
+                <label for="monument_image" class="upload-button" id="browse-btn">
                     📁 Choose Photo
-                </button>
+                </label>
+
+                <div class="or-divider">
+                    <span>or drag and drop</span>
+                </div>
 
                 <div class="selected-file-name" id="selected-file-name"></div>
 
@@ -54,34 +62,33 @@
         </div>
         {% endif %}
 
-        {% if result %}
-        <div class="result-section active">
+        <!-- Result section (populated by JavaScript on successful upload) -->
+        <div class="result-section" id="result-section" style="display: none;">
             <div class="result-card">
                 <div class="result-header">
-                    <div class="result-title">{{ result.name }}</div>
-                    <div class="result-confidence">Confidence: {{ (result.confidence * 100)|round }}%</div>
+                    <div class="result-title" id="result-title"></div>
+                    <div class="result-confidence" id="result-confidence"></div>
                 </div>
                 <div class="result-body">
                     <div class="result-image">
-                        <img src="{{ asset('uploads/monuments/' ~ result.imageFilename) }}" alt="{{ result.name }}">
+                        <img id="result-image" src="" alt="Monument">
                     </div>
                     <div class="result-info">
-                        <h3>{{ result.name }}</h3>
-                        <p class="result-location">📍 {{ result.city }}, {{ result.country }}</p>
-                        <p class="result-description">{{ result.description }}</p>
+                        <h3 id="result-name"></h3>
+                        <p class="result-location" id="result-location"></p>
+                        <p class="result-description" id="result-description"></p>
                         <div class="result-actions">
-                            <a href="{{ path('app_billing') }}?destination={{ result.city|url_encode }},+{{ result.country|url_encode }}" class="btn btn-primary">
+                            <button type="button" class="btn btn-primary" id="add-to-request-btn">
                                 ✈️ Add to Travel Request
-                            </a>
-                            <a href="{{ path('app_monument_scan') }}" class="btn btn-secondary">
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="scan-another-btn">
                                 📷 Scan Another
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        {% endif %}
 
         {% if recentScans is defined and recentScans|length > 0 %}
             <div class="recent-scans" style="margin-top: 3rem;">
@@ -109,8 +116,11 @@
         {{ parent() }}
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                console.log('Monument scan page loaded');
+                
                 const form = document.getElementById('monument-upload-form');
                 const fileInput = document.getElementById('monument_image');
+                const uploadArea = document.getElementById('upload-area');
                 const browseBtn = document.getElementById('browse-btn');
                 const submitBtn = document.getElementById('submit-btn');
                 const selectedFileName = document.getElementById('selected-file-name');
@@ -121,19 +131,35 @@
                 const errorBox = document.getElementById('error-box');
                 const errorMessage = document.getElementById('error-message');
 
-                // Browse button opens file dialog
-                browseBtn.addEventListener('click', function() {
-                    fileInput.click();
-                });
+                if (!fileInput) {
+                    console.error('ERROR: File input element #monument_image not found!');
+                    showError('Internal error: file input not found');
+                    return;
+                }
 
-                // File selection
-                fileInput.addEventListener('change', function() {
-                    if (this.files.length > 0) {
-                        handleFileSelect(this.files[0]);
+                console.log('File input element found:', fileInput);
+                console.log('File input type:', fileInput.type);
+
+                // File selection - CRITICAL
+                fileInput.addEventListener('change', function(event) {
+                    console.log('=== FILE INPUT CHANGE EVENT ===');
+                    console.log('Event target:', event.target);
+                    console.log('Files array length:', event.target.files.length);
+                    
+                    const file = event.target.files[0];
+                    console.log('File object:', file);
+                    
+                    if (file) {
+                        console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type);
+                        handleFileSelect(file);
+                    } else {
+                        console.log('No file selected (event.target.files is empty)');
                     }
                 });
 
                 function handleFileSelect(file) {
+                    console.log('handleFileSelect called with:', file.name, 'type:', file.type, 'size:', file.size);
+                    
                     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
                     if (!validTypes.includes(file.type)) {
                         showError('Please upload a valid image file (JPEG, PNG, or WebP)');
@@ -146,19 +172,25 @@
                     }
 
                     selectedFileName.textContent = 'Selected: ' + file.name;
+                    selectedFileName.style.display = 'block';
                     submitBtn.disabled = false;
 
                     const reader = new FileReader();
                     reader.onload = function(e) {
+                        console.log('FileReader loaded, showing preview');
                         previewImg.src = e.target.result;
                         previewFilename.textContent = file.name;
                         filePreview.style.display = 'block';
+                    };
+                    reader.onerror = function() {
+                        showError('Error reading file');
                     };
                     reader.readAsDataURL(file);
 
                     hideError();
                 }
 
+                // Form submission
                 form.addEventListener('submit', async function(e) {
                     e.preventDefault();
 
@@ -173,7 +205,7 @@
                     formData.append('monument_image', fileInput.files[0]);
 
                     try {
-                        const response = await fetch('{{ path('app_monument_scan') }}', {
+                        const response = await fetch('{{ path('app_monument_scan_process') }}', {
                             method: 'POST',
                             body: formData,
                             headers: {
@@ -181,17 +213,29 @@
                             }
                         });
 
-                        const data = await response.json();
+                        console.log('Response status:', response.status);
+
+                        const contentType = response.headers.get('content-type');
+                        let data;
+
+                        if (contentType && contentType.includes('application/json')) {
+                            data = await response.json();
+                            console.log('JSON data:', data);
+                        } else {
+                            const text = await response.text();
+                            console.log('Non-JSON response:', text.substring(0, 200));
+                            throw new Error('Server returned ' + response.status);
+                        }
 
                         if (data.success) {
-                            window.location.reload();
+                            showResult(data.monumentScan);
                         } else {
-                            showError(data.error || 'Failed to recognize monument. Please try again.');
+                            showError(data.error || 'Failed to recognize monument.');
                             hideLoading();
                         }
                     } catch (error) {
                         console.error('Upload error:', error);
-                        showError('Network error. Please check your connection.');
+                        showError('Upload failed: ' + error.message);
                         hideLoading();
                     }
                 });
@@ -207,6 +251,7 @@
                 }
 
                 function showError(message) {
+                    console.error('Error:', message);
                     errorMessage.textContent = message;
                     errorBox.classList.add('active');
                     errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -215,6 +260,74 @@
                 function hideError() {
                     errorBox.classList.remove('active');
                 }
+
+                function showResult(monumentScan) {
+                    console.log('Showing result:', monumentScan);
+                    
+                    // Populate result fields
+                    document.getElementById('result-title').textContent = monumentScan.monumentName;
+                    document.getElementById('result-confidence').textContent = 'Confidence: ' + Math.round(monumentScan.confidence * 100) + '%';
+                    document.getElementById('result-image').src = monumentScan.imagePath;
+                    document.getElementById('result-name').textContent = monumentScan.monumentName;
+                    document.getElementById('result-location').innerHTML = '📍 ' + monumentScan.city + ', ' + monumentScan.country;
+                    document.getElementById('result-description').textContent = monumentScan.description;
+
+                    // Set up "Add to Travel Request" button
+                    const addBtn = document.getElementById('add-to-request-btn');
+                    addBtn.onclick = async function() {
+                        addBtn.disabled = true;
+                        addBtn.textContent = 'Adding...';
+                        
+                        try {
+                            const response = await fetch('{{ path('app_monument_add_to_request', {'id': 'SCAN_ID_PLACEHOLDER'}) }}'.replace('SCAN_ID_PLACEHOLDER', monumentScan.id), {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            });
+                            
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                addBtn.textContent = '✓ Added to Travel Request';
+                                addBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                                addBtn.disabled = true;
+                                alert('Monument added to your travel request!');
+                            } else {
+                                alert('Error: ' + (data.error || 'Failed to add'));
+                                addBtn.disabled = false;
+                                addBtn.textContent = '✈️ Add to Travel Request';
+                            }
+                        } catch (error) {
+                            console.error('Add to request error:', error);
+                            alert('Network error. Please try again.');
+                            addBtn.disabled = false;
+                            addBtn.textContent = '✈️ Add to Travel Request';
+                        }
+                    };
+
+                    // Show result section
+                    const resultSection = document.getElementById('result-section');
+                    resultSection.style.display = 'block';
+                    resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    hideLoading();
+                }
+
+                // Scan Another button
+                document.getElementById('scan-another-btn').addEventListener('click', function() {
+                    form.reset();
+                    selectedFileName.style.display = 'none';
+                    selectedFileName.textContent = '';
+                    filePreview.style.display = 'none';
+                    previewImg.src = '';
+                    previewFilename.textContent = '';
+                    submitBtn.disabled = true;
+                    document.getElementById('result-section').style.display = 'none';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+
+                console.log('Monument scan JavaScript initialized');
             });
         </script>
     {% endblock %}

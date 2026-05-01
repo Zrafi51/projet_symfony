@@ -32,25 +32,45 @@ class MonumentRecognizer
     public function recognize(string $imagePath): array
     {
         try {
+            // Validate image file exists
+            if (!file_exists($imagePath)) {
+                throw new Exception("Image file not found: {$imagePath}");
+            }
+
+            // Check file size
+            $fileSize = filesize($imagePath);
+            if ($fileSize === false || $fileSize > 10 * 1024 * 1024) {
+                throw new Exception('Image file too large or unreadable (max 10MB)');
+            }
+
+            $this->logger->critical('MONUMENT RECOGNITION STARTED', [
+                'model' => $this->openrouterModel,
+                'image' => basename($imagePath),
+                'imageSize' => $fileSize
+            ]);
+
             // Use OpenRouter free vision model
             $result = $this->recognizeWithOpenRouter($imagePath);
             
-            if ($result['name'] !== '') {
+            if (!empty($result['name'])) {
                 return [
                     'success' => true,
                     'name' => $result['name'],
-                    'city' => $result['city'],
-                    'country' => $result['country'],
-                    'description' => $result['description'],
+                    'city' => $result['city'] ?? '',
+                    'country' => $result['country'] ?? '',
+                    'description' => $result['description'] ?? '',
                     'confidence' => $result['confidence'] ?? 0.7,
                     'provider' => 'openrouter_free'
                 ];
             }
         } catch (Exception $e) {
-            $this->logger->error('OpenRouter API failed: ' . $e->getMessage());
+            $this->logger->error('Monument recognition failed: ' . $e->getMessage(), [
+                'image_path' => $imagePath,
+                'trace' => $e->getTraceAsString()
+            ]);
         }
 
-        // API failed
+        // API failed or no monument detected
         return [
             'success' => false,
             'name' => '',
@@ -59,7 +79,7 @@ class MonumentRecognizer
             'description' => '',
             'confidence' => 0.0,
             'provider' => 'none',
-            'error' => 'Impossible de reconnaître le monument. Veuillez essayer avec une photo plus claire.'
+            'error' => 'Impossible de reconnaître le monument. Vérifiez que l\'image est claire et montre un monument ou bâtiment historique.'
         ];
     }
 
@@ -72,10 +92,16 @@ class MonumentRecognizer
             throw new Exception('OpenRouter API key not configured');
         }
 
+        $this->logger->info('Monument recognition started', [
+            'model' => $this->openrouterModel,
+            'image' => basename($imagePath),
+            'imageSize' => strlen($imageData)
+        ]);
+
         // Read and encode image
         $imageData = file_get_contents($imagePath);
         if ($imageData === false) {
-            throw new Exception('Cannot read image file');
+            throw new Exception('Cannot read image file: ' . $imagePath);
         }
 
         $base64Image = base64_encode($imageData);
