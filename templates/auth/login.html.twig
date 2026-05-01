@@ -61,10 +61,242 @@
             <span></span>
         </div>
 
+        <div class="face-login-container">
+            <button type="button" class="button face-login-trigger" id="faceLoginTrigger">
+                <span class="face-icon">👤</span> Se connecter avec Face ID
+            </button>
+            
+            <div id="faceLoginModal" class="face-modal" style="display:none;">
+                <div class="face-modal-content">
+                    <h3>Authentification Faciale</h3>
+                    <div class="face-video-wrapper">
+                        <video id="faceVideo" autoplay muted playsinline style="width:100%; height:100%; object-fit:cover; pointer-events:none;"></video>
+                        <canvas id="faceLoginOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+                        <div id="faceStatus" class="face-status">Initialisation...</div>
+                    </div>
+                    <div style="margin-top:15px;">
+                        <button type="button" class="button" id="scanButton" style="display:none; background:#E89B6D; width:100%;">SCANNER & CONNEXION</button>
+                    </div>
+                    <button type="button" class="button face-cancel" id="cancelFaceLogin">Annuler</button>
+                </div>
+            </div>
+        </div>
+
         <p class="auth-switch">
             Vous n'avez pas de compte ?
             <a href="/sign-up">S'inscrire</a>
         </p>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.face-login-container {
+    margin: 15px 0;
+    text-align: center;
+}
+.face-login-trigger {
+    background: #0B3C5D;
+    color: white;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.face-login-trigger:hover {
+    background: #14597F;
+}
+.face-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.face-modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 30px;
+    text-align: center;
+    max-width: 600px;
+    width: 95%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+.face-video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+#faceVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+.face-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(11, 60, 93, 0.9);
+    color: white;
+    padding: 15px;
+    font-size: 14px;
+    font-weight: 600;
+    backdrop-filter: blur(5px);
+}
+#faceLoginOverlay {
+    transform: scaleX(-1);
+}
+.face-cancel {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const trigger = document.getElementById('faceLoginTrigger');
+    const modal = document.getElementById('faceLoginModal');
+    const video = document.getElementById('faceVideo');
+    const canvas = document.getElementById('faceLoginOverlay');
+    const status = document.getElementById('faceStatus');
+    const cancelBtn = document.getElementById('cancelFaceLogin');
+    const scanBtn = document.getElementById('scanButton');
+    const emailInput = document.querySelector('input[name="email"]');
+    
+    let isMatching = false;
+    let modelsLoaded = false;
+    let stream = null;
+    let detectionInterval = null;
+
+    // Preload models once
+    (async function init() {
+        try {
+            const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js/weights';
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            modelsLoaded = true;
+            trigger.innerHTML = '<span class="face-icon">👤</span> Face ID Prêt';
+        } catch (err) {
+            console.error('FaceAPI Init Error:', err);
+        }
+    })();
+
+    function startDetectionLoop() {
+        if (detectionInterval) clearInterval(detectionInterval);
+        
+        const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        detectionInterval = setInterval(async () => {
+            if (!modelsLoaded || video.paused || video.ended) return;
+
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks();
+
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (detection) {
+                const resizedDetections = faceapi.resizeResults(detection, displaySize);
+                faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            }
+        }, 100);
+    }
+
+    trigger.addEventListener('click', async () => {
+        if (!emailInput.value) {
+            alert('Veuillez saisir votre email.');
+            emailInput.focus();
+            return;
+        }
+        modal.style.display = 'flex';
+        status.textContent = 'Démarrage caméra...';
+        
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                video.play();
+                startDetectionLoop();
+                scanBtn.style.display = 'block';
+                status.textContent = 'Prêt pour le scan.';
+            };
+        } catch (err) {
+            console.error('Camera Access Error:', err);
+            status.textContent = 'Erreur caméra.';
+        }
+    });
+
+    scanBtn.addEventListener('click', async () => {
+        if (isMatching || !modelsLoaded) return;
+        isMatching = true;
+        status.innerHTML = '<span style="color:#f4a261">Analyse en cours...</span>';
+        scanBtn.disabled = true;
+
+        try {
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (detection) {
+                const response = await fetch('/api/face-id/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: emailInput.value.trim(),
+                        descriptor: Array.from(detection.descriptor)
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    status.innerHTML = '<span style="color:#10b981; font-weight:bold;">SUCCÈS ! Redirection...</span>';
+                    if (detectionInterval) clearInterval(detectionInterval);
+                    window.location.href = result.redirect;
+                } else {
+                    status.innerHTML = '<small style="color:#ef4444">' + result.message + '</small>';
+                }
+            } else {
+                status.textContent = 'Aucun visage détecté. Rapprochez-vous.';
+            }
+        } catch (err) {
+            console.error('Scan Error:', err);
+            status.textContent = "Erreur: " + err.message;
+        } finally {
+            isMatching = false;
+            scanBtn.disabled = false;
+        }
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        if (detectionInterval) clearInterval(detectionInterval);
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        video.srcObject = null;
+        modal.style.display = 'none';
+        scanBtn.style.display = 'none';
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    });
+});
+</script>
 {% endblock %}

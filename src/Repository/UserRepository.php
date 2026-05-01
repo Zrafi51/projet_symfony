@@ -307,6 +307,34 @@ final class UserRepository
         ]);
     }
 
+    public function getFaceDescriptor(string $email): ?string
+    {
+        $this->ensureSchema();
+        $statement = $this->connectionFactory->getConnection()->prepare(
+            'SELECT face_descriptor FROM '.self::USER_TABLE.' WHERE LOWER(email) = LOWER(:email)'
+        );
+        $statement->execute([
+            'email' => $this->normalizeEmail($email),
+        ]);
+
+        $result = $statement->fetchColumn();
+
+        return $result !== false ? (string) $result : null;
+    }
+
+    public function updateFaceDescriptor(string $email, ?string $descriptor): bool
+    {
+        $this->ensureSchema();
+        $statement = $this->connectionFactory->getConnection()->prepare(
+            'UPDATE '.self::USER_TABLE.' SET face_descriptor = :descriptor WHERE LOWER(email) = LOWER(:email)'
+        );
+
+        return $statement->execute([
+            'descriptor' => $descriptor,
+            'email' => $this->normalizeEmail($email),
+        ]);
+    }
+
     private function ensureSchema(): void
     {
         if ($this->schemaEnsured) {
@@ -323,6 +351,11 @@ final class UserRepository
             $connection,
             'validated_at',
             'ALTER TABLE '.self::USER_TABLE.' ADD COLUMN validated_at TIMESTAMP NULL DEFAULT NULL AFTER is_validated'
+        );
+        $this->addColumnIfMissing(
+            $connection,
+            'face_descriptor',
+            'ALTER TABLE '.self::USER_TABLE.' ADD COLUMN face_descriptor LONGTEXT NULL DEFAULT NULL AFTER validated_at'
         );
 
         $this->schemaEnsured = true;

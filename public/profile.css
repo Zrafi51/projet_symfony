@@ -1320,3 +1320,66 @@ body {
         align-items: stretch;
     }
 }
+/* === FACE ID SETUP === */
+.face-id-setup-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.face-id-video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(11, 60, 93, 0.15);
+}
+
+#faceIdVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+
+#faceIdOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transform: scaleX(-1);
+}
+
+.face-id-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(11, 60, 93, 0.85);
+    color: white;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    backdrop-filter: blur(8px);
+}
+
+.profile-form-actions-center {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .profile-features-row {
+        grid-template-columns: 1fr;
+    }
+}

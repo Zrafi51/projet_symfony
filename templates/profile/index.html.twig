@@ -414,6 +414,26 @@
                                 </div>
                             </form>
                         </div>
+
+                        <div class="profile-feature-card" id="faceIdCard">
+                            <div class="profile-card-header">
+                                <h2 class="profile-card-title">Configuration Face ID</h2>
+                                <p class="profile-card-copy">Utilisez votre visage pour vous connecter rapidement et en toute sécurité.</p>
+                            </div>
+
+                            <div class="face-id-setup-container">
+                                <div class="face-id-video-wrapper">
+                                    <video id="faceIdVideo" autoplay muted playsinline></video>
+                                    <canvas id="faceIdOverlay"></canvas>
+                                    <div class="face-id-status" id="faceIdStatus">Prêt pour la configuration</div>
+                                </div>
+
+                                <div class="profile-form-actions-center">
+                                    <button type="button" class="profile-primary-button" id="startFaceIdSetup">Activer la caméra</button>
+                                    <button type="button" class="profile-primary-button" id="captureFaceId" style="display:none;">Capturer mon visage</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -447,5 +467,141 @@
 <script src="/custom-cursor.js"></script>
 <script src="/currency.js"></script>
 <script src="/profile.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const startBtn = document.getElementById('startFaceIdSetup');
+    const captureBtn = document.getElementById('captureFaceId');
+    const video = document.getElementById('faceIdVideo');
+    const canvas = document.getElementById('faceIdOverlay');
+    const status = document.getElementById('faceIdStatus');
+    
+    let modelsLoaded = false;
+    let detectionInterval = null;
+
+    // Load AI Models
+    (async function init() {
+        const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js/weights';
+        try {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            modelsLoaded = true;
+            status.textContent = 'Système IA Prêt.';
+            console.log('FaceAPI models loaded successfully');
+        } catch (err) {
+            console.error('Error loading FaceAPI models:', err);
+            status.textContent = 'Erreur chargement IA.';
+        }
+    })();
+
+    // Start Detection Loop
+    function startDetectionLoop() {
+        if (detectionInterval) clearInterval(detectionInterval);
+        
+        const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        detectionInterval = setInterval(async () => {
+            if (!modelsLoaded || video.paused || video.ended) return;
+
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks();
+
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (detection) {
+                const resizedDetections = faceapi.resizeResults(detection, displaySize);
+                faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            }
+        }, 100);
+    }
+
+    startBtn.addEventListener('click', async () => {
+        if (!modelsLoaded) {
+            status.textContent = 'Finalisation IA...';
+            let retries = 0;
+            while(!modelsLoaded && retries < 50) { 
+                await new Promise(r => setTimeout(r, 100)); 
+                retries++;
+            }
+            if (!modelsLoaded) {
+                status.textContent = 'Échec IA. Vérifiez votre connexion.';
+                return;
+            }
+        }
+        
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+            video.srcObject = stream;
+            
+            video.onloadedmetadata = () => {
+                video.play();
+                startDetectionLoop();
+                startBtn.style.display = 'none';
+                captureBtn.style.display = 'inline-block';
+                status.textContent = 'Positionnez votre visage face à la caméra.';
+            };
+        } catch (err) {
+            console.error('Camera access error:', err);
+            status.textContent = 'Accès caméra refusé.';
+        }
+    });
+
+    captureBtn.addEventListener('click', async () => {
+        if (!modelsLoaded) return;
+        status.textContent = 'Analyse faciale en cours...';
+        captureBtn.disabled = true;
+        
+        try {
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (detection) {
+                status.textContent = 'Visage capturé ! Synchronisation...';
+                
+                const response = await fetch('/api/face-id/enroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ descriptor: Array.from(detection.descriptor) })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    status.textContent = 'Face ID configuré avec succès !';
+                    captureBtn.style.display = 'none';
+                    
+                    if (detectionInterval) clearInterval(detectionInterval);
+                    
+                    setTimeout(() => {
+                        const stream = video.srcObject;
+                        if (stream) {
+                            const tracks = stream.getTracks();
+                            tracks.forEach(track => track.stop());
+                        }
+                        video.srcObject = null;
+                        startBtn.style.display = 'inline-block';
+                        startBtn.textContent = 'Reconfigurer Face ID';
+                        captureBtn.disabled = false;
+                    }, 2500);
+                } else {
+                    status.textContent = 'Erreur : ' + result.message;
+                    captureBtn.disabled = false;
+                }
+            } else {
+                status.textContent = 'Aucun visage détecté. Réessayez.';
+                captureBtn.disabled = false;
+            }
+        } catch (err) {
+            console.error('Capture error:', err);
+            status.textContent = 'Erreur lors de la capture.';
+            captureBtn.disabled = false;
+        }
+    });
+});
+</script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 27, 2026 at 10:43 AM
+-- Generation Time: May 01, 2026 at 01:02 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -206,27 +206,42 @@ CREATE TABLE `comments` (
 CREATE TABLE `destinations` (
   `id` int(11) NOT NULL,
   `nom` varchar(100) NOT NULL,
+  `slug` varchar(160) DEFAULT NULL,
   `pays` varchar(100) DEFAULT NULL,
   `continent` varchar(50) DEFAULT NULL,
   `prix_base` decimal(10,2) DEFAULT NULL,
-  `description` text DEFAULT NULL
+  `description` text DEFAULT NULL,
+  `workflow_place` varchar(30) NOT NULL DEFAULT 'published',
+  `cover_image_path` varchar(255) DEFAULT NULL,
+  `hero_video_path` varchar(255) DEFAULT NULL,
+  `travel_mood` varchar(60) DEFAULT NULL,
+  `best_period` varchar(120) DEFAULT NULL,
+  `duration_days` int(11) NOT NULL DEFAULT 7,
+  `max_travelers` int(11) NOT NULL DEFAULT 4,
+  `interest_tags` text DEFAULT NULL,
+  `audience_tags` text DEFAULT NULL,
+  `catalog_priority` int(11) NOT NULL DEFAULT 50,
+  `quality_score` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `published_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `destinations`
 --
 
-INSERT INTO `destinations` (`id`, `nom`, `pays`, `continent`, `prix_base`, `description`) VALUES
-(1, 'Tunisie', NULL, NULL, NULL, 'Destination test'),
-(2, 'Bali', 'Indonésie', 'Asie', 2758.85, 'Destination recommandée par IA'),
-(3, 'Tirana', 'Albanie', 'Europe', 1276.85, 'Recommandation IA'),
-(4, 'Addis Ababa', 'Éthiopie', 'Afrique', 23520.60, 'Recommandation IA'),
-(5, 'Shanghai', 'Chine', 'Asie', 11498.22, 'Recommandation IA'),
-(6, 'Berlin', 'Allemagne', 'Europe', 22052.40, 'Recommandation IA'),
-(7, 'Toronto', 'Canada', 'Amerique', 6786.56, 'Recommandation IA'),
-(8, 'Algiers', 'Algérie', 'Afrique', 6139.84, 'Recommandation IA'),
-(9, 'Rio de Janeiro', 'Brésil', 'Amerique', 1917.28, 'Recommandation IA'),
-(10, 'Casablanca', 'Maroc', 'Afrique', 20676.00, 'Recommandation IA');
+INSERT INTO `destinations` (`id`, `nom`, `slug`, `pays`, `continent`, `prix_base`, `description`, `workflow_place`, `cover_image_path`, `hero_video_path`, `travel_mood`, `best_period`, `duration_days`, `max_travelers`, `interest_tags`, `audience_tags`, `catalog_priority`, `quality_score`, `created_at`, `updated_at`, `published_at`) VALUES
+(1, 'Tunisie', 'tunisie', NULL, NULL, NULL, 'Destination test', 'published', NULL, NULL, 'Culture', 'Toute l annee', 7, 4, 'Culture, Nature, Detente', 'Famille, Couple, Solo', 50, 65.70, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(2, 'Bali', 'bali-indon-esie', 'Indonésie', 'Asie', 2758.85, 'Destination recommandée par IA', 'published', NULL, NULL, 'Plage', 'Mars a mai', 7, 4, 'Plage, Detente, Nature', 'Couple, Famille', 50, 76.00, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(3, 'Tirana', 'tirana-albanie', 'Albanie', 'Europe', 1276.85, 'Recommandation IA', 'published', NULL, NULL, 'Culture', 'Avril a octobre', 7, 4, 'Culture, Nature, Detente', 'Famille, Couple, Solo', 50, 75.80, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(4, 'Addis Ababa', 'addis-ababa-ethiopie', 'Éthiopie', 'Afrique', 23520.60, 'Recommandation IA', 'published', NULL, NULL, 'Aventure', 'Juin a octobre', 7, 4, 'Aventure, Nature, Culture, Safari', 'Solo, Couple, Famille', 50, 79.80, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(5, 'Shanghai', 'shanghai-chine', 'Chine', 'Asie', 11498.22, 'Recommandation IA', 'published', NULL, NULL, 'Plage', 'Mars a mai', 7, 4, 'Plage, Detente, Nature', 'Couple, Famille', 50, 73.80, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(6, 'Berlin', 'berlin-allemagne', 'Allemagne', 'Europe', 22052.40, 'Recommandation IA', 'published', NULL, NULL, 'City Trip', 'Avril a octobre', 7, 4, 'Shopping, Gastronomie, Culture', 'Business, Solo, Couple', 50, 75.80, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(7, 'Toronto', 'toronto-canada', 'Canada', 'Amerique', 6786.56, 'Recommandation IA', 'published', NULL, NULL, 'City Trip', 'Novembre a avril', 7, 4, 'Shopping, Gastronomie, Culture', 'Business, Solo, Couple', 50, 75.80, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(8, 'Algiers', 'algiers-alg-erie', 'Algérie', 'Afrique', 6139.84, 'Recommandation IA', 'published', NULL, NULL, 'Aventure', 'Juin a octobre', 7, 4, 'Aventure, Nature, Culture, Safari', 'Solo, Couple, Famille', 50, 79.80, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(9, 'Rio de Janeiro', 'rio-de-janeiro-br-esil', 'Brésil', 'Amerique', 1917.28, 'Recommandation IA', 'published', NULL, NULL, 'City Trip', 'Novembre a avril', 7, 4, 'Shopping, Gastronomie, Culture', 'Business, Solo, Couple', 50, 75.80, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23'),
+(10, 'Casablanca', 'casablanca-maroc', 'Maroc', 'Afrique', 20676.00, 'Recommandation IA', 'published', NULL, NULL, 'Aventure', 'Juin a octobre', 7, 4, 'Aventure, Nature, Culture, Safari', 'Solo, Couple, Famille', 50, 79.80, '2026-04-27 10:14:23', '2026-04-27 10:14:23', '2026-04-27 10:14:23');
 
 -- --------------------------------------------------------
 
@@ -375,126 +390,6 @@ INSERT INTO `featured_destination_history` (`id`, `featured_destination_id`, `ac
 (16, 11, 'AI_SELECTED', 'Casablanca', 72.5, 'Selection IA appliquee au slot #4.', 13, '2026-04-14 04:38:17'),
 (17, 12, 'AI_SELECTED', 'Shanghai', 71.5, 'Selection IA appliquee au slot #5.', 13, '2026-04-14 04:38:17'),
 (18, 13, 'AI_SELECTED', 'Toronto', 71, 'Selection IA appliquee au slot #6.', 13, '2026-04-14 04:38:17');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `forum_comments`
---
-
-CREATE TABLE `forum_comments` (
-  `id` int(11) NOT NULL,
-  `post_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `content` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `forum_comments`
---
-
-INSERT INTO `forum_comments` (`id`, `post_id`, `user_id`, `content`, `created_at`, `updated_at`) VALUES
-(2, 1, 14, 'sa7a wassime 👏👏👏🍹', '2026-04-18 15:34:01', '2026-04-18 15:34:01'),
-(3, 2, 16, 'bien wlh tanja7 elforum hethi', '2026-04-26 16:53:11', '2026-04-26 16:53:11');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `forum_posts`
---
-
-CREATE TABLE `forum_posts` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `title` varchar(160) NOT NULL,
-  `content` text NOT NULL,
-  `image_path` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `forum_posts`
---
-
-INSERT INTO `forum_posts` (`id`, `user_id`, `title`, `content`, `image_path`, `created_at`, `updated_at`) VALUES
-(1, 15, 'csqdcsqddssqdqs', 'cqsscsqdsqcsqscd', '/uploads/forum-media/post-15-20260418163938-313c59f9.png', '2026-04-18 14:39:38', '2026-04-18 14:39:38'),
-(2, 15, 'n,,nn,n,', '✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️🌍🌍🌍🌍🌍🌍', NULL, '2026-04-18 14:45:13', '2026-04-18 14:45:13');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `forum_reactions`
---
-
-CREATE TABLE `forum_reactions` (
-  `id` int(11) NOT NULL,
-  `post_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `reaction_code` varchar(20) NOT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `forum_reactions`
---
-
-INSERT INTO `forum_reactions` (`id`, `post_id`, `user_id`, `reaction_code`, `created_at`, `updated_at`) VALUES
-(1, 1, 15, 'LOVE', '2026-04-18 16:39:44', '2026-04-18 16:39:52'),
-(3, 1, 14, 'WOW', '2026-04-18 17:33:45', '2026-04-18 17:33:45'),
-(4, 2, 16, 'LOVE', '2026-04-26 17:52:07', '2026-04-26 17:52:07');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `forum_stories`
---
-
-CREATE TABLE `forum_stories` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `caption` varchar(180) NOT NULL,
-  `image_path` varchar(255) DEFAULT NULL,
-  `created_at` datetime NOT NULL,
-  `expires_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `forum_stories`
---
-
-INSERT INTO `forum_stories` (`id`, `user_id`, `caption`, `image_path`, `created_at`, `expires_at`) VALUES
-(1, 15, 'azazz', '/uploads/forum-media/story-15-20260418164114-de0a36c3.png', '2026-04-18 16:41:14', '2026-04-19 16:41:14'),
-(3, 14, '🌆🌆🌆🌆', '/uploads/forum-media/story-14-20260418190541-cf2d9189.png', '2026-04-18 19:05:41', '2026-04-19 19:05:41'),
-(4, 15, '', '/uploads/forum-media/story-15-20260420150916-a3f3ead5.png', '2026-04-20 15:09:16', '2026-04-21 15:09:16');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `forum_story_views`
---
-
-CREATE TABLE `forum_story_views` (
-  `id` int(11) NOT NULL,
-  `story_id` int(11) NOT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `viewer_key` varchar(120) DEFAULT NULL,
-  `viewed_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `forum_story_views`
---
-
-INSERT INTO `forum_story_views` (`id`, `story_id`, `user_id`, `viewer_key`, `viewed_at`) VALUES
-(1, 1, 14, NULL, '2026-04-18 17:34:12'),
-(3, 3, 14, NULL, '2026-04-18 19:05:49'),
-(4, 1, 15, NULL, '2026-04-18 19:06:18'),
-(5, 3, 15, NULL, '2026-04-18 19:06:20'),
-(6, 4, 15, NULL, '2026-04-20 15:09:21');
 
 -- --------------------------------------------------------
 
@@ -885,11 +780,333 @@ INSERT INTO `sessions` (`id`, `user_id`, `title`, `form_data`, `agent_state`, `c
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `sf_comments`
+--
+
+CREATE TABLE `sf_comments` (
+  `id` int(11) NOT NULL,
+  `post_id` int(11) NOT NULL,
+  `auteur` varchar(100) NOT NULL,
+  `contenu` text NOT NULL,
+  `date_commentaire` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_comments`
+--
+
+INSERT INTO `sf_comments` (`id`, `post_id`, `auteur`, `contenu`, `date_commentaire`) VALUES
+(1, 1, 'mohamed', 'hhhh', '2026-04-25 23:29:25'),
+(2, 1, 'admin', 'nn', '2026-04-25 23:42:53'),
+(3, 1, 'shayma', 'HI', '2026-04-25 23:44:45');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_follows`
+--
+
+CREATE TABLE `sf_follows` (
+  `id` int(11) NOT NULL,
+  `follower_username` varchar(100) NOT NULL,
+  `following_username` varchar(100) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'accepted',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `sf_follows`
+--
+
+INSERT INTO `sf_follows` (`id`, `follower_username`, `following_username`, `status`, `created_at`) VALUES
+(2, 'behybehy', 'mohamed', 'accepted', '2026-04-27 00:48:46'),
+(3, 'fatou', 'leyen', 'accepted', '2026-04-27 10:22:21');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_images`
+--
+
+CREATE TABLE `sf_images` (
+  `id` int(11) NOT NULL,
+  `post_id` int(11) NOT NULL,
+  `filename` varchar(500) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `position` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_images`
+--
+
+INSERT INTO `sf_images` (`id`, `post_id`, `filename`, `description`, `position`) VALUES
+(1, 1, '067b9c3a7d77ee1822d2aea5370fbffe-69ed3222e09f5.jpg', NULL, 0),
+(2, 2, 'jpg-39-69ef160daff50.jpg', NULL, 0),
+(3, 3, 'Last-time-I-caught-Plaza-de-Espana-at-sunrise-69ef16cd6aee0.jpg', NULL, 0),
+(4, 4, 'Malaga-Spain-69ef1818e8f46.jpg', NULL, 0),
+(17, 6, 'Fall-diary-in-Paris-69ef19a685280.jpg', NULL, 1),
+(18, 6, 'France-Paris-Louvre-Portrait-69ef19a685a23.jpg', NULL, 2),
+(19, 6, 'Le-Louvre-paris-art-museum-69ef19a68608b.jpg', NULL, 0),
+(21, 7, '5a89ac9405a365e7356b3183768a62f6-69ef1bc2bb1b0.jpg', NULL, 0),
+(22, 7, '4x4-69ef1bc2bba39.jpg', NULL, 1),
+(23, 8, 'UML-Activity-Diagram-Frame-2-69ef37d67f93b.jpg', NULL, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_location_pins`
+--
+
+CREATE TABLE `sf_location_pins` (
+  `id` int(11) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `latitude` decimal(10,7) NOT NULL,
+  `longitude` decimal(10,7) NOT NULL,
+  `label` varchar(120) DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_messages`
+--
+
+CREATE TABLE `sf_messages` (
+  `id` int(11) NOT NULL,
+  `sender_username` varchar(100) NOT NULL,
+  `receiver_username` varchar(100) NOT NULL,
+  `content` text NOT NULL,
+  `story_id` int(11) DEFAULT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `sf_messages`
+--
+
+INSERT INTO `sf_messages` (`id`, `sender_username`, `receiver_username`, `content`, `story_id`, `is_read`, `created_at`) VALUES
+(1, 'behybehy', 'mohamed', 'HI', NULL, 1, '2026-04-27 00:48:59'),
+(2, 'behybehy', 'mohamed', 'wow', NULL, 1, '2026-04-27 00:50:30'),
+(3, 'fatou', 'leyen', 'hello', NULL, 0, '2026-04-27 10:22:34');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_music`
+--
+
+CREATE TABLE `sf_music` (
+  `id` int(11) NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `artist` varchar(150) DEFAULT NULL,
+  `filename` varchar(500) NOT NULL,
+  `uploaded_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_music`
+--
+
+INSERT INTO `sf_music` (`id`, `title`, `artist`, `filename`, `uploaded_at`) VALUES
+(1, 'music1', 'artist1', 'Guliz-Ayla-Olmazsan-Olmaz-Guliz-Ayla-128k-69ed32de405e5.mp3', '2026-04-25 23:32:14'),
+(2, 'morafrefo deleli', 'fairuz', '1955-69ef12a2d3baa.mp3', '2026-04-27 09:39:14'),
+(3, 'lamericano', 'tu vuo', 'Tu-vuo-fa-lamericano-69ef12e2206bd.mp3', '2026-04-27 09:40:18'),
+(4, 'un jour tu ris', 'erik', 'Un-jour-tu-ris-un-jour-tu-pleures-No-Soy-De-Aqui-69ef13489f1b4.mp3', '2026-04-27 09:42:00'),
+(5, 'lama bada yata', 'nour', 'Lamma-Bada-Yatathana-69ef13ab46dc0.mp3', '2026-04-27 09:43:39'),
+(6, 'bang bang', 'cinatra', 'Bang-Bang-69ef13c7f2ce6.mp3', '2026-04-27 09:44:07'),
+(7, 'love in portofino', 'dalida', 'Love-In-Portofino-69ef13dee1459.mp3', '2026-04-27 09:44:30'),
+(8, 'salma ya salama', 'dalida', 'Dalida-Salma-Ya-Salama-Clip-Officiel-69ef1407314cc.mp3', '2026-04-27 09:45:11');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_posts`
+--
+
+CREATE TABLE `sf_posts` (
+  `id` int(11) NOT NULL,
+  `auteur` varchar(100) NOT NULL,
+  `description` text NOT NULL,
+  `chemin_photo` varchar(500) NOT NULL DEFAULT '',
+  `likes` int(11) NOT NULL DEFAULT 0,
+  `music_id` int(11) DEFAULT NULL,
+  `date_creation` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_posts`
+--
+
+INSERT INTO `sf_posts` (`id`, `auteur`, `description`, `chemin_photo`, `likes`, `music_id`, `date_creation`) VALUES
+(1, 'mohamed', 'ggggg', '067b9c3a7d77ee1822d2aea5370fbffe-69ed3222e09f5.jpg', 1, NULL, '2026-04-25 23:29:06'),
+(2, 'nour', 'Les pyramides...', 'jpg-39-69ef160daff50.jpg', 0, 8, '2026-04-27 09:53:49'),
+(3, 'nour', 'La riviere...', 'Last-time-I-caught-Plaza-de-Espana-at-sunrise-this-time-I-stayed-for-the-sunset-glow-69ef16cd6aee0.jpg', 0, 2, '2026-04-27 09:57:01'),
+(4, 'leyen', 'Sous le soleil de Malaga...', 'Malaga-Spain-69ef1818e8f46.jpg', 0, 5, '2026-04-27 10:02:32'),
+(5, 'leyen', 'Les gargouilles de la Sagrada Familia...', 'Madrid-l-essentiel-en-quelques-jours-69ef18969a04d.jpg', 0, 4, '2026-04-27 10:04:38'),
+(6, 'leyen', '#paris', 'Le-Louvre-paris-art-museum-69ef19a68608b.jpg', 0, 2, '2026-04-27 10:09:10'),
+(7, 'leyen', 'A la lisiere d une montagne...', '5a89ac9405a365e7356b3183768a62f6-69ef1bc2bb1b0.jpg', 0, 6, '2026-04-27 10:18:10'),
+(8, 'aziz', 'Les dunes de sable s\'étendent, ondulant sous le soleil, tandis que la mer parle des secrets d\'azur. Chaque vague rugit un poème qui s\'efface en grains de rêve.', 'UML-Activity-Diagram-Frame-2-69ef37d67f93b.jpg', 0, 4, '2026-04-27 12:17:57');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_post_likes`
+--
+
+CREATE TABLE `sf_post_likes` (
+  `id` int(11) NOT NULL,
+  `post_id` int(11) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_post_likes`
+--
+
+INSERT INTO `sf_post_likes` (`id`, `post_id`, `username`, `created_at`) VALUES
+(2, 1, 'shayma', '2026-04-26 00:04:32');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_reactions`
+--
+
+CREATE TABLE `sf_reactions` (
+  `id` int(11) NOT NULL,
+  `post_id` int(11) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `reaction_type` varchar(20) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_reactions`
+--
+
+INSERT INTO `sf_reactions` (`id`, `post_id`, `username`, `reaction_type`, `created_at`) VALUES
+(1, 1, 'shayma', '😂', '2026-04-26 00:04:25');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_stories`
+--
+
+CREATE TABLE `sf_stories` (
+  `id` int(11) NOT NULL,
+  `auteur` varchar(100) NOT NULL,
+  `media_type` varchar(10) NOT NULL,
+  `filename` varchar(500) NOT NULL,
+  `music_id` int(11) DEFAULT NULL,
+  `music_start` double DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `expires_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_stories`
+--
+
+INSERT INTO `sf_stories` (`id`, `auteur`, `media_type`, `filename`, `music_id`, `music_start`, `created_at`, `expires_at`) VALUES
+(4, 'nour', 'image', 'Last-time-I-caught-Plaza-de-Espana-at-sunrise-69ef17595cac0.jpg', 3, 0, '2026-04-27 09:59:21', '2026-04-28 09:59:21'),
+(5, 'leyen', 'image', 'being-a-tourist-today-69ef18f141352.jpg', 1, 0, '2026-04-27 10:06:09', '2026-04-28 10:06:09'),
+(6, 'fatou', 'image', 'Cooking-with-Nonna-69ef1ceb27c87.jpg', 3, 0, '2026-04-27 10:23:07', '2026-04-28 10:23:07');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_story_likes`
+--
+
+CREATE TABLE `sf_story_likes` (
+  `id` int(11) NOT NULL,
+  `story_id` int(11) NOT NULL,
+  `liker_username` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_story_views`
+--
+
+CREATE TABLE `sf_story_views` (
+  `id` int(11) NOT NULL,
+  `story_id` int(11) NOT NULL,
+  `viewer_username` varchar(100) NOT NULL,
+  `viewed_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_users`
+--
+
+CREATE TABLE `sf_users` (
+  `id` int(11) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL DEFAULT '',
+  `email` varchar(180) DEFAULT NULL,
+  `bio` varchar(30) DEFAULT NULL,
+  `roles` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`roles`)),
+  `is_private` tinyint(1) NOT NULL DEFAULT 0,
+  `profile_photo_path` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_users`
+--
+
+INSERT INTO `sf_users` (`id`, `username`, `password`, `email`, `bio`, `roles`, `is_private`, `profile_photo_path`, `created_at`) VALUES
+(1, 'admin', '$2y$13$6NFvvRDG0U09Bd4HkNtTrO/gG58.U8S6Qrb3mIP/4sI4Vcupu1F/S', 'admin@easytravel.com', NULL, '[\"ROLE_ADMIN\"]', 0, NULL, '2026-04-25 19:47:57'),
+(2, 'behybehy', '$2y$13$R45O5725nvanPtTR3npLyOQ1/26LdHdFduGxBEvmHbYzNX35e0QgG', 'behybehy@gmail.com', NULL, '[\"ROLE_USER\"]', 0, '35b63108ae7e7be77c44ad1420dcb86d-69ed3080ae916.jpg', '2026-04-25 21:35:48'),
+(3, 'mohamed', '$2y$13$uzN/Nh9MXkPB/XsAFVfYZe/IHbDE/k9PfBzToG9pyIm9AiGza6TpG', 'mouadh@gmail.com', NULL, '[\"ROLE_USER\"]', 0, '464411394-8275821155873823-6935755919950091175-n-69edab3fa2867.jpg', '2026-04-25 23:27:31'),
+(4, 'shayma', '$2y$13$BM19jQZ1fGwnyTnFrr5lyeq/c5CgvEjSOta.2eiMgKEpesn6fA5e6', 'shayma@gmail.com', NULL, '[\"ROLE_USER\"]', 0, NULL, '2026-04-25 23:43:33'),
+(5, 'nour', '$2y$13$hQOq/DbckBa6.EZ1LxJTuetrfw3IZOAzN7tb6xZpYvgbNsIuykGWu', 'nour@gmail.com', NULL, '[\"ROLE_USER\"]', 1, 'Makeup-aesthetic-69ef15c187cb0.jpg', '2026-04-27 09:49:42'),
+(6, 'leyen', '$2y$13$pVrDbnJEhMTXwDLz7z5Ozu7LdedfIPWsFHmAhaTSFcuUJanMC.2uS', 'leyen@gmail.com', NULL, '[\"ROLE_USER\"]', 0, '-69ef17a838089.jpg', '2026-04-27 09:50:20'),
+(7, 'fatou', '$2y$13$msFJ.CvspELzlUgYuHvjz.HHe8pZPk5hlcjSQTXlhA/hLxEBZv.jW', 'fatou@gmail.com', NULL, '[\"ROLE_USER\"]', 0, '-69ef1ca814aad.jpg', '2026-04-27 09:50:54'),
+(8, 'amine', '$2y$13$72bPVBQbK.WhYkkD6HvHu.wBG6GsxSuW6mQ3sDXUsxYznANZbZ//W', 'amine@gmail.com', NULL, '[\"ROLE_USER\"]', 0, NULL, '2026-04-27 09:51:30'),
+(10, 'aziz', '$2y$13$GQTKBwJY833glv2XIfrRl.9bksnprOG/3QFRNWimASMB9NzvTVp9K', 'aziz@gmail.com', NULL, '[\"ROLE_USER\"]', 0, NULL, '2026-04-27 12:16:06');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sf_videos`
+--
+
+CREATE TABLE `sf_videos` (
+  `id` int(11) NOT NULL,
+  `post_id` int(11) NOT NULL,
+  `filename` varchar(500) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `position` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sf_videos`
+--
+
+INSERT INTO `sf_videos` (`id`, `post_id`, `filename`, `description`, `position`) VALUES
+(1, 7, 'WhatsApp-Video-2026-04-18-at-21-18-50-69ef1bc2bbfca.mp4', NULL, 0);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `sponsor`
 --
 
 CREATE TABLE `sponsor` (
   `id` int(11) NOT NULL,
+  `sponsor_uid` varchar(36) DEFAULT NULL,
   `nom` varchar(100) NOT NULL,
   `logo_url` varchar(255) DEFAULT NULL,
   `logo_blob` mediumblob DEFAULT NULL,
@@ -1010,6 +1227,7 @@ CREATE TABLE `user` (
   `is_active` tinyint(1) DEFAULT 1,
   `is_validated` tinyint(1) NOT NULL DEFAULT 1,
   `validated_at` timestamp NULL DEFAULT NULL,
+  `face_descriptor` longtext DEFAULT NULL,
   `date_inscription` date DEFAULT curdate(),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -1019,20 +1237,20 @@ CREATE TABLE `user` (
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`id`, `nom`, `prenom`, `email`, `password`, `telephone`, `adresse`, `date_naissance`, `role`, `photo_url`, `is_active`, `is_validated`, `validated_at`, `date_inscription`, `created_at`, `updated_at`) VALUES
-(13, 'Zrafi', 'Mehdi', 'zrafimehdi5@gmail.com', 'i7DPbrmxfQ99IrRW8SElfcElTh8BZlNwR2OD6ndt9BQ=', '51418902', 'RUE N° 6', NULL, 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426193523-3e829752.jpg', 1, 1, NULL, '2026-02-22', '2026-02-22 09:12:53', '2026-04-26 17:38:11'),
-(14, 'aaaa', 'yassmine', 'yassmine@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', '', 'kairouan', '2016-03-05', 'ADMIN', '/uploads/profile-photos/yassmine-gmail-com-20260426190746-5e934ccb.png.jpg', 1, 1, '2026-03-31 02:29:38', '2026-03-31', '2026-03-30 23:15:19', '2026-04-26 17:39:45'),
-(16, 'Zrafi', 'Mehdi', 'zrafimehdi@gmail.com', 'v3BGi7hyZdrY9m6r9LlPeba2RFBdwI5vPgzOa3iL5Mk=', '+21651418902', 'Rue 6 N°436\r\nSuite', '2003-07-14', 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426193618-0368fe5b.jpg', 1, 1, NULL, '2026-04-26', '2026-04-26 16:25:32', '2026-04-26 17:36:18'),
-(42, 'Admin', 'System', 'admin@easytravel.local', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33123456789', '123 Admin Street, Paris', '1985-05-15', 'ADMIN', '/uploads/profile-photos/fixture_92068d1bd458bae170e1f7f0726e97f4.jpg', 1, 1, '2026-04-26 19:03:52', '2026-04-26', '2026-04-26 18:03:52', '2026-04-26 18:03:52'),
-(43, 'Dupont', 'Jean', 'jean.dupont@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33612345678', '45 Avenue des Champs, Paris', '1990-08-22', 'USER', '/uploads/profile-photos/fixture_ac915d2c8b99a634c0f4037498214e2d.jpg', 1, 1, '2026-04-26 19:03:53', '2026-04-26', '2026-04-26 18:03:53', '2026-04-26 18:03:53'),
-(44, 'Martin', 'Sophie', 'sophie.martin@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33698765432', '12 Rue de la Paix, Lyon', '1995-12-05', 'USER', '/uploads/profile-photos/fixture_bbbd3c055a9275535116491b898e04d3.jpg', 1, 1, '2026-04-26 19:03:54', '2026-04-26', '2026-04-26 18:03:54', '2026-04-26 18:03:54'),
-(45, 'Lefevre', 'Luc', 'luc.lefevre@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33711223344', '78 Boulevard Saint-Michel, Marseille', '1988-03-30', 'USER', '/uploads/profile-photos/fixture_89e9203c9256e888923e1cc88098fa32.jpg', 1, 0, NULL, '2026-04-26', '2026-04-26 18:03:55', '2026-04-26 18:03:55'),
-(46, 'Moreau', 'Alice', 'alice.moreau@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33755667788', '8 Place du Capitole, Toulouse', '1992-07-14', 'USER', '/uploads/profile-photos/fixture_04a3c4bc8125c724c81eb8287f2305d2.jpg', 0, 1, '2026-04-26 19:03:55', '2026-04-26', '2026-04-26 18:03:55', '2026-04-26 18:03:55'),
-(47, 'Moreau', 'Julie', 'julie.moreau_19633@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33625442841', '3 Rue de Marseille', '1979-04-02', 'USER', '/uploads/profile-photos/fixture_8acbda119e9c80cb9f0b4f60f8cd0fb9.jpg', 1, 1, '2026-04-26 19:06:55', '2026-04-26', '2026-04-26 18:06:55', '2026-04-26 18:06:55'),
-(48, 'Roux', 'Camille', 'camille.roux_a2638@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33676899209', '13 Rue de Lyon', '1995-03-24', 'USER', '/uploads/profile-photos/fixture_ff5e03d3680dc3fe541541e52026bb07.jpg', 1, 1, '2026-04-26 19:06:56', '2026-04-26', '2026-04-26 18:06:56', '2026-04-26 18:06:56'),
-(49, 'Michel', 'Luc', 'luc.michel_c2f2a@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33665073739', '42 Rue de Paris', '1980-02-03', 'USER', '/uploads/profile-photos/fixture_467d2c24ef3768066a136c7fafef1b6f.jpg', 1, 1, '2026-04-26 19:06:56', '2026-04-26', '2026-04-26 18:06:56', '2026-04-26 18:06:56'),
-(50, 'Durand', 'Julien', 'julien.durand_124cc@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33734878861', '120 Rue de Montpellier', '1999-02-14', 'USER', '/uploads/profile-photos/fixture_18eb8d2b8ba04379604a0bd48f51af10.jpg', 1, 1, '2026-04-26 19:06:57', '2026-04-26', '2026-04-26 18:06:57', '2026-04-26 18:06:57'),
-(51, 'Bernard', 'Chloe', 'chloe.bernard_3b4dc@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33611550886', '120 Rue de Strasbourg', '1988-01-30', 'ADMIN', '/uploads/profile-photos/fixture_dfcde8183b86b0cfb49081af76c5af87.jpg', 1, 1, '2026-04-26 19:06:58', '2026-04-26', '2026-04-26 18:06:58', '2026-04-26 18:06:58');
+INSERT INTO `user` (`id`, `nom`, `prenom`, `email`, `password`, `telephone`, `adresse`, `date_naissance`, `role`, `photo_url`, `is_active`, `is_validated`, `validated_at`, `face_descriptor`, `date_inscription`, `created_at`, `updated_at`) VALUES
+(13, 'Zrafi', 'Mehdi', 'zrafimehdi5@gmail.com', 'i7DPbrmxfQ99IrRW8SElfcElTh8BZlNwR2OD6ndt9BQ=', '51418902', 'RUE N° 6', NULL, 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426193523-3e829752.jpg', 1, 1, NULL, NULL, '2026-02-22', '2026-02-22 09:12:53', '2026-04-26 17:38:11'),
+(14, 'aaaa', 'yassmine', 'yassmine@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', '', 'kairouan', '2016-03-05', 'ADMIN', '/uploads/profile-photos/yassmine-gmail-com-20260426190746-5e934ccb.png.jpg', 1, 1, '2026-03-31 02:29:38', NULL, '2026-03-31', '2026-03-30 23:15:19', '2026-04-26 17:39:45'),
+(16, 'Zrafi', 'Mehdi', 'zrafimehdi@gmail.com', 'v3BGi7hyZdrY9m6r9LlPeba2RFBdwI5vPgzOa3iL5Mk=', '+21651418902', 'Rue 6 N°436\r\nSuite', '2003-07-14', 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426193618-0368fe5b.jpg', 1, 1, NULL, '[-0.17615115642547607,0.04586852341890335,0.03727798908948898,-0.01455969549715519,-0.023947961628437042,-0.042517442256212234,0.01749814860522747,-0.08891227096319199,0.13159245252609253,0.007630017586052418,0.2432693988084793,-0.0034708715975284576,-0.23217017948627472,-0.09184239059686661,-0.022422175854444504,0.0014915944775566459,-0.05153800547122955,-0.15237373113632202,-0.039155881851911545,-0.12048626691102982,0.07530723512172699,-0.017224682494997978,-0.003004219848662615,0.06502970308065414,-0.2210153192281723,-0.2576545178890228,-0.08296266943216324,-0.12097037583589554,0.05506567656993866,-0.14365167915821075,-0.011502468027174473,0.04380124434828758,-0.2139766961336136,-0.06742319464683533,-0.0015363318379968405,0.09507579356431961,0.02975020557641983,-0.02321123331785202,0.15143142640590668,-0.015814265236258507,-0.09558651596307755,0.012579872272908688,0.03438430652022362,0.27476754784584045,0.13254307210445404,-0.01032636035233736,0.0713222473859787,-0.0447288379073143,0.05026097223162651,-0.24139249324798584,0.09352169185876846,0.13487982749938965,0.1236409842967987,0.014022158458828926,0.13984286785125732,-0.22045084834098816,-0.06754755228757858,0.11587600409984589,-0.10296230018138885,0.16130447387695312,-0.0250545646995306,0.02016436867415905,-0.03841449320316315,-0.07396532595157623,0.17763803899288177,0.08210345357656479,-0.14137163758277893,-0.09894514083862305,0.11240676045417786,-0.11802497506141663,0.006613447330892086,0.142992302775383,-0.09399373084306717,-0.19225941598415375,-0.24922142922878265,0.1663544774055481,0.45810022950172424,0.09648120403289795,-0.1976822465658188,0.10425415635108948,-0.12036027759313583,-0.012264045886695385,0.025023655965924263,0.0017322857165709138,-0.11254621297121048,0.05524261295795441,-0.1220218762755394,0.044575076550245285,0.16790995001792908,0.07412244379520416,-0.03355008736252785,0.1608828455209732,-0.05433018133044243,0.0410521999001503,0.07086004316806793,0.08075235038995743,-0.1314280927181244,-0.03144512325525284,-0.03761117532849312,-0.006557261571288109,0.03556431084871292,-0.14907793700695038,-0.0024993829429149628,0.09529536217451096,-0.16337159276008606,0.0747361034154892,-0.01199458446353674,-0.02402283251285553,-0.044557493180036545,0.05917833745479584,-0.06997822225093842,-0.0023869231808930635,0.09272398799657822,-0.37599894404411316,0.1772441267967224,0.13917535543441772,-0.01994149573147297,0.1629246324300766,0.05138169601559639,0.04252856224775314,0.03748643025755882,0.05748508870601654,-0.054763056337833405,-0.046376895159482956,0.0014915532665327191,-0.0608474463224411,0.00353855243884027,0.013543200679123402]', '2026-04-26', '2026-04-26 16:25:32', '2026-05-01 10:58:47'),
+(42, 'Admin', 'System', 'admin@easytravel.local', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33123456789', '123 Admin Street, Paris', '1985-05-15', 'ADMIN', '/uploads/profile-photos/fixture_92068d1bd458bae170e1f7f0726e97f4.jpg', 1, 1, '2026-04-26 19:03:52', NULL, '2026-04-26', '2026-04-26 18:03:52', '2026-04-26 18:03:52'),
+(43, 'Dupont', 'Jean', 'jean.dupont@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33612345678', '45 Avenue des Champs, Paris', '1990-08-22', 'USER', '/uploads/profile-photos/fixture_ac915d2c8b99a634c0f4037498214e2d.jpg', 1, 1, '2026-04-26 19:03:53', NULL, '2026-04-26', '2026-04-26 18:03:53', '2026-04-26 18:03:53'),
+(44, 'Martin', 'Sophie', 'sophie.martin@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33698765432', '12 Rue de la Paix, Lyon', '1995-12-05', 'USER', '/uploads/profile-photos/fixture_bbbd3c055a9275535116491b898e04d3.jpg', 1, 1, '2026-04-26 19:03:54', NULL, '2026-04-26', '2026-04-26 18:03:54', '2026-04-26 18:03:54'),
+(45, 'Lefevre', 'Luc', 'luc.lefevre@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33711223344', '78 Boulevard Saint-Michel, Marseille', '1988-03-30', 'USER', '/uploads/profile-photos/fixture_89e9203c9256e888923e1cc88098fa32.jpg', 1, 0, NULL, NULL, '2026-04-26', '2026-04-26 18:03:55', '2026-04-26 18:03:55'),
+(46, 'Moreau', 'Alice', 'alice.moreau@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33755667788', '8 Place du Capitole, Toulouse', '1992-07-14', 'USER', '/uploads/profile-photos/fixture_04a3c4bc8125c724c81eb8287f2305d2.jpg', 0, 1, '2026-04-26 19:03:55', NULL, '2026-04-26', '2026-04-26 18:03:55', '2026-04-26 18:03:55'),
+(47, 'Moreau', 'Julie', 'julie.moreau_19633@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33625442841', '3 Rue de Marseille', '1979-04-02', 'USER', '/uploads/profile-photos/fixture_8acbda119e9c80cb9f0b4f60f8cd0fb9.jpg', 1, 1, '2026-04-26 19:06:55', NULL, '2026-04-26', '2026-04-26 18:06:55', '2026-04-26 18:06:55'),
+(48, 'Roux', 'Camille', 'camille.roux_a2638@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33676899209', '13 Rue de Lyon', '1995-03-24', 'USER', '/uploads/profile-photos/fixture_ff5e03d3680dc3fe541541e52026bb07.jpg', 1, 1, '2026-04-26 19:06:56', NULL, '2026-04-26', '2026-04-26 18:06:56', '2026-04-26 18:06:56'),
+(49, 'Michel', 'Luc', 'luc.michel_c2f2a@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33665073739', '42 Rue de Paris', '1980-02-03', 'USER', '/uploads/profile-photos/fixture_467d2c24ef3768066a136c7fafef1b6f.jpg', 1, 1, '2026-04-26 19:06:56', NULL, '2026-04-26', '2026-04-26 18:06:56', '2026-04-26 18:06:56'),
+(50, 'Durand', 'Julien', 'julien.durand_124cc@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33734878861', '120 Rue de Montpellier', '1999-02-14', 'USER', '/uploads/profile-photos/fixture_18eb8d2b8ba04379604a0bd48f51af10.jpg', 1, 1, '2026-04-26 19:06:57', NULL, '2026-04-26', '2026-04-26 18:06:57', '2026-04-26 18:06:57'),
+(51, 'Bernard', 'Chloe', 'chloe.bernard_3b4dc@example.com', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', '+33611550886', '120 Rue de Strasbourg', '1988-01-30', 'ADMIN', '/uploads/profile-photos/fixture_dfcde8183b86b0cfb49081af76c5af87.jpg', 1, 1, '2026-04-26 19:06:58', NULL, '2026-04-26', '2026-04-26 18:06:58', '2026-04-26 18:06:58');
 
 -- --------------------------------------------------------
 
@@ -1099,7 +1317,21 @@ INSERT INTO `user_notifications` (`id`, `recipient_email`, `sender_email`, `send
 (40, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 1, '2026-04-26 17:35:23'),
 (41, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 17:35:26'),
 (42, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 1, '2026-04-26 17:36:18'),
-(43, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 17:36:22');
+(43, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-04-26 17:36:22'),
+(44, 'zrafimehdi6@gmail.com', 'system@easytravel.local', 'SYSTEM', 'ACCOUNT', 'Compte cree en attente de validation', 'Bienvenue Mehdi, votre compte EasyTravel a ete cree et attend maintenant la validation d\'un administrateur.', 0, '2026-05-01 08:31:23'),
+(45, 'chloe.bernard_3b4dc@example.com', 'zrafimehdi6@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 08:31:23'),
+(46, 'admin@easytravel.local', 'zrafimehdi6@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 08:31:23'),
+(47, 'zrafimehdi@gmail.com', 'zrafimehdi6@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 1, '2026-05-01 08:31:23'),
+(48, 'yassmine@gmail.com', 'zrafimehdi6@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 08:31:23'),
+(49, 'zrafimehdi5@gmail.com', 'zrafimehdi6@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 08:31:23'),
+(50, 'zrafimehdi6@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'ACCOUNT', 'Compte valide par l\'administration', 'Votre compte EasyTravel a ete valide. Vous pouvez maintenant vous connecter.', 0, '2026-05-01 08:32:17'),
+(51, 'zrafimehdi7@gmail.com', 'system@easytravel.local', 'SYSTEM', 'ACCOUNT', 'Compte cree en attente de validation', 'Bienvenue Mehdi, votre compte EasyTravel a ete cree et attend maintenant la validation d\'un administrateur.', 0, '2026-05-01 09:29:23'),
+(52, 'chloe.bernard_3b4dc@example.com', 'zrafimehdi7@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 09:29:23'),
+(53, 'admin@easytravel.local', 'zrafimehdi7@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 09:29:23'),
+(54, 'zrafimehdi@gmail.com', 'zrafimehdi7@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 09:29:23'),
+(55, 'yassmine@gmail.com', 'zrafimehdi7@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 09:29:23'),
+(56, 'zrafimehdi5@gmail.com', 'zrafimehdi7@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-05-01 09:29:23'),
+(57, 'zrafimehdi7@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'ACCOUNT', 'Compte valide par l\'administration', 'Votre compte EasyTravel a ete valide. Vous pouvez maintenant vous connecter.', 0, '2026-05-01 09:29:42');
 
 -- --------------------------------------------------------
 
@@ -1128,7 +1360,11 @@ INSERT INTO `user_notification_preferences` (`id`, `user_email`, `user_role`, `n
 (2, 'yassmine@gmail.com', 'USER', 1, 1, 1, 0, '2026-03-31 02:29:39', '2026-03-31 02:29:39'),
 (3, 'wassim@gmail.com', 'USER', 1, 1, 1, 0, '2026-04-02 14:22:57', '2026-04-02 14:22:57'),
 (11, 'zrafimehdi@gmail.com', 'ADMIN', 1, 1, 1, 0, '2026-04-26 16:25:32', '2026-04-26 16:32:41'),
-(25, 'sophie.martin@example.com', 'USER', 1, 1, 1, 0, '2026-04-26 17:50:06', '2026-04-26 17:50:06');
+(25, 'sophie.martin@example.com', 'USER', 1, 1, 1, 0, '2026-04-26 17:50:06', '2026-04-26 17:50:06'),
+(26, 'zrafimehdi6@gmail.com', 'USER', 1, 1, 1, 0, '2026-05-01 08:31:23', '2026-05-01 08:31:23'),
+(28, 'chloe.bernard_3b4dc@example.com', 'ADMIN', 1, 1, 1, 0, '2026-05-01 08:31:23', '2026-05-01 08:31:23'),
+(29, 'admin@easytravel.local', 'ADMIN', 1, 1, 1, 0, '2026-05-01 08:31:23', '2026-05-01 08:31:23'),
+(31, 'zrafimehdi7@gmail.com', 'USER', 1, 1, 1, 0, '2026-05-01 09:29:23', '2026-05-01 09:29:23');
 
 -- --------------------------------------------------------
 
@@ -1256,52 +1492,6 @@ ALTER TABLE `featured_destination_history`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `forum_comments`
---
-ALTER TABLE `forum_comments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_forum_comments_post` (`post_id`),
-  ADD KEY `idx_forum_comments_user` (`user_id`),
-  ADD KEY `idx_forum_comments_created` (`created_at`);
-
---
--- Indexes for table `forum_posts`
---
-ALTER TABLE `forum_posts`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_forum_posts_user` (`user_id`),
-  ADD KEY `idx_forum_posts_created` (`created_at`);
-
---
--- Indexes for table `forum_reactions`
---
-ALTER TABLE `forum_reactions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uniq_forum_reactions_post_user` (`post_id`,`user_id`),
-  ADD KEY `idx_forum_reactions_post` (`post_id`),
-  ADD KEY `idx_forum_reactions_user` (`user_id`),
-  ADD KEY `idx_forum_reactions_code` (`reaction_code`);
-
---
--- Indexes for table `forum_stories`
---
-ALTER TABLE `forum_stories`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_forum_stories_user` (`user_id`),
-  ADD KEY `idx_forum_stories_expires` (`expires_at`),
-  ADD KEY `idx_forum_stories_created` (`created_at`);
-
---
--- Indexes for table `forum_story_views`
---
-ALTER TABLE `forum_story_views`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uniq_forum_story_views_story_user` (`story_id`,`user_id`),
-  ADD UNIQUE KEY `uniq_forum_story_views_story_viewer` (`story_id`,`viewer_key`),
-  ADD KEY `idx_forum_story_views_story` (`story_id`),
-  ADD KEY `idx_forum_story_views_viewed` (`viewed_at`);
-
---
 -- Indexes for table `historique_paiements`
 --
 ALTER TABLE `historique_paiements`
@@ -1399,6 +1589,117 @@ ALTER TABLE `revenus_admin`
 ALTER TABLE `sessions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_sessions_user_updated` (`user_id`,`updated_at`);
+
+--
+-- Indexes for table `sf_comments`
+--
+ALTER TABLE `sf_comments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sf_comments_post` (`post_id`);
+
+--
+-- Indexes for table `sf_follows`
+--
+ALTER TABLE `sf_follows`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_sf_follow` (`follower_username`,`following_username`),
+  ADD KEY `idx_sf_follower` (`follower_username`),
+  ADD KEY `idx_sf_following` (`following_username`);
+
+--
+-- Indexes for table `sf_images`
+--
+ALTER TABLE `sf_images`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sf_images_post` (`post_id`),
+  ADD KEY `idx_sf_images_position` (`post_id`,`position`);
+
+--
+-- Indexes for table `sf_location_pins`
+--
+ALTER TABLE `sf_location_pins`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_sf_location_user` (`username`),
+  ADD KEY `idx_sf_location_expires` (`expires_at`);
+
+--
+-- Indexes for table `sf_messages`
+--
+ALTER TABLE `sf_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sf_conv` (`sender_username`,`receiver_username`,`created_at`),
+  ADD KEY `idx_sf_receiver` (`receiver_username`,`is_read`),
+  ADD KEY `fk_sf_messages_story` (`story_id`);
+
+--
+-- Indexes for table `sf_music`
+--
+ALTER TABLE `sf_music`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `sf_posts`
+--
+ALTER TABLE `sf_posts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_posts_auteur` (`auteur`),
+  ADD KEY `idx_posts_date` (`date_creation`),
+  ADD KEY `fk_sf_post_music` (`music_id`);
+
+--
+-- Indexes for table `sf_post_likes`
+--
+ALTER TABLE `sf_post_likes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_sf_post_user` (`post_id`,`username`),
+  ADD KEY `idx_sf_post_likes_username` (`username`);
+
+--
+-- Indexes for table `sf_reactions`
+--
+ALTER TABLE `sf_reactions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_sf_user_post_reaction` (`post_id`,`username`),
+  ADD KEY `idx_sf_reactions_post` (`post_id`);
+
+--
+-- Indexes for table `sf_stories`
+--
+ALTER TABLE `sf_stories`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sf_stories_author` (`auteur`),
+  ADD KEY `idx_sf_stories_expires` (`expires_at`),
+  ADD KEY `fk_sf_stories_music` (`music_id`);
+
+--
+-- Indexes for table `sf_story_likes`
+--
+ALTER TABLE `sf_story_likes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_sf_story_liker` (`story_id`,`liker_username`),
+  ADD KEY `idx_sf_sl_created_at` (`created_at`);
+
+--
+-- Indexes for table `sf_story_views`
+--
+ALTER TABLE `sf_story_views`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_sf_story_viewer` (`story_id`,`viewer_username`),
+  ADD KEY `idx_sf_viewed_at` (`viewed_at`);
+
+--
+-- Indexes for table `sf_users`
+--
+ALTER TABLE `sf_users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`);
+
+--
+-- Indexes for table `sf_videos`
+--
+ALTER TABLE `sf_videos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_sf_video_post` (`post_id`);
 
 --
 -- Indexes for table `transactions`
@@ -1513,36 +1814,6 @@ ALTER TABLE `featured_destination_history`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
--- AUTO_INCREMENT for table `forum_comments`
---
-ALTER TABLE `forum_comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `forum_posts`
---
-ALTER TABLE `forum_posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `forum_reactions`
---
-ALTER TABLE `forum_reactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `forum_stories`
---
-ALTER TABLE `forum_stories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `forum_story_views`
---
-ALTER TABLE `forum_story_views`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
 -- AUTO_INCREMENT for table `historique_paiements`
 --
 ALTER TABLE `historique_paiements`
@@ -1597,6 +1868,90 @@ ALTER TABLE `revenus_admin`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `sf_comments`
+--
+ALTER TABLE `sf_comments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `sf_follows`
+--
+ALTER TABLE `sf_follows`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `sf_images`
+--
+ALTER TABLE `sf_images`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+
+--
+-- AUTO_INCREMENT for table `sf_location_pins`
+--
+ALTER TABLE `sf_location_pins`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `sf_messages`
+--
+ALTER TABLE `sf_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `sf_music`
+--
+ALTER TABLE `sf_music`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `sf_posts`
+--
+ALTER TABLE `sf_posts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `sf_post_likes`
+--
+ALTER TABLE `sf_post_likes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `sf_reactions`
+--
+ALTER TABLE `sf_reactions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `sf_stories`
+--
+ALTER TABLE `sf_stories`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `sf_story_likes`
+--
+ALTER TABLE `sf_story_likes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `sf_story_views`
+--
+ALTER TABLE `sf_story_views`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `sf_users`
+--
+ALTER TABLE `sf_users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `sf_videos`
+--
+ALTER TABLE `sf_videos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
@@ -1618,19 +1973,19 @@ ALTER TABLE `travel_packages`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `user_notifications`
 --
 ALTER TABLE `user_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `user_notification_preferences`
 --
 ALTER TABLE `user_notification_preferences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `user_remember_me`
@@ -1696,6 +2051,66 @@ ALTER TABLE `reclamation`
 ALTER TABLE `reponse`
   ADD CONSTRAINT `reponse_ibfk_1` FOREIGN KEY (`reclamation_id`) REFERENCES `reclamation` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `reponse_ibfk_2` FOREIGN KEY (`admin_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `sf_comments`
+--
+ALTER TABLE `sf_comments`
+  ADD CONSTRAINT `fk_sf_comments_post` FOREIGN KEY (`post_id`) REFERENCES `sf_posts` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `sf_images`
+--
+ALTER TABLE `sf_images`
+  ADD CONSTRAINT `fk_sf_images_post` FOREIGN KEY (`post_id`) REFERENCES `sf_posts` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `sf_messages`
+--
+ALTER TABLE `sf_messages`
+  ADD CONSTRAINT `fk_sf_messages_story` FOREIGN KEY (`story_id`) REFERENCES `sf_stories` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `sf_posts`
+--
+ALTER TABLE `sf_posts`
+  ADD CONSTRAINT `fk_sf_post_music` FOREIGN KEY (`music_id`) REFERENCES `sf_music` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `sf_post_likes`
+--
+ALTER TABLE `sf_post_likes`
+  ADD CONSTRAINT `fk_sf_post_like_post` FOREIGN KEY (`post_id`) REFERENCES `sf_posts` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `sf_reactions`
+--
+ALTER TABLE `sf_reactions`
+  ADD CONSTRAINT `fk_sf_reactions_post` FOREIGN KEY (`post_id`) REFERENCES `sf_posts` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `sf_stories`
+--
+ALTER TABLE `sf_stories`
+  ADD CONSTRAINT `fk_sf_stories_music` FOREIGN KEY (`music_id`) REFERENCES `sf_music` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `sf_story_likes`
+--
+ALTER TABLE `sf_story_likes`
+  ADD CONSTRAINT `fk_sf_story_likes_story` FOREIGN KEY (`story_id`) REFERENCES `sf_stories` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `sf_story_views`
+--
+ALTER TABLE `sf_story_views`
+  ADD CONSTRAINT `fk_sf_story_views_story` FOREIGN KEY (`story_id`) REFERENCES `sf_stories` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `sf_videos`
+--
+ALTER TABLE `sf_videos`
+  ADD CONSTRAINT `fk_sf_video_post` FOREIGN KEY (`post_id`) REFERENCES `sf_posts` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

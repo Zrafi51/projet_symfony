@@ -6,6 +6,7 @@
     <title>{% block title %}{{ title|default('Authentification') }}{% endblock %}</title>
     <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
     <link rel="stylesheet" href="/app.css">
+    {% block extra_css %}{% endblock %}
 </head>
 <body class="auth-body">
     <div class="auth-screen">
@@ -13,5 +14,6 @@
             {{ legacy_content|default('')|raw }}
         {% endblock %}
     </div>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

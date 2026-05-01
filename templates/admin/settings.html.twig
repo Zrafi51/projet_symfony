@@ -152,6 +152,24 @@
                     <h3 class="admin-settings-card-title">Conseil admin</h3>
                     <p class="admin-settings-card-copy">Cette page est faite pour gerer votre profil, vos notifications et votre avatar comme un vrai espace settings.</p>
                 </section>
+
+                <section class="admin-settings-card admin-settings-side-card">
+                    <h3 class="admin-settings-card-title">Configuration Face ID</h3>
+                    <p class="admin-settings-card-copy">Sécurisez votre accès admin avec la reconnaissance faciale.</p>
+                    
+                    <div class="admin-face-id-setup-container">
+                        <div class="admin-face-id-video-wrapper" style="display: none !important;">
+                            <video id="adminFaceIdVideo" autoplay muted playsinline></video>
+                            <canvas id="adminFaceIdOverlay"></canvas>
+                            <div class="admin-face-id-status" id="adminFaceIdStatus">Prêt</div>
+                        </div>
+
+                        <div class="admin-settings-actions" style="justify-content: center; margin-top: 15px;">
+                            <button type="button" class="admin-settings-primary-button admin-full-button" id="startAdminFaceId">Activer la caméra</button>
+                            <button type="button" class="admin-settings-primary-button admin-full-button" id="captureAdminFaceId" style="display:none;">Capturer mon visage</button>
+                        </div>
+                    </div>
+                </section>
             </aside>
 
             <div class="admin-settings-main">
@@ -286,6 +304,7 @@
                             </div>
                         </form>
                     </section>
+
                 </div>
             </div>
         </div>
@@ -395,6 +414,153 @@
 
         syncCards();
     }
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+(() => {
+    const startBtn = document.getElementById('startAdminFaceId');
+    const captureBtn = document.getElementById('captureAdminFaceId');
+    const video = document.getElementById('adminFaceIdVideo');
+    const canvas = document.getElementById('adminFaceIdOverlay');
+    const status = document.getElementById('adminFaceIdStatus');
+    
+    let modelsLoaded = false;
+    let detectionInterval = null;
+
+    // Load AI Models
+    (async function init() {
+        const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js/weights';
+        try {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            modelsLoaded = true;
+            status.textContent = 'Système IA Prêt.';
+        } catch (err) {
+            console.error('FaceAPI Init Error:', err);
+            status.textContent = 'Erreur chargement IA.';
+        }
+    })();
+
+    function startDetectionLoop() {
+        if (detectionInterval) clearInterval(detectionInterval);
+        
+        const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        detectionInterval = setInterval(async () => {
+            if (!modelsLoaded || video.paused || video.ended) return;
+
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks();
+
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (detection) {
+                const resizedDetections = faceapi.resizeResults(detection, displaySize);
+                faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            }
+        }, 100);
+    }
+
+    startBtn.addEventListener('click', async () => {
+        if (!modelsLoaded) {
+            status.textContent = 'Finalisation IA...';
+            let retries = 0;
+            while(!modelsLoaded && retries < 50) { 
+                await new Promise(r => setTimeout(r, 100)); 
+                retries++;
+            }
+            if (!modelsLoaded) {
+                status.textContent = 'Échec IA. Vérifiez la connexion.';
+                return;
+            }
+        }
+        
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+            video.srcObject = stream;
+            
+            video.onloadedmetadata = () => {
+                video.play();
+                const wrapper = document.querySelector('.admin-face-id-video-wrapper');
+                if (wrapper) {
+                    wrapper.style.setProperty('display', 'block', 'important');
+                }
+                
+                // Important: Match dimensions AFTER showing the wrapper so offsetWidth/Height are correct
+                setTimeout(() => {
+                    startDetectionLoop();
+                }, 200);
+                
+                startBtn.style.display = 'none';
+                captureBtn.style.display = 'inline-block';
+                status.textContent = 'Positionnez votre visage.';
+            };
+        } catch (err) {
+            console.error('Camera Access Error:', err);
+            status.textContent = 'Accès caméra refusé.';
+        }
+    });
+
+    captureBtn.addEventListener('click', async () => {
+        if (!modelsLoaded) return;
+        status.textContent = 'Analyse en cours...';
+        captureBtn.disabled = true;
+        
+        try {
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (detection) {
+                status.textContent = 'Visage capturé ! Synchronisation...';
+                
+                const response = await fetch('/api/face-id/enroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ descriptor: Array.from(detection.descriptor) })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    status.textContent = 'Face ID configuré avec succès !';
+                    captureBtn.style.display = 'none';
+                    if (detectionInterval) clearInterval(detectionInterval);
+                    
+                    setTimeout(() => {
+                        const stream = video.srcObject;
+                        if (stream) {
+                            stream.getTracks().forEach(track => track.stop());
+                        }
+                        video.srcObject = null;
+                        
+                        const wrapper = document.querySelector('.admin-face-id-video-wrapper');
+                        if (wrapper) {
+                            wrapper.style.setProperty('display', 'none', 'important');
+                        }
+                        
+                        startBtn.style.display = 'inline-block';
+                        startBtn.textContent = 'Reconfigurer Face ID';
+                        captureBtn.disabled = false;
+                    }, 2500);
+                } else {
+                    status.textContent = 'Erreur : ' + result.message;
+                    captureBtn.disabled = false;
+                }
+            } else {
+                status.textContent = 'Aucun visage détecté. Réessayez.';
+                captureBtn.disabled = false;
+            }
+        } catch (err) {
+            console.error('Capture Error:', err);
+            status.textContent = 'Erreur lors de la capture.';
+            captureBtn.disabled = false;
+        }
+    });
 })();
 </script>
 {% endblock %}
