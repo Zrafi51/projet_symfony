@@ -56,4 +56,4 @@ services:
     App\Service\MonumentRecognizer:
         arguments:
             $openrouterApiKey: '%env(OPENROUTER_API_KEY)%'
-            $openrouterModel: 'meta-llama/llama-3.2-11b-vision-instruct:free'
+            $openrouterModel: '%env(OPENROUTER_MODEL)%'

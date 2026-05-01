@@ -72,6 +72,7 @@ class MonumentController extends AbstractController
     #[Route('/scan', name: 'app_monument_scan_process', methods: ['POST'])]
     public function processScan(Request $request): JsonResponse
     {
+        $this->logger->info('Monument scan process started');
         $currentUser = $this->getAuthenticatedUser($request);
         
         if (!$currentUser) {
@@ -129,13 +130,15 @@ class MonumentController extends AbstractController
             // Recognize monument
             $result = $this->monumentRecognizer->recognize($imagePath);
             
+            $this->logger->info('Monument recognition result', $result);
+            
             if ($result['success']) {
                 $monumentScan->setMonumentName($result['name']);
                 $monumentScan->setCity($result['city']);
                 $monumentScan->setCountry($result['country']);
                 $monumentScan->setDescription($result['description']);
                 $monumentScan->setConfidenceScore($result['confidence']);
-                $monumentScan->setApiProvider($result['provider']);
+                $monumentScan->setApiProvider($result['provider'] ?? 'unknown');
                 $monumentScan->setScanStatus('completed');
                 
                 $this->entityManager->flush();
@@ -154,7 +157,7 @@ class MonumentController extends AbstractController
                         'createdAt' => $monumentScan->getCreatedAt()->format('Y-m-d H:i:s'),
                         'addedToRequest' => $monumentScan->isAddedToRequest()
                     ]
-                ]);
+                ], 200, [], JsonResponse::DEFAULT_ENCODING_OPTIONS);
             } else {
                 $monumentScan->setScanStatus('failed');
                 $this->entityManager->flush();
@@ -167,14 +170,14 @@ class MonumentController extends AbstractController
             
         } catch (\Exception $e) {
             $this->logger->error('Monument scan failed: ' . $e->getMessage(), [
-                'file' => $file->getClientOriginalName(),
-                'user' => $currentUser['email'] ?? 'unknown'
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return new JsonResponse([
                 'success' => false,
                 'error' => 'An error occurred while processing your image. Please try again.'
-            ], 500);
+            ], 500, [], JsonResponse::DEFAULT_ENCODING_OPTIONS);
         }
     }
 
@@ -202,7 +205,7 @@ class MonumentController extends AbstractController
             ], 404);
         }
 
-        if ($monumentScan->getUser()->getId() !== $currentUser['id']) {
+        if ($monumentScan->getUserId() !== $currentUser['id']) {
             return new JsonResponse([
                 'success' => false,
                 'error' => 'Access denied'
@@ -252,7 +255,7 @@ class MonumentController extends AbstractController
         }
 
         $scans = $this->monumentScanRepository->findBy(
-            ['user' => $currentUser],
+            ['userId' => $currentUser['id']],
             ['createdAt' => 'DESC']
         );
 
@@ -303,7 +306,7 @@ class MonumentController extends AbstractController
             ], 404);
         }
 
-        if ($monumentScan->getUser()->getId() !== $currentUser['id']) {
+        if ($monumentScan->getUserId() !== $currentUser['id']) {
             return new JsonResponse([
                 'success' => false,
                 'error' => 'Access denied'

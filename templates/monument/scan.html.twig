@@ -55,13 +55,7 @@
             </div>
         </form>
 
-        {% if error %}
-        <div class="error-box active">
-            <h3>❌ Recognition Failed</h3>
-            <p>{{ error }}</p>
-        </div>
-        {% endif %}
-
+        
         <!-- Result section (populated by JavaScript on successful upload) -->
         <div class="result-section" id="result-section" style="display: none;">
             <div class="result-card">
@@ -157,6 +151,34 @@
                     }
                 });
 
+                // Drag and drop functionality
+                uploadArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadArea.classList.add('dragover');
+                });
+
+                uploadArea.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadArea.classList.remove('dragover');
+                });
+
+                uploadArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadArea.classList.remove('dragover');
+                    
+                    const dt = e.dataTransfer;
+                    const file = dt.files[0];
+                    
+                    if (file) {
+                        console.log('File dropped:', file.name, 'Size:', file.size, 'Type:', file.type);
+                        // Process the dropped file directly
+                        handleFileSelect(file);
+                    }
+                });
+
                 function handleFileSelect(file) {
                     console.log('handleFileSelect called with:', file.name, 'type:', file.type, 'size:', file.size);
                     
@@ -214,23 +236,39 @@
                         });
 
                         console.log('Response status:', response.status);
-
-                        const contentType = response.headers.get('content-type');
+                        console.log('Response ok:', response.ok);
+                        
+                        // Get response text first to see what we're getting
+                        const responseText = await response.text();
+                        console.log('Response text:', responseText);
+                        
                         let data;
-
-                        if (contentType && contentType.includes('application/json')) {
-                            data = await response.json();
-                            console.log('JSON data:', data);
-                        } else {
-                            const text = await response.text();
-                            console.log('Non-JSON response:', text.substring(0, 200));
-                            throw new Error('Server returned ' + response.status);
+                        try {
+                            data = JSON.parse(responseText);
+                            console.log('Parsed JSON:', data);
+                        } catch (e) {
+                            console.error('Failed to parse JSON:', e);
+                            // If not JSON, show the response text as error
+                            if (responseText.trim() !== '') {
+                                // Try to extract meaningful error from HTML or plain text
+                                let errorMessage = responseText;
+                                if (responseText.includes('<html')) {
+                                    // It's an HTML error page, try to get a simple message
+                                    errorMessage = 'Server error (500). Check console for details.';
+                                }
+                                showError('Server error: ' + errorMessage.substring(0, 100));
+                            } else {
+                                showError('Empty response from server');
+                            }
+                            hideLoading();
+                            return;
                         }
 
                         if (data.success) {
+                            // Display result directly
                             showResult(data.monumentScan);
                         } else {
-                            showError(data.error || 'Failed to recognize monument.');
+                            showError(data.error || 'Failed to recognize monument. Please try again.');
                             hideLoading();
                         }
                     } catch (error) {

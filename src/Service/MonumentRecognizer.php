@@ -31,6 +31,11 @@ class MonumentRecognizer
      */
     public function recognize(string $imagePath): array
     {
+        // If API key is not set, return mock result for development
+        if (empty($this->openrouterApiKey)) {
+            return $this->getMockResult();
+        }
+
         try {
             // Validate image file exists
             if (!file_exists($imagePath)) {
@@ -51,7 +56,7 @@ class MonumentRecognizer
 
             // Use OpenRouter free vision model
             $result = $this->recognizeWithOpenRouter($imagePath);
-            
+             
             if (!empty($result['name'])) {
                 return [
                     'success' => true,
@@ -59,8 +64,8 @@ class MonumentRecognizer
                     'city' => $result['city'] ?? '',
                     'country' => $result['country'] ?? '',
                     'description' => $result['description'] ?? '',
-                    'confidence' => $result['confidence'] ?? 0.7,
-                    'provider' => 'openrouter_free'
+                    'confidence' => min(1.0, max(0.0, $result['confidence'] ?? 0.7)),
+                    'provider' => $result['provider'] ?? 'openrouter_free'
                 ];
             }
         } catch (Exception $e) {
@@ -84,6 +89,22 @@ class MonumentRecognizer
     }
 
     /**
+     * Get mock recognition result for development when API key is not set
+     */
+    private function getMockResult(): array
+    {
+        return [
+            'success' => true,
+            'name' => 'Statue of Liberty',
+            'city' => 'New York',
+            'country' => 'USA',
+            'description' => 'A colossal neoclassical sculpture on Liberty Island in New York Harbor.',
+            'confidence' => 0.95,
+            'provider' => 'mock'
+        ];
+    }
+
+    /**
      * Recognize monument using FREE OpenRouter API
      */
     private function recognizeWithOpenRouter(string $imagePath): array
@@ -92,17 +113,17 @@ class MonumentRecognizer
             throw new Exception('OpenRouter API key not configured');
         }
 
-        $this->logger->info('Monument recognition started', [
-            'model' => $this->openrouterModel,
-            'image' => basename($imagePath),
-            'imageSize' => strlen($imageData)
-        ]);
-
         // Read and encode image
         $imageData = file_get_contents($imagePath);
         if ($imageData === false) {
             throw new Exception('Cannot read image file: ' . $imagePath);
         }
+
+        $this->logger->info('Monument recognition started', [
+            'model' => $this->openrouterModel,
+            'image' => basename($imagePath),
+            'imageSize' => strlen($imageData)
+        ]);
 
         $base64Image = base64_encode($imageData);
         $mimeType = mime_content_type($imagePath) ?: 'image/jpeg';

@@ -42,7 +42,7 @@ class MonumentScan
     #[ORM\Column(length: 50)]
     private string $scanStatus = 'pending'; // pending, completed, failed
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 3, scale: 2)]
+    #[ORM\Column(type: Types::FLOAT)]
     private float $confidenceScore = 0.0;
 
     #[ORM\Column(length: 50, nullable: true)]

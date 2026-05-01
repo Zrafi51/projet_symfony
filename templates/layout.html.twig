@@ -48,7 +48,7 @@
         <header class="site-header">
             <a class="brand" href="/">
                 <span class="brand-logo-shell">
-                    <img class="brand-logo brand-logo-animated" src="/assets/java/logo-animated.svg" alt="Logo anime EasyTravel du projet Java">
+                    <img class="brand-logo" src="/assets/java/trans_bg.png" alt="Logo EasyTravel du projet Symfony">
                 </span>
                 <span class="brand-copy">
                     <small>Logo anime de l'accueil Java</small>
@@ -178,11 +178,7 @@
             </div>
         </header>
 
-        {% if showPageHeading|default(true) %}
-            <section class="page-heading">
-                <h1>{{ title|default('Projet Symfony') }}</h1>
-            </section>
-        {% endif %}
+        
 
         {% if databaseError is not empty %}
             <div class="alert alert-error">{{ databaseError }}</div>

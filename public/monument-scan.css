@@ -189,20 +189,24 @@ label.upload-button:hover {
     color: var(--monument-accent);
     font-weight: 600;
     font-size: 1rem;
+    text-align: center;
 }
 
 /* File Preview */
 .file-preview {
     margin-top: 1.5rem;
     display: none;
+    text-align: center;
 }
 
 .file-preview img {
     max-width: 250px;
     max-height: 250px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
     border: 3px solid var(--monument-border);
+    display: block;
+    margin: 0 auto;
 }
 
 .file-preview p {
@@ -323,10 +327,20 @@ label.upload-button:hover {
     padding: 2rem;
 }
 
+.result-image {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .result-image img {
-    width: 100%;
+    max-width: 100%;
     height: auto;
     border-radius: 12px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
 }
 
 .result-info h3 {
