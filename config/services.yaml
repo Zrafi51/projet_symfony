@@ -53,5 +53,7 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Service\MonumentRecognizer:
+        arguments:
+            $openrouterApiKey: '%env(OPENROUTER_API_KEY)%'
+            $openrouterModel: 'meta-llama/llama-3.2-11b-vision-instruct:free'

@@ -21,8 +21,9 @@ class MonumentRecognizer
     ) {
         $this->httpClient = $httpClient;
         $this->logger = $logger;
-        $this->openrouterApiKey = $openrouterApiKey ?: $_ENV['OPENROUTER_API_KEY'] ?? '';
-        $this->openrouterModel = $openrouterModel ?: $_ENV['OPENROUTER_MODEL'] ?? 'google/gemini-2-flash-lite-preview-02-05:free';
+        // Use provided args, fallback to env, fallback to default vision model
+        $this->openrouterApiKey = $openrouterApiKey ?: ($_ENV['OPENROUTER_API_KEY'] ?? '');
+        $this->openrouterModel = $openrouterModel ?: ($_ENV['OPENROUTER_MODEL'] ?? 'google/gemini-2.0-flash-exp:free');
     }
 
     /**
@@ -88,7 +89,7 @@ class MonumentRecognizer
                     'content' => [
                         [
                             'type' => 'text',
-                            'text' => 'Analysez cette image et identifiez si elle contient un monument, un lieu historique ou un bâtiment important. Si oui, fournissez le nom du monument, la ville, le pays et une brève description en français. Si non, répondez "Aucun monument détecté". Format de réponse JSON: {"nom": "...", "ville": "...", "pays": "...", "description": "..."}'
+                            'text' => 'Analysez cette image et identifiez si elle contient un monument, un lieu historique ou un bâtiment important. Si oui, fournissez uniquement un objet JSON valide avec: nom, ville, pays, description. Si aucun monument n\'est détecté, retournez {"nom": "Aucun monument détecté"}. Format JSON strict.'
                         ],
                         [
                             'type' => 'image_url',
@@ -99,7 +100,8 @@ class MonumentRecognizer
                     ]
                 ]
             ],
-            'max_tokens' => 500
+            'max_tokens' => 500,
+            'response_format' => ['type' => 'json_object']
         ];
 
         $response = $this->httpClient->request('POST', 'https://openrouter.ai/api/v1/chat/completions', [

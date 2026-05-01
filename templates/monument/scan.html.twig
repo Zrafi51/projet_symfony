@@ -2,452 +2,99 @@
 
 {% block title %}Monument Recognition - EasyTravel{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .monument-scan-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+    {% block stylesheets %}
+        {{ parent() }}
+        <link rel="stylesheet" href="/monument-scan.css">
+    {% endblock %}
 
-        .scan-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .scan-header h1 {
-            color: #0b4a6e;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .scan-header p {
-            color: #666;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .upload-section {
-            background: linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 2px dashed #0b4a6e;
-            transition: all 0.3s ease;
-        }
-
-        .upload-section.dragover {
-            border-color: #1976d2;
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            transform: scale(1.02);
-        }
-
-        .upload-form {
-            text-align: center;
-        }
-
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 1.5rem;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .file-input-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, #0b4a6e, #1d5f8a);
-            color: white;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(11, 74, 110, 0.3);
-        }
-
-        .file-input-label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(11, 74, 110, 0.4);
-        }
-
-        .file-input-label:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .upload-button {
-            padding: 1rem 2.5rem;
-            background: linear-gradient(135deg, #4caf50, #66bb6a);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-        }
-
-        .upload-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-        }
-
-        .upload-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .loading-spinner.active {
-            display: block;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #0b4a6e;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .result-section {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .result-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .result-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .result-header {
-            background: linear-gradient(135deg, #0b4a6e, #1d5f8a);
-            color: white;
-            padding: 1.5rem;
-        }
-
-        .result-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .result-confidence {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-
-        .result-body {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 2rem;
-            padding: 2rem;
-        }
-
-        .result-image {
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .result-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .result-info h3 {
-            color: #0b4a6e;
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .result-location {
-            color: #666;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .result-description {
-            color: #333;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-
-        .result-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #4caf50, #66bb6a);
-            color: white;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #ff9800, #ffa726);
-            color: white;
-            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
-        }
-
-        .error-section {
-            display: none;
-            background: #fff5f5;
-            border: 2px solid #fed7d7;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .error-section.active {
-            display: block;
-        }
-
-        .error-title {
-            color: #e53e3e;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .error-message {
-            color: #c53030;
-        }
-
-        .recent-scans {
-            margin-top: 3rem;
-        }
-
-        .recent-scans h2 {
-            color: #0b4a6e;
-            margin-bottom: 1.5rem;
-        }
-
-        .scans-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .scan-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .scan-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .scan-card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
-
-        .scan-card-content {
-            padding: 1rem;
-        }
-
-        .scan-card-title {
-            font-weight: 600;
-            color: #0b4a6e;
-            margin-bottom: 0.25rem;
-            font-size: 0.9rem;
-        }
-
-        .scan-card-location {
-            color: #666;
-            font-size: 0.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .scan-card-date {
-            color: #999;
-            font-size: 0.7rem;
-        }
-
-        @media (max-width: 768px) {
-            .monument-scan-container {
-                padding: 1rem;
-            }
-
-            .result-body {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .result-actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
-{% endblock %}
-
-{% block body %}
-    <div class="monument-scan-container" data-controller="monument-upload">
+    {% block content %}
+    <div class="monument-scan-container">
         <div class="scan-header">
             <h1>🏛️ Monument Recognition</h1>
             <p>Upload a photo of a monument, landmark, or historical building and let AI identify it for you!</p>
         </div>
 
-        <div class="upload-section" data-monument-upload-target="uploadSection">
-            <form class="upload-form" data-action="submit->monument-upload#handleSubmit">
-                <div class="file-input-wrapper">
-                    <input 
-                        type="file" 
-                        id="monument_image" 
-                        name="monument_image" 
-                        class="file-input"
-                        accept="image/jpeg,image/png,image/webp"
-                        data-monument-upload-target="fileInput"
-                        data-action="change->monument-upload#handleFileSelect"
-                    >
-                    <label for="monument_image" class="file-input-label" data-monument-upload-target="fileLabel">
-                        <span>📷</span>
-                        <span>Choose Monument Photo</span>
-                    </label>
+        <form method="post" enctype="multipart/form-data" id="monument-upload-form">
+            <div class="upload-area" id="upload-area">
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="spinner-large"></div>
+                    <p>Analyzing your image...</p>
                 </div>
                 
-                <div id="file-info" data-monument-upload-target="fileInfo" style="display: none; margin-bottom: 1rem; color: #666;">
-                    <span data-monument-upload-target="fileName"></span>
-                </div>
-
-                <button type="submit" class="upload-button" data-monument-upload-target="submitButton">
-                    <span>🔍</span>
-                    <span>Recognize Monument</span>
+                <input type="file" id="monument_image" name="monument_image" accept="image/jpeg,image/png,image/webp" required>
+                
+                <button type="button" class="upload-button" id="browse-btn">
+                    📁 Choose Photo
                 </button>
-            </form>
-        </div>
 
-        <div class="loading-spinner" data-monument-upload-target="loadingSpinner">
-            <div class="spinner"></div>
-            <p>Analyzing monument with AI...</p>
-        </div>
+                <div class="selected-file-name" id="selected-file-name"></div>
 
-        <div class="error-section" data-monument-upload-target="errorSection">
-            <div class="error-title">❌ Recognition Failed</div>
-            <div class="error-message" data-monument-upload-target="errorMessage"></div>
-        </div>
+                <div class="file-preview" id="file-preview">
+                    <img id="preview-img" src="" alt="Preview">
+                    <p id="preview-filename"></p>
+                </div>
+            </div>
 
-        <div class="result-section" data-monument-upload-target="resultSection">
+            <div class="error-box" id="error-box">
+                <h3>❌ Upload Failed</h3>
+                <p id="error-message"></p>
+            </div>
+
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button type="submit" class="upload-button" id="submit-btn" disabled>
+                    🔍 Recognize Monument
+                </button>
+            </div>
+        </form>
+
+        {% if error %}
+        <div class="error-box active">
+            <h3>❌ Recognition Failed</h3>
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+
+        {% if result %}
+        <div class="result-section active">
             <div class="result-card">
                 <div class="result-header">
-                    <div class="result-title" data-monument-upload-target="monumentName"></div>
-                    <div class="result-confidence" data-monument-upload-target="confidence"></div>
+                    <div class="result-title">{{ result.name }}</div>
+                    <div class="result-confidence">Confidence: {{ (result.confidence * 100)|round }}%</div>
                 </div>
                 <div class="result-body">
                     <div class="result-image">
-                        <img data-monument-upload-target="resultImage" alt="Recognized monument">
+                        <img src="{{ asset('uploads/monuments/' ~ result.imageFilename) }}" alt="{{ result.name }}">
                     </div>
                     <div class="result-info">
-                        <h3 data-monument-upload-target="monumentName"></h3>
-                        <div class="result-location">
-                            <span>📍</span>
-                            <span data-monument-upload-target="location"></span>
-                        </div>
-                        <div class="result-description" data-monument-upload-target="description"></div>
+                        <h3>{{ result.name }}</h3>
+                        <p class="result-location">📍 {{ result.city }}, {{ result.country }}</p>
+                        <p class="result-description">{{ result.description }}</p>
                         <div class="result-actions">
-                            <button 
-                                class="btn btn-primary" 
-                                data-action="click->monument-upload#addToRequest"
-                                data-monument-upload-target="addToRequestButton"
-                            >
-                                <span>✈️</span>
-                                <span>Add to Travel Request</span>
-                            </button>
-                            <button class="btn btn-secondary" data-action="click->monument-upload#scanAnother">
-                                <span>📷</span>
-                                <span>Scan Another</span>
-                            </button>
+                            <a href="{{ path('app_billing') }}?destination={{ result.city|url_encode }},+{{ result.country|url_encode }}" class="btn btn-primary">
+                                ✈️ Add to Travel Request
+                            </a>
+                            <a href="{{ path('app_monument_scan') }}" class="btn btn-secondary">
+                                📷 Scan Another
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        {% endif %}
 
-        {% if recentScans|length > 0 %}
-            <div class="recent-scans">
-                <h2>📸 Your Recent Scans</h2>
-                <div class="scans-grid">
+        {% if recentScans is defined and recentScans|length > 0 %}
+            <div class="recent-scans" style="margin-top: 3rem;">
+                <h2 style="color: #0b4a6e; margin-bottom: 1.5rem;">📸 Your Recent Scans</h2>
+                <div class="scans-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
                     {% for scan in recentScans %}
                         {% if scan.isSuccessful() %}
-                            <div class="scan-card">
-                                <img src="{{ scan.getImagePath() }}" alt="{{ scan.getMonumentName() }}">
-                                <div class="scan-card-content">
-                                    <div class="scan-card-title">{{ scan.getMonumentName() }}</div>
-                                    <div class="scan-card-location">{{ scan.getFormattedLocation() }}</div>
-                                    <div class="scan-card-date">{{ scan.getCreatedAt().format('M d, Y') }}</div>
+                            <div class="scan-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
+                                <img src="{{ scan.getImagePath() }}" alt="{{ scan.getMonumentName() }}" style="width: 100%; height: 150px; object-fit: cover;">
+                                <div class="scan-card-content" style="padding: 1rem;">
+                                    <div class="scan-card-title" style="font-weight: 600; color: #0b4a6e; margin-bottom: 0.25rem;">{{ scan.getMonumentName() }}</div>
+                                    <div class="scan-card-location" style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">{{ scan.getFormattedLocation() }}</div>
+                                    <div class="scan-card-date" style="color: #999; font-size: 0.8rem;">{{ scan.getCreatedAt().format('M d, Y') }}</div>
                                 </div>
                             </div>
                         {% endif %}
@@ -458,7 +105,116 @@
     </div>
 {% endblock %}
 
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('assets/controllers/monument_upload_controller.js') }}" defer></script>
-{% endblock %}
+    {% block javascripts %}
+        {{ parent() }}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('monument-upload-form');
+                const fileInput = document.getElementById('monument_image');
+                const browseBtn = document.getElementById('browse-btn');
+                const submitBtn = document.getElementById('submit-btn');
+                const selectedFileName = document.getElementById('selected-file-name');
+                const filePreview = document.getElementById('file-preview');
+                const previewImg = document.getElementById('preview-img');
+                const previewFilename = document.getElementById('preview-filename');
+                const loadingOverlay = document.getElementById('loading-overlay');
+                const errorBox = document.getElementById('error-box');
+                const errorMessage = document.getElementById('error-message');
+
+                // Browse button opens file dialog
+                browseBtn.addEventListener('click', function() {
+                    fileInput.click();
+                });
+
+                // File selection
+                fileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        handleFileSelect(this.files[0]);
+                    }
+                });
+
+                function handleFileSelect(file) {
+                    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    if (!validTypes.includes(file.type)) {
+                        showError('Please upload a valid image file (JPEG, PNG, or WebP)');
+                        return;
+                    }
+
+                    if (file.size > 10 * 1024 * 1024) {
+                        showError('File size must be less than 10MB');
+                        return;
+                    }
+
+                    selectedFileName.textContent = 'Selected: ' + file.name;
+                    submitBtn.disabled = false;
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewFilename.textContent = file.name;
+                        filePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+
+                    hideError();
+                }
+
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    if (!fileInput.files.length) {
+                        showError('Please select a file to upload');
+                        return;
+                    }
+
+                    showLoading();
+
+                    const formData = new FormData();
+                    formData.append('monument_image', fileInput.files[0]);
+
+                    try {
+                        const response = await fetch('{{ path('app_monument_scan') }}', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            showError(data.error || 'Failed to recognize monument. Please try again.');
+                            hideLoading();
+                        }
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        showError('Network error. Please check your connection.');
+                        hideLoading();
+                    }
+                });
+
+                function showLoading() {
+                    loadingOverlay.classList.add('active');
+                    submitBtn.disabled = true;
+                }
+
+                function hideLoading() {
+                    loadingOverlay.classList.remove('active');
+                    submitBtn.disabled = false;
+                }
+
+                function showError(message) {
+                    errorMessage.textContent = message;
+                    errorBox.classList.add('active');
+                    errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
+                function hideError() {
+                    errorBox.classList.remove('active');
+                }
+            });
+        </script>
+    {% endblock %}

@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title|default('Projet Symfony') }}{% endblock %}</title>
-    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
-    <link rel="stylesheet" href="/app.css">
-    <link rel="stylesheet" href="/currency.css">
+        <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+        <link rel="stylesheet" href="/app.css">
+        <link rel="stylesheet" href="/currency.css">
+        <link rel="stylesheet" href="/monument-scan.css">
     {% for stylesheet in stylesheets|default([]) %}
         <link rel="stylesheet" href="{{ stylesheet }}">
     {% endfor %}
@@ -179,9 +180,7 @@
 
         {% if showPageHeading|default(true) %}
             <section class="page-heading">
-                <p class="eyebrow">Design Java applique aux templates Symfony</p>
                 <h1>{{ title|default('Projet Symfony') }}</h1>
-                <p class="lead">Navigation, hero, cartes et ecrans CRUD rebranches sur la meme logique de donnees que l'application Java.</p>
             </section>
         {% endif %}
 
@@ -198,9 +197,7 @@
         {% endif %}
 
         <main class="page">
-            {% block content %}
-                {{ legacy_content|default('')|raw }}
-            {% endblock %}
+            {% block content %}{% endblock %}
         </main>
     </div>
     <script src="/app.js"></script>
