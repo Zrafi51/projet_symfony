@@ -39,10 +39,7 @@ class MonumentController extends AbstractController
         $this->monumentScanRepository = $monumentScanRepository;
         $this->validator = $validator;
         $this->logger = $logger;
-        $this->uploadsDir = __DIR__ . '/../../public/uploads/monuments';
-        
-        // Ensure uploads directory exists
-        $this->ensureUploadsDirectory();
+        $this->uploadsDir = dirname(__DIR__, 2) . '/public/uploads/monuments';
     }
 
     /**
@@ -72,52 +69,89 @@ class MonumentController extends AbstractController
     #[Route('/scan', name: 'app_monument_scan_process', methods: ['POST'])]
     public function processScan(Request $request): JsonResponse
     {
-        $this->logger->info('Monument scan process started');
-        $currentUser = $this->getAuthenticatedUser($request);
-        
-        if (!$currentUser) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => 'Authentication required'
-            ], 401);
-        }
-
-        /** @var UploadedFile $file */
-        $file = $request->files->get('monument_image');
-        
-        if (!$file) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => 'No file uploaded'
-            ], 400);
-        }
-
-        // Validate file
-        $violations = $this->validator->validate($file, new Image([
-            'maxSize' => '10M',
-            'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
-            'mimeTypesMessage' => 'Please upload a valid image file (JPEG, PNG, or WebP)'
-        ]));
-
-        if (count($violations) > 0) {
-            $errors = [];
-            foreach ($violations as $violation) {
-                $errors[] = $violation->getMessage();
-            }
-            
-            return new JsonResponse([
-                'success' => false,
-                'error' => implode(', ', $errors)
-            ], 400);
-        }
-
         try {
+            $this->logger->info('Monument scan process started');
+            $currentUser = $this->getAuthenticatedUser($request);
+            
+            if (!$currentUser) {
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Authentication required'
+                ], 401);
+            }
+
+            /** @var UploadedFile $file */
+            $file = $request->files->get('monument_image');
+            
+            if (!$file) {
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'No file uploaded'
+                ], 400);
+            }
+
+            // Validate file
+            $violations = $this->validator->validate($file, new Image([
+                'maxSize' => '10M',
+                'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
+                'mimeTypesMessage' => 'Please upload a valid image file (JPEG, PNG, or WebP)'
+            ]));
+
+            if (count($violations) > 0) {
+                $errors = [];
+                foreach ($violations as $violation) {
+                    $errors[] = $violation->getMessage();
+                }
+                
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => implode(', ', $errors)
+                ], 400);
+            }
+
+            $this->logger->info('Starting monument scan processing', [
+                'user_id' => $currentUser['id'],
+                'file_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize()
+            ]);
+
             // Generate unique filename
             $filename = $this->generateUniqueFilename($file);
             
-            // Save file
-            $file->move($this->uploadsDir, $filename);
-            $imagePath = $this->uploadsDir . '/' . $filename;
+            // Ensure uploads directory exists and is writable
+            if (!is_dir($this->uploadsDir)) {
+                if (!mkdir($this->uploadsDir, 0755, true)) {
+                    throw new \Exception('Cannot create uploads directory: ' . $this->uploadsDir);
+                }
+            }
+            
+            if (!is_writable($this->uploadsDir)) {
+                throw new \Exception('Uploads directory is not writable: ' . $this->uploadsDir);
+            }
+            
+            // Save file with error handling
+            try {
+                $file->move($this->uploadsDir, $filename);
+                $imagePath = $this->uploadsDir . '/' . $filename;
+                
+                $this->logger->info('File saved successfully', [
+                    'filename' => $filename,
+                    'image_path' => $imagePath,
+                    'uploads_dir' => $this->uploadsDir
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('File upload failed: ' . $e->getMessage(), [
+                    'filename' => $filename,
+                    'uploads_dir' => $this->uploadsDir,
+                    'error' => $e->getMessage()
+                ]);
+                throw new \Exception('Failed to save uploaded file: ' . $e->getMessage());
+            }
+
+            $this->logger->info('File saved successfully', [
+                'filename' => $filename,
+                'image_path' => $imagePath
+            ]);
 
             // Create monument scan record
             $monumentScan = new MonumentScan($currentUser['id']);
@@ -127,10 +161,17 @@ class MonumentController extends AbstractController
             $this->entityManager->persist($monumentScan);
             $this->entityManager->flush();
 
+            $this->logger->info('Monument scan record created', [
+                'scan_id' => $monumentScan->getId()
+            ]);
+
             // Recognize monument
             $result = $this->monumentRecognizer->recognize($imagePath);
             
-            $this->logger->info('Monument recognition result', $result);
+            $this->logger->info('Monument recognition result', [
+                'result' => $result,
+                'scan_id' => $monumentScan->getId()
+            ]);
             
             if ($result['success']) {
                 $monumentScan->setMonumentName($result['name']);
@@ -142,6 +183,11 @@ class MonumentController extends AbstractController
                 $monumentScan->setScanStatus('completed');
                 
                 $this->entityManager->flush();
+                
+                $this->logger->info('Monument scan completed successfully', [
+                    'scan_id' => $monumentScan->getId(),
+                    'monument_name' => $monumentScan->getMonumentName()
+                ]);
                 
                 return new JsonResponse([
                     'success' => true,
@@ -162,6 +208,11 @@ class MonumentController extends AbstractController
                 $monumentScan->setScanStatus('failed');
                 $this->entityManager->flush();
                 
+                $this->logger->warning('Monument recognition failed', [
+                    'scan_id' => $monumentScan->getId(),
+                    'error' => $result['error'] ?? 'Unknown error'
+                ]);
+                
                 return new JsonResponse([
                     'success' => false,
                     'error' => $result['error'] ?? 'Unable to recognize monument'
@@ -171,7 +222,8 @@ class MonumentController extends AbstractController
         } catch (\Exception $e) {
             $this->logger->error('Monument scan failed: ' . $e->getMessage(), [
                 'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $currentUser['id'] ?? 'unknown'
             ]);
             
             return new JsonResponse([
@@ -344,7 +396,18 @@ class MonumentController extends AbstractController
      */
     private function getAuthenticatedUser(Request $request): ?array
     {
-        return $request->getSession()->get('auth_user');
+        try {
+            $session = $request->getSession();
+            if (!$session) {
+                return null;
+            }
+            
+            $user = $session->get('auth_user');
+            return is_array($user) ? $user : null;
+        } catch (\Exception $e) {
+            $this->logger->error('Session access error: ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**
