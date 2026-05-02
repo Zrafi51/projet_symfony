@@ -56,6 +56,16 @@
             </div>
             <div class="admin-settings-topbar-actions">
                 {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'adminSettingsCurrencySwitcher'} %}
+
+                <button id="hand-tracking-toggle" class="hand-toggle-btn" type="button" data-tooltip="Contrôle par la main (Caméra)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                    </svg>
+                    <span class="hand-status-badge"></span>
+                </button>
                 <button class="admin-settings-primary-button" type="submit" form="admin-profile-form">Sauvegarder le profil</button>
             </div>
         </div>
@@ -86,7 +96,7 @@
                 </div>
                 <div class="admin-settings-avatar-meta">
                     <strong class="admin-settings-panel-title">Avatar admin</strong>
-                    <small class="admin-settings-panel-copy" data-admin-avatar-file-label>{{ photoSourceUrl ? photoSourceUrl|split('/')|last : 'PNG, JPG ou WEBP - 5 Mo max' }}</small>
+                    <small class="admin-settings-panel-copy" data-admin-avatar-file-label>PNG, JPG ou WEBP - 5 Mo max</small>
                 </div>
                 <form class="admin-settings-upload-form" method="post" action="/admin/settings/avatar" enctype="multipart/form-data" data-admin-avatar-form>
                     <input class="admin-settings-file-input" id="admin-avatar-input" type="file" name="avatar" accept="image/*" required>

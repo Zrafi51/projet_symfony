@@ -3248,6 +3248,7 @@
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .admin-settings-upload-name {

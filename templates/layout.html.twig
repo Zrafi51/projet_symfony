@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
     <link rel="stylesheet" href="/app.css">
     <link rel="stylesheet" href="/currency.css">
+    <link rel="stylesheet" href="/hand-tracking.css">
     {% for stylesheet in stylesheets|default([]) %}
         <link rel="stylesheet" href="{{ stylesheet }}">
     {% endfor %}
@@ -70,6 +71,16 @@
                     <span>{{ isAdminUser ? 'Session admin connectee' : 'Meme base MySQL que Java' }}</span>
                 </div>
                 {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'layoutCurrencySwitcher'} %}
+
+                <button id="hand-tracking-toggle" class="hand-toggle-btn" type="button" data-tooltip="Contrôle par la main (Caméra)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                    </svg>
+                    <span class="hand-status-badge"></span>
+                </button>
 
                 {% if currentUser %}
                     <div class="account-menu-wrapper" data-account-menu-wrapper>
@@ -183,7 +194,13 @@
             {% endblock %}
         </main>
     </div>
+    <!-- MediaPipe Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
     <script src="/app.js"></script>
     <script src="/currency.js"></script>
+    <script src="/hand-tracking.js"></script>
 </body>
 </html>

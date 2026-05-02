@@ -718,6 +718,7 @@ body {
 .profile-upload-row {
     display: flex;
     align-items: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 10px;
     width: 100%;
@@ -725,13 +726,13 @@ body {
 }
 
 .profile-upload-name {
-    flex: 1;
     min-width: 0;
     color: rgba(255, 255, 255, 0.85);
     font-size: 12px;
     font-weight: 600;
     line-height: 1.4;
     overflow-wrap: anywhere;
+    text-align: center;
 }
 
 .profile-full-button {

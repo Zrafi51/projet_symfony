@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/currency.css">
     <link rel="stylesheet" href="/profile.css">
     <link rel="stylesheet" href="/custom-cursor.css">
+    <link rel="stylesheet" href="/hand-tracking.css">
 </head>
 <body>
 {% set currentUser = current_user(currentUser|default(null)) %}
@@ -64,12 +65,25 @@
             <a href="/destinations" class="nav-button">Destinations</a>
             <a href="/about" class="nav-button">A propos</a>
             <a href="/forum" class="nav-button">Forum</a>
+            <a href="/weather" class="nav-button">Météo</a>
             <a href="/contact" class="nav-button">Contact</a>
         </div>
         <div class="navbar-spacer"></div>
         <div class="navbar-actions">
             <button class="search-button" type="button" id="profileSearchToggle" aria-label="Ouvrir la recherche">&#128269;</button>
             {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'profileCurrencySwitcher'} %}
+
+            <div>
+            <button id="hand-tracking-toggle" class="hand-toggle-btn" type="button" data-tooltip="Contrôle par la main (Caméra)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                    <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                </svg>
+                <span class="hand-status-badge"></span>
+            </button>
+            </div>
 
             <div class="notification-menu-wrapper">
                 <button class="search-button notification-button" type="button" id="profileNotificationToggle" aria-label="Ouvrir les notifications">
@@ -117,8 +131,8 @@
             </div>
 
             {% if currentUser is defined and currentUser %}
-                <div class="account-menu-wrapper">
-                    <button class="connexion-button account-button account-button-logged-in" id="accountMenuButton" type="button">
+                <div class="account-menu-wrapper" data-account-menu-wrapper>
+                    <button class="connexion-button account-button account-button-logged-in" id="accountMenuButton" type="button" data-account-menu-button aria-controls="accountMenu" aria-expanded="false">
                         <div class="account-button-content">
                             <div class="account-button-avatar">
                                 {% if photoUrl %}
@@ -131,7 +145,7 @@
                             <span class="account-button-arrow">&#9662;</span>
                         </div>
                     </button>
-                    <div class="navbar-account-menu" id="accountMenu" style="display: none;">
+                    <div class="navbar-account-menu" id="accountMenu" data-account-menu hidden>
                         <div class="account-menu-header">
                             <div class="account-menu-header-avatar">
                                 {% if photoUrl %}
@@ -223,7 +237,7 @@
                         </div>
                         <div class="profile-avatar-info">
                             <h3 class="profile-panel-title">Photo de profil</h3>
-                            <p class="profile-panel-copy" id="avatarLabel">{{ photoUrl ? currentUser.photo_url|default('Photo active') : 'PNG, JPG ou WEBP - 5 Mo max' }}</p>
+                            <p class="profile-panel-copy" id="avatarLabel">PNG, JPG ou WEBP - 5 Mo max</p>
                         </div>
 
                         <form class="profile-upload-form" method="post" action="/profile/avatar" enctype="multipart/form-data" data-profile-avatar-form>
@@ -466,8 +480,51 @@
 </div>
 
 <script src="/custom-cursor.js"></script>
+<script src="/app.js"></script>
 <script src="/currency.js"></script>
 <script src="/profile.js"></script>
+
+<!-- Custom cursor sync -->
+<script>
+(function() {
+
+    // Hide custom cursor when hand-tracking is active
+    function syncCursors() {
+        var handActive = localStorage.getItem('handTrackingActive') === 'true';
+        var customCursor = document.getElementById('custom-cursor');
+        var cursorTrail = document.getElementById('cursor-trail');
+        if (handActive) {
+            document.body.style.cursor = 'none';
+            if (customCursor) customCursor.style.display = 'none';
+            if (cursorTrail) cursorTrail.style.display = 'none';
+        }
+    }
+    syncCursors();
+    var origSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+        origSetItem.apply(this, arguments);
+        if (key === 'handTrackingActive') {
+            var customCursor = document.getElementById('custom-cursor');
+            var cursorTrail = document.getElementById('cursor-trail');
+            if (value === 'true') {
+                document.body.style.cursor = 'none';
+                if (customCursor) customCursor.style.display = 'none';
+                if (cursorTrail) cursorTrail.style.display = 'none';
+            } else {
+                document.body.style.cursor = '';
+                if (customCursor) customCursor.style.display = '';
+                if (cursorTrail) cursorTrail.style.display = '';
+            }
+        }
+    };
+})();
+</script>
+
+<!-- MediaPipe Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="/hand-tracking.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
