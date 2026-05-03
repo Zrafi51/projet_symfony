@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion de la Playlist - Admin{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h3 class="fw-bold mb-0"><i class="fas fa-music me-2 text-primary"></i>Playlist — Administration</h3>
+            <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+
+        {# Upload form — all validation in PHP (MusicController::upload). #}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle me-2 text-success"></i>Ajouter une piste</h5>
+                <form action="{{ path('app_admin_music_new') }}" method="post" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" name="_token" value="{{ csrf_token('music_upload') }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Titre</label>
+                            <input type="text" name="title" class="form-control" placeholder="Titre de la piste">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Artiste <small class="text-muted">(facultatif)</small></label>
+                            <input type="text" name="artist" class="form-control" placeholder="Nom de l'artiste">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Fichier audio</label>
+                            <input type="file" name="audio" class="form-control">
+                            <small class="text-muted">MP3, OGG, WAV, AAC, M4A — max 20 MB.</small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">
+                        <i class="fas fa-upload me-1"></i>Ajouter à la playlist
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {# Existing tracks #}
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="fas fa-list me-2 text-primary"></i>Pistes disponibles ({{ tracks|length }})</h5>
+                {% if tracks is empty %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-music fs-1 d-block mb-2"></i>
+                        Aucune piste pour le moment.
+                    </div>
+                {% else %}
+                    <div class="list-group list-group-flush">
+                        {% for track in tracks %}
+                            <div class="list-group-item d-flex align-items-center gap-3 px-0">
+                                <i class="fas fa-compact-disc fs-3 text-primary"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">{{ track.title }}</div>
+                                    {% if track.artist %}
+                                        <small class="text-muted"><i class="fas fa-user me-1"></i>{{ track.artist }}</small>
+                                    {% endif %}
+                                    <audio controls preload="none" class="w-100 mt-2" style="max-width:400px;">
+                                        <source src="{{ asset('uploads/music/' ~ track.filename) }}">
+                                    </audio>
+                                </div>
+                                <form action="{{ path('app_admin_music_delete', {id: track.id}) }}" method="post"
+                                      onsubmit="return confirm('Supprimer cette piste ? Les publications qui l\'utilisent perdront la musique.');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('music_delete' ~ track.id) }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

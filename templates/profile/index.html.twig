@@ -1,0 +1,565 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil - Forum Voyage{% endblock %}
+
+{% block body %}
+{# Cover Header #}
+<div class="profile-cover rounded-top mb-0">
+    <div class="profile-cover-overlay"></div>
+    <div class="profile-info text-center text-white position-relative">
+        {# Instagram-style story ring: gradient border when the user has an
+           active story, clickable → fullscreen viewer. Otherwise falls back
+           to a plain white border. #}
+        {% set avatarInner %}
+            {% if user.profilePhotoPath %}
+                <img src="{{ asset('uploads/profiles/' ~ user.profilePhotoPath) }}"
+                     class="rounded-circle profile-avatar" width="120" height="120" alt="{{ user.username }}"
+                     style="object-fit:cover;display:block;">
+            {% else %}
+                <div class="rounded-circle bg-white d-flex align-items-center justify-content-center profile-avatar"
+                     style="width:120px;height:120px;">
+                    <span class="text-primary fw-bold" style="font-size:3rem;">{{ user.username|first|upper }}</span>
+                </div>
+            {% endif %}
+        {% endset %}
+        {% if hasActiveStory|default(false) %}
+            <a href="{{ path('app_story_view', {username: user.username, return: 'profile'}) }}"
+               class="story-ring d-inline-block js-open-story" title="Voir votre story"
+               style="display:inline-block;padding:3px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">
+                <span style="display:inline-block;padding:3px;border-radius:50%;background:#fff;">
+                    {{ avatarInner }}
+                </span>
+            </a>
+        {% else %}
+            <span class="d-inline-block border border-4 border-white shadow rounded-circle" style="line-height:0;">
+                {{ avatarInner }}
+            </span>
+        {% endif %}
+        <h3 class="mt-3 fw-bold">
+            {{ user.username }}
+            {% if user.isPrivate %}<i class="fas fa-lock ms-1" style="font-size:0.7em;" title="Compte privé"></i>{% endif %}
+        </h3>
+        <p class="mb-0 opacity-75"><i class="far fa-calendar me-1"></i>Membre depuis {{ user.createdAt|date('d/m/Y') }}</p>
+
+        {# Stats row — publications / abonnés / suivi(e)s — Instagram-style.
+           The follower/following counts are clickable → full list view. #}
+        <div class="d-flex justify-content-center gap-4 mt-3 text-white">
+            <div class="text-center">
+                <div class="fw-bold fs-5">{{ socialStats.posts }}</div>
+                <small class="opacity-75">publications</small>
+            </div>
+            <a href="{{ path('app_follow_list', {username: user.username, kind: 'followers'}) }}"
+               class="text-center text-white text-decoration-none">
+                <div class="fw-bold fs-5">{{ socialStats.followers }}</div>
+                <small class="opacity-75">abonné(e)s</small>
+            </a>
+            <a href="{{ path('app_follow_list', {username: user.username, kind: 'following'}) }}"
+               class="text-center text-white text-decoration-none">
+                <div class="fw-bold fs-5">{{ socialStats.following }}</div>
+                <small class="opacity-75">suivi(e)s</small>
+            </a>
+        </div>
+
+        {# Bio — short caption under the stats row (Instagram-style). Hidden
+           when empty so the header stays tight for users who haven't set one. #}
+        {% if user.bio %}
+            <p class="mb-0 mt-2 fw-semibold text-white" style="max-width:360px;margin-left:auto;margin-right:auto;word-break:break-word;">
+                {{ user.bio }}
+            </p>
+        {% endif %}
+
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+            <a href="{{ path('app_profile_edit') }}" class="btn btn-edit-profile">
+                <i class="fas fa-user-edit"></i>
+                <span>Modifier le profil</span>
+            </a>
+            {# Privacy toggle — private accounts limit posts to accepted followers. #}
+            <form method="post" action="{{ path('app_profile_privacy_toggle') }}" class="d-inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('privacy') }}">
+                <button type="submit" class="btn btn-light fw-semibold">
+                    {% if user.isPrivate %}
+                        <i class="fas fa-unlock me-1"></i>Rendre public
+                    {% else %}
+                        <i class="fas fa-lock me-1"></i>Rendre privé
+                    {% endif %}
+                </button>
+            </form>
+            <a href="{{ path('app_messages') }}" class="btn btn-light fw-semibold">
+                <i class="fas fa-paper-plane me-1"></i>Messages
+            </a>
+            {% if user.isPrivate and pendingRequestCount > 0 %}
+                <a href="{{ path('app_follow_requests') }}" class="btn btn-warning fw-semibold">
+                    <i class="fas fa-user-clock me-1"></i>Demandes ({{ pendingRequestCount }})
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Collapsible statistics block. Hidden by default — the user clicks the
+   toggle to expand. Charts are only drawn once the panel is first opened
+   (see the JS block below) to avoid rendering into an invisible canvas. #}
+<div class="d-flex justify-content-end mt-4">
+    <button type="button"
+            class="btn btn-outline-primary btn-sm fw-semibold"
+            id="statsToggleBtn"
+            data-bs-toggle="collapse"
+            data-bs-target="#statsPanel"
+            aria-expanded="false"
+            aria-controls="statsPanel">
+        <i class="fas fa-chart-bar me-1"></i>
+        <span id="statsToggleLabel">Afficher les statistiques</span>
+        <i class="fas fa-chevron-down ms-1" id="statsToggleChevron"></i>
+    </button>
+</div>
+
+<div class="collapse" id="statsPanel">
+    {# Stats Cards #}
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center stat-card">
+                <div class="card-body">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary mx-auto mb-2">
+                        <i class="fas fa-pen"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ postCount }}</h3>
+                    <small class="text-muted">Publications</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center stat-card">
+                <div class="card-body">
+                    <div class="stat-icon bg-danger bg-opacity-10 text-danger mx-auto mb-2">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ totalLikes }}</h3>
+                    <small class="text-muted">J'aime reçus</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center stat-card">
+                <div class="card-body">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning mx-auto mb-2">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ totalReactions }}</h3>
+                    <small class="text-muted">Réactions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center stat-card">
+                <div class="card-body">
+                    <div class="stat-icon bg-info bg-opacity-10 text-info mx-auto mb-2">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ totalComments }}</h3>
+                    <small class="text-muted">Commentaires</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Charts Row #}
+    <div class="row g-3 mt-3">
+        {# Posts Per Month Chart #}
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-chart-bar me-2 text-primary"></i>Publications par mois</h5>
+                    <canvas id="postsChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        {# Reaction Breakdown #}
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-chart-pie me-2 text-warning"></i>Répartition des réactions</h5>
+                    {% if reactionBreakdown is not empty %}
+                        <canvas id="reactionsChart" height="250"></canvas>
+                    {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-smile-wink fs-1"></i>
+                            <p class="mt-2">Pas encore de réactions</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Collapsible "Nouvelle Publication" card — same partial as on the feed. #}
+<div class="mt-5">
+    {% include '_partials/new_post_card.html.twig' with {
+        postForm: postForm,
+        musicUrlsById: musicUrlsById,
+        collapseId: 'newPostPanelProfile',
+        returnTo: 'profile'
+    } %}
+</div>
+
+{# My Posts Grid #}
+<h4 class="fw-bold mt-4 mb-3"><i class="fas fa-images me-2 text-primary"></i>Mes Publications</h4>
+<div class="row g-3">
+    {% for post in posts %}
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 profile-post-card profile-post-clickable"
+             data-post-id="{{ post.id }}" role="button" tabindex="0">
+            {# Every thumbnail is now wrapped so we can overlay the music badge
+               in a single place regardless of media type. #}
+            <div class="position-relative">
+                {# Thumbnail priority: photo first, otherwise first uploaded video,
+                   otherwise a generic placeholder. Video-only posts show an inline
+                   muted preview with a play-icon overlay. #}
+                {% if post.cheminPhoto %}
+                    <img src="{{ asset('uploads/posts/' ~ post.cheminPhoto) }}" class="card-img-top"
+                         style="height: 200px; object-fit: cover;" alt="Post" loading="lazy">
+                {% elseif post.videos|length > 0 %}
+                    {% set firstVideo = post.videos|first %}
+                    <div class="card-img-top position-relative" style="height:200px;overflow:hidden;background:#000;">
+                        <video src="{{ asset('uploads/videos/' ~ firstVideo.filename) }}"
+                               muted
+                               playsinline
+                               preload="metadata"
+                               style="width:100%;height:100%;object-fit:cover;pointer-events:none;"></video>
+                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+                            <i class="fas fa-play-circle text-white" style="font-size:2.75rem;text-shadow:0 2px 10px rgba(0,0,0,0.6);"></i>
+                        </div>
+                        <span class="badge bg-danger position-absolute" style="top:8px;left:8px;">
+                            <i class="fas fa-video me-1"></i>Vidéo
+                        </span>
+                    </div>
+                {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:200px;">
+                        <i class="fas fa-image text-muted fs-1"></i>
+                    </div>
+                {% endif %}
+
+                {# Music badge (top-right). Click = toggle inline playback of
+                   this post's track. The audio element is injected in the
+                   card-body below so we can reuse it from the badge's JS. #}
+                {% if post.music %}
+                    <button type="button"
+                            class="btn btn-sm profile-music-toggle position-absolute"
+                            data-audio-id="profileMusic-{{ post.id }}"
+                            style="top:8px;right:8px;border-radius:50%;width:36px;height:36px;padding:0;background:rgba(0,0,0,0.55);color:#fff;border:none;backdrop-filter:blur(4px);"
+                            title="{{ post.music.title }}{% if post.music.artist %} · {{ post.music.artist }}{% endif %}">
+                        <i class="fas fa-music"></i>
+                    </button>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                {# Instagram-style inline music label (same as the feed & show page). #}
+                {% if post.music %}
+                    <small class="post-music-label d-inline-flex align-items-center text-muted mb-1">
+                        <i class="fas fa-music me-1"></i>
+                        <span class="text-truncate" style="max-width:180px;">{{ post.music.title }}{% if post.music.artist %} · {{ post.music.artist }}{% endif %}</span>
+                    </small>
+                    {# Hidden <audio>; toggled by the badge button above. #}
+                    <audio id="profileMusic-{{ post.id }}"
+                           class="profile-music-audio"
+                           src="{{ asset('uploads/music/' ~ post.music.filename) }}"
+                           preload="none"
+                           loop></audio>
+                {% endif %}
+                <p class="card-text small">{{ post.description|slice(0, 80) }}{% if post.description|length > 80 %}...{% endif %}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted"><i class="far fa-clock me-1"></i>{{ post.dateCreation|date('d/m/Y') }}</small>
+                    <div>
+                        <span class="badge bg-danger bg-opacity-10 text-danger"><i class="fas fa-heart me-1"></i>{{ post.likes }}</span>
+                        <span class="badge bg-info bg-opacity-10 text-info"><i class="fas fa-comment me-1"></i>{{ post.comments|length }}</span>
+                    </div>
+                </div>
+            </div>
+            {# Edit + delete only — clicking the card body opens a modal.
+               data-no-modal stops these buttons from bubbling up to the card click. #}
+            <div class="card-footer bg-transparent border-0 d-flex gap-1" data-no-modal>
+                <a href="{{ path('app_post_edit', {id: post.id, return_to: 'profile'}) }}" class="btn btn-outline-secondary btn-sm flex-fill" data-no-modal>
+                    <i class="fas fa-edit me-1"></i>Modifier
+                </a>
+                <form action="{{ path('app_post_delete', {id: post.id}) }}" method="post" data-no-modal>
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer ?')" data-no-modal>
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <i class="fas fa-camera text-muted fs-1"></i>
+        <p class="text-muted mt-2">Vous n'avez pas encore de publication. <a href="{{ path('app_forum') }}">Créez-en une !</a></p>
+    </div>
+    {% endfor %}
+</div>
+
+{# =========== Own-post modal (Instagram-style) ===========
+   Opened by clicking any post card. Left column = media carousel (swipe);
+   right column = description, likes, comments, and a close button. #}
+<div class="modal fade user-post-modal" id="myPostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <button type="button" class="btn-close btn-close-white position-absolute"
+                    style="top:-2.5rem;right:0;z-index:10;" data-bs-dismiss="modal"></button>
+            <div class="row g-0">
+                <div class="col-md-7 bg-black d-flex align-items-center justify-content-center position-relative"
+                     style="min-height:60vh;">
+                    <div id="myPostMedia" class="w-100 position-relative"></div>
+                </div>
+                <div class="col-md-5 bg-white d-flex flex-column" style="max-height:85vh;">
+                    <div class="p-3 border-bottom d-flex align-items-center gap-2">
+                        {% if user.profilePhotoPath %}
+                            <img src="{{ asset('uploads/profiles/' ~ user.profilePhotoPath) }}"
+                                 class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">
+                        {% else %}
+                            <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
+                                  style="width:36px;height:36px;">{{ user.username|first|upper }}</span>
+                        {% endif %}
+                        <strong>{{ user.username }}</strong>
+                        <small class="text-muted ms-2" id="myPostDate"></small>
+                    </div>
+                    <div id="myPostDescription" class="p-3 border-bottom"></div>
+                    <div class="p-3 border-bottom d-flex align-items-center gap-3 text-muted">
+                        <span><i class="fas fa-heart text-danger me-1"></i><span id="myPostLikes">0</span> j'aime</span>
+                        <span><i class="fas fa-comment text-info me-1"></i><span id="myPostCommentsCount">0</span></span>
+                    </div>
+                    <div id="myPostComments" class="flex-grow-1 overflow-auto p-3"></div>
+                    <div class="p-3 border-top text-end">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Fermer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== Profile grid — music toggle buttons =====
+    // Each card with music has a round button overlay; clicking it toggles
+    // inline playback of that post's <audio>. Only one track plays at a time.
+    var currentAudio = null;
+    document.querySelectorAll('.profile-music-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var audio = document.getElementById(btn.dataset.audioId);
+            if (!audio) return;
+
+            // Pause any other track first.
+            if (currentAudio && currentAudio !== audio) {
+                currentAudio.pause();
+                var prevBtn = document.querySelector('.profile-music-toggle.playing');
+                if (prevBtn) {
+                    prevBtn.classList.remove('playing');
+                    var prevIcon = prevBtn.querySelector('i');
+                    if (prevIcon) { prevIcon.className = 'fas fa-music'; }
+                }
+            }
+
+            var icon = btn.querySelector('i');
+            if (audio.paused) {
+                var p = audio.play();
+                if (p && typeof p.catch === 'function') { p.catch(function () {}); }
+                btn.classList.add('playing');
+                if (icon) { icon.className = 'fas fa-pause'; }
+                currentAudio = audio;
+            } else {
+                audio.pause();
+                btn.classList.remove('playing');
+                if (icon) { icon.className = 'fas fa-music'; }
+                if (currentAudio === audio) currentAudio = null;
+            }
+        });
+    });
+
+    // ===== Stats panel toggle =====
+    // Charts are drawn lazily — Chart.js measures canvas size when constructing,
+    // so rendering into a hidden element yields a 0×0 chart. We defer chart
+    // creation until the very first time the panel is expanded.
+    const postsData = {{ postsPerMonth|json_encode|raw }};
+    const reactionData = {{ reactionBreakdown|json_encode|raw }};
+    var chartsBuilt = false;
+
+    function buildCharts() {
+        if (chartsBuilt) return;
+        chartsBuilt = true;
+
+        const labels = Object.keys(postsData).reverse();
+        const values = Object.values(postsData).reverse();
+        if (labels.length > 0) {
+            new Chart(document.getElementById('postsChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Publications',
+                        data: values,
+                        backgroundColor: 'rgba(21, 101, 192, 0.7)',
+                        borderColor: 'rgba(21, 101, 192, 1)',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        const reactionLabels = Object.keys(reactionData);
+        const reactionValues = Object.values(reactionData);
+        if (reactionLabels.length > 0) {
+            const colors = ['#e74c3c', '#f39c12', '#3498db', '#2ecc71', '#9b59b6'];
+            new Chart(document.getElementById('reactionsChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: reactionLabels,
+                    datasets: [{
+                        data: reactionValues,
+                        backgroundColor: colors.slice(0, reactionLabels.length),
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 14 } } }
+                    }
+                }
+            });
+        }
+    }
+
+    var statsPanel = document.getElementById('statsPanel');
+    var toggleLabel = document.getElementById('statsToggleLabel');
+    var toggleChevron = document.getElementById('statsToggleChevron');
+    if (statsPanel) {
+        statsPanel.addEventListener('shown.bs.collapse', function () {
+            buildCharts();
+            if (toggleLabel) toggleLabel.textContent = 'Masquer les statistiques';
+            if (toggleChevron) toggleChevron.className = 'fas fa-chevron-up ms-1';
+        });
+        statsPanel.addEventListener('hidden.bs.collapse', function () {
+            if (toggleLabel) toggleLabel.textContent = 'Afficher les statistiques';
+            if (toggleChevron) toggleChevron.className = 'fas fa-chevron-down ms-1';
+        });
+    }
+
+    // ===== Own-post modal (click any card body to open) =====
+    var myPosts = {{ posts|map(p => {
+        id: p.id,
+        description: p.description,
+        likes: p.likes,
+        date: p.dateCreation|date('d/m/Y H:i'),
+        media: (p.images|map(i => {'type':'image','url':asset('uploads/posts/' ~ i.filename)})|merge(
+                p.videos|map(v => {'type':'video','url':asset('uploads/videos/' ~ v.filename)}))),
+        comments: p.comments|map(c => {
+            auteur: c.auteur,
+            contenu: c.contenu,
+            date: c.dateCommentaire|date('d/m/Y H:i')
+        })
+    })|json_encode|raw }};
+
+    var myModalEl = document.getElementById('myPostModal');
+    var myBsModal = myModalEl ? new bootstrap.Modal(myModalEl) : null;
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+        });
+    }
+
+    function renderMyPost(idx) {
+        var post = myPosts[idx];
+        if (!post) return;
+        var media = post.media || [];
+        var mediaEl = document.getElementById('myPostMedia');
+        var html = '';
+        if (media.length === 0) {
+            html = '<div class="text-white text-center py-5"><i class="fas fa-image fs-1"></i></div>';
+        } else {
+            var carId = 'myPostCar' + idx;
+            html = '<div id="' + carId + '" class="carousel slide" data-bs-interval="false" data-bs-touch="true">';
+            html += '<div class="carousel-inner">';
+            media.forEach(function (m, i) {
+                html += '<div class="carousel-item ' + (i === 0 ? 'active' : '') + '">';
+                if (m.type === 'image') {
+                    html += '<img src="' + m.url + '" class="d-block w-100" style="max-height:85vh;object-fit:contain;background:#000;">';
+                } else {
+                    html += '<video src="' + m.url + '" class="d-block w-100" style="max-height:85vh;object-fit:contain;background:#000;pointer-events:none;" muted playsinline loop autoplay></video>';
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+            if (media.length > 1) {
+                html += '<button class="carousel-control-prev" type="button" data-bs-target="#' + carId + '" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>';
+                html += '<button class="carousel-control-next" type="button" data-bs-target="#' + carId + '" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>';
+            }
+            html += '</div>';
+        }
+        mediaEl.innerHTML = html;
+        document.getElementById('myPostDate').textContent = post.date || '';
+        document.getElementById('myPostDescription').textContent = post.description || '';
+        document.getElementById('myPostLikes').textContent = post.likes || 0;
+        document.getElementById('myPostCommentsCount').textContent = (post.comments || []).length;
+
+        // Comments list.
+        var cEl = document.getElementById('myPostComments');
+        if (!post.comments || post.comments.length === 0) {
+            cEl.innerHTML = '<p class="text-muted text-center small my-3">Aucun commentaire.</p>';
+        } else {
+            cEl.innerHTML = post.comments.map(function (c) {
+                var initial = (c.auteur || '?').charAt(0).toUpperCase();
+                return '<div class="d-flex mb-3">' +
+                    '<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width:32px;height:32px;font-size:.8rem;">' + escapeHtml(initial) + '</div>' +
+                    '<div class="flex-grow-1">' +
+                        '<div class="bg-light rounded p-2"><strong class="small">' + escapeHtml(c.auteur) + '</strong>' +
+                            '<p class="mb-0 small">' + escapeHtml(c.contenu) + '</p></div>' +
+                        '<small class="text-muted ms-2">' + escapeHtml(c.date) + '</small>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+    }
+
+    if (myBsModal) {
+        document.querySelectorAll('.profile-post-clickable').forEach(function (card) {
+            card.addEventListener('click', function (e) {
+                // Ignore clicks originating from any action element.
+                if (e.target.closest('[data-no-modal]') ||
+                    e.target.closest('.profile-music-toggle')) {
+                    return;
+                }
+                var pid = parseInt(card.dataset.postId, 10);
+                var idx = myPosts.findIndex(function (p) { return p.id === pid; });
+                if (idx < 0) return;
+                renderMyPost(idx);
+                myBsModal.show();
+            });
+        });
+
+        // Pause any modal videos on close so audio doesn't keep playing.
+        myModalEl.addEventListener('hidden.bs.modal', function () {
+            var mediaEl = document.getElementById('myPostMedia');
+            if (mediaEl) mediaEl.innerHTML = '';
+        });
+    }
+});
+</script>
+{% endblock %}

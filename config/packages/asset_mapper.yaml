@@ -1,8 +1,12 @@
 framework:
     asset_mapper:
         # The paths to make available to the asset mapper.
+        # Map syntax `path: namespace` is required because we namespace the UX
+        # bundle dist directories — empty namespace ('') means no prefix.
         paths:
-            - assets/
+            assets/: ''
+            vendor/symfony/ux-map/assets/dist: '@symfony/ux-map'
+            vendor/symfony/ux-leaflet-map/assets/dist: '@symfony/ux-leaflet-map'
         missing_import_mode: strict
 
 when@prod:

@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% set heading = kind == 'followers' ? 'Abonné(e)s' : 'Abonnements' %}
+
+{% block title %}{{ heading }} de {{ target.username }} - Forum Voyage{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-{{ kind == 'followers' ? 'users' : 'user-friends' }} me-2 text-primary"></i>
+                        {{ heading }} de
+                        <a href="{{ path(isSelf ? 'app_profile' : 'app_user_profile', isSelf ? {} : {username: target.username}) }}"
+                           class="text-decoration-none">{{ target.username }}</a>
+                        <span class="badge bg-light text-dark ms-2">{{ total }}</span>
+                    </h5>
+                    <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+
+                {% if not canSee %}
+                    {# Private profile, the viewer isn't an accepted follower. #}
+                    <div class="text-center py-5">
+                        <i class="fas fa-lock fa-3x text-muted mb-3"></i>
+                        <h6 class="fw-bold">Compte privé</h6>
+                        <p class="text-muted small mb-0">
+                            Seul(e)s les abonné(e)s de {{ target.username }} peuvent voir
+                            cette liste.
+                        </p>
+                    </div>
+                {% elseif users is empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-user-slash fa-2x mb-2"></i>
+                        <p class="mb-0 small">
+                            {% if kind == 'followers' %}
+                                Aucun abonné pour l'instant.
+                            {% else %}
+                                {{ target.username }} ne suit personne pour l'instant.
+                            {% endif %}
+                        </p>
+                    </div>
+                {% else %}
+                    <ul class="list-group list-group-flush">
+                        {% for u in users %}
+                            <li class="list-group-item d-flex align-items-center gap-3 px-0">
+                                {% if u.profilePhotoPath %}
+                                    <img src="{{ asset('uploads/profiles/' ~ u.profilePhotoPath) }}"
+                                         class="rounded-circle" width="48" height="48"
+                                         style="object-fit:cover;" alt="{{ u.username }}">
+                                {% else %}
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                         style="width:48px;height:48px;font-weight:600;">
+                                        {{ u.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                    <a href="{{ path('app_user_profile', {username: u.username}) }}"
+                                       class="fw-semibold text-decoration-none text-dark">
+                                        {{ u.username }}
+                                        {% if u.isPrivate %}
+                                            <i class="fas fa-lock ms-1 small text-muted" title="Compte privé"></i>
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <a href="{{ path('app_user_profile', {username: u.username}) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Voir
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

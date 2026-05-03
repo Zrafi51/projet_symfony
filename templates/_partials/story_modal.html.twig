@@ -1,0 +1,140 @@
+{#
+    Story modal overlay — opened on top of whatever page the user is currently
+    on (home feed / own profile / public profile). A dimmed backdrop paints
+    behind the phone-shaped frame so the origin page stays visible around it.
+
+    The actual viewer loads inside an <iframe> that points at /story/user/X.
+    The child talks back via postMessage — see stories/show.html.twig. This
+    keeps the viewer's full logic (progress bars, music, delete, auto-advance)
+    intact without duplicating it here.
+
+    Any link with class `js-open-story` and an href to /story/user/... is
+    hijacked and opened inside the modal instead of navigating.
+#}
+<div id="storyModalOverlay" class="story-modal-overlay d-none" role="dialog" aria-modal="true" aria-label="Story">
+    <button type="button" class="story-modal-close" id="storyModalCloseBtn" aria-label="Fermer">
+        <i class="fas fa-times"></i>
+    </button>
+    <div class="story-modal-frame">
+        <iframe id="storyModalFrame" title="Story viewer" allow="autoplay"></iframe>
+    </div>
+</div>
+
+<style>
+.story-modal-overlay {
+    position: fixed;
+    inset: 0;
+    /* Translucent — the origin page is still faintly visible, matching the
+       Instagram pattern where the feed blurs behind the story. */
+    background: rgba(0, 0, 0, .88);
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.story-modal-overlay.d-none { display: none !important; }
+
+.story-modal-frame {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    height: 100vh;
+    max-height: 100vh;
+    background: #000;
+    overflow: hidden;
+}
+@media (min-width: 600px) {
+    .story-modal-frame {
+        height: 95vh;
+        max-height: 860px;
+        border-radius: 14px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.7);
+    }
+}
+.story-modal-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #000;
+}
+
+.story-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    z-index: 10051;
+}
+.story-modal-close:hover { background: rgba(255,255,255,.28); }
+body.story-modal-open { overflow: hidden; }
+</style>
+
+<script>
+(function () {
+    var overlay  = document.getElementById('storyModalOverlay');
+    var frame    = document.getElementById('storyModalFrame');
+    var closeBtn = document.getElementById('storyModalCloseBtn');
+    if (!overlay || !frame) return;
+
+    function open(url) {
+        frame.src = url;
+        overlay.classList.remove('d-none');
+        document.body.classList.add('story-modal-open');
+    }
+    function close() {
+        overlay.classList.add('d-none');
+        // Clear src so the viewer's music/video stops immediately.
+        frame.src = 'about:blank';
+        document.body.classList.remove('story-modal-open');
+    }
+
+    // Any link marked `js-open-story` anywhere on the page opens the modal
+    // instead of navigating — covers the stories carousel tiles AND the
+    // story ring on the profile avatar.
+    document.addEventListener('click', function (e) {
+        var link = e.target.closest('a.js-open-story');
+        if (!link) return;
+        e.preventDefault();
+        open(link.getAttribute('href'));
+    });
+
+    // ESC closes.
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !overlay.classList.contains('d-none')) {
+            close();
+        }
+    });
+
+    // Click on the backdrop (but not on the iframe itself) closes.
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) { close(); }
+    });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+
+    // The viewer inside the iframe asks us to close when the user hits its
+    // own close button / ESC / reaches the end / finishes a delete.
+    window.addEventListener('message', function (e) {
+        if (!e.data || typeof e.data !== 'object') return;
+        if (e.data.type === 'story-close' || e.data.type === 'story-deleted') {
+            close();
+            // After a deletion, refresh so the carousel no longer shows the
+            // now-missing story tile.
+            if (e.data.type === 'story-deleted') {
+                window.location.reload();
+            }
+        }
+    });
+})();
+</script>

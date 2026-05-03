@@ -1,0 +1,298 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Profil - Forum Voyage{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow border-0">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4"><i class="fas fa-user-edit me-2 text-primary"></i>Modifier le Profil</h3>
+
+                <div class="text-center mb-4">
+                    {% if app.user.profilePhotoPath %}
+                        <img src="{{ asset('uploads/profiles/' ~ app.user.profilePhotoPath) }}"
+                             class="rounded-circle border border-3 border-primary" id="profilePhotoPreview"
+                             width="100" height="100" style="object-fit:cover" alt="">
+                    {% else %}
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center mx-auto"
+                             id="profilePhotoPreviewFallback"
+                             style="width:100px;height:100px;">
+                            <span class="text-white fw-bold fs-2">{{ app.user.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profileEditForm', 'novalidate': 'novalidate'}}) }}
+
+                    {# Username field with inline validation.
+                       NOTE: we do NOT override the id via attr because Symfony still uses its own
+                       generated id for the input. Instead, the JS below picks up `form.username.vars.id`. #}
+                    <div class="mb-3">
+                        {{ form_label(form.username) }}
+                        {{ form_widget(form.username, {'attr': {'class': 'form-control form-control-modern'}}) }}
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Lettres uniquement, pas de chiffres.
+                            </small>
+                            <small class="text-muted"><span id="charCount">0</span>/15</small>
+                        </div>
+                        <div id="usernameError" class="text-danger small mt-1 d-none">
+                            <i class="fas fa-exclamation-circle me-1"></i><span></span>
+                        </div>
+                        {# Server-side errors (fallback) #}
+                        {% if form.username.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ form_errors(form.username) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Bio field — 30 chars max with live counter and inline
+                       red error as soon as the user types over the limit. The
+                       submit handler also blocks the form from validating when
+                       it's too long (matches Symfony-side Length constraint). #}
+                    <div class="mb-3">
+                        {{ form_label(form.bio) }}
+                        {{ form_widget(form.bio, {'attr': {'class': 'form-control form-control-modern'}}) }}
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Visible sur votre profil, sous les statistiques.
+                            </small>
+                            <small class="text-muted" id="bioCounterWrap">
+                                <span id="bioCharCount">0</span>/30
+                            </small>
+                        </div>
+                        <div id="bioError" class="text-danger small mt-1 d-none">
+                            <i class="fas fa-exclamation-circle me-1"></i><span></span>
+                        </div>
+                        {# Server-side errors (NoBannedWords, length). The validator
+                           attaches them to the field; we render them here so the
+                           user gets an explicit red line after a failed submit. #}
+                        {% if form.bio.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1 bio-server-error">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ form_errors(form.bio) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Modern photo upload zone #}
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Photo de profil</label>
+                        <label for="{{ form.profilePhoto.vars.id }}" class="upload-zone upload-zone-compact" id="profileUploadZone">
+                            {{ form_widget(form.profilePhoto, {'attr': {'class': 'd-none'}}) }}
+                            <div class="upload-zone-content">
+                                <i class="fas fa-camera fa-2x mb-2 text-primary"></i>
+                                <p class="mb-1 fw-semibold small">Cliquez ou glissez une photo ici</p>
+                                <small class="text-muted">JPEG, PNG, WebP — max 3 MB</small>
+                            </div>
+                        </label>
+                        {% if form.profilePhoto.vars.errors|length > 0 %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ form_errors(form.profilePhoto) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill" id="profileSaveBtn">
+                            <i class="fas fa-save me-2"></i>Enregistrer
+                        </button>
+                        <a href="{{ path('app_profile') }}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function () {
+    // Use Symfony's auto-generated id for the username input (e.g. "profile_username"),
+    // not a hand-picked one — because form_widget's attr.id is ignored by the form theme.
+    var input = document.getElementById('{{ form.username.vars.id }}');
+    var counter = document.getElementById('charCount');
+    var errorBox = document.getElementById('usernameError');
+    var form = document.getElementById('profileEditForm');
+    var saveBtn = document.getElementById('profileSaveBtn');
+
+    function showUsernameError(msg) {
+        if (!errorBox) return;
+        errorBox.classList.remove('d-none');
+        errorBox.querySelector('span').textContent = msg;
+        input.classList.add('is-invalid');
+    }
+    function hideUsernameError() {
+        if (!errorBox) return;
+        errorBox.classList.add('d-none');
+        input.classList.remove('is-invalid');
+    }
+    function validateUsername(val) {
+        if (!val || val.trim().length === 0) return 'Le nom d\'utilisateur est obligatoire.';
+        if (val.length < 2) return 'Au moins 2 caractères.';
+        if (val.length > 15) return 'Maximum 15 caractères.';
+        if (/\d/.test(val)) return 'Le nom ne doit contenir aucun chiffre.';
+        return null;
+    }
+
+    if (input && counter) {
+        counter.textContent = input.value.length;
+        input.addEventListener('input', function () {
+            counter.textContent = this.value.length;
+            var err = validateUsername(this.value);
+            if (err) showUsernameError(err); else hideUsernameError();
+        });
+    }
+
+    // ===== Bio: live counter + red inline error on overflow =====
+    // IMPORTANT: use Symfony's auto-generated id (e.g. "profile_bio") because
+    // form_widget ignores attr.id — same gotcha as the username field above.
+    var bioInput       = document.getElementById('{{ form.bio.vars.id }}');
+    var bioCounter     = document.getElementById('bioCharCount');
+    var bioCounterWrap = document.getElementById('bioCounterWrap');
+    var bioError       = document.getElementById('bioError');
+
+    function showBioError(msg) {
+        if (!bioError) return;
+        bioError.classList.remove('d-none');
+        bioError.querySelector('span').textContent = msg;
+        bioInput.classList.add('is-invalid');
+    }
+    function hideBioError() {
+        if (!bioError) return;
+        bioError.classList.add('d-none');
+        bioInput.classList.remove('is-invalid');
+    }
+    // Mirror of App\Validator\NoBannedWords::BANNED_WORDS — so the same words
+    // blocked in post descriptions are ALSO blocked here live, before submit.
+    // The server re-validates with the same list, this is just the UX layer.
+    var BIO_BANNED_WORDS = {{ constant('App\\Validator\\NoBannedWords::BANNED_WORDS')|json_encode|raw }};
+
+    function findBannedWord(val) {
+        if (!val) return null;
+        var hay = val.toLowerCase();
+        for (var i = 0; i < BIO_BANNED_WORDS.length; i++) {
+            if (hay.indexOf(BIO_BANNED_WORDS[i]) !== -1) {
+                return BIO_BANNED_WORDS[i];
+            }
+        }
+        return null;
+    }
+
+    function validateBio(val) {
+        if (val && val.length > 30) return 'La bio ne peut pas dépasser 30 caractères.';
+        var bad = findBannedWord(val);
+        if (bad) return 'Votre texte contient un mot interdit : « ' + bad + ' ». Merci de reformuler.';
+        return null;
+    }
+
+    function refreshBioCounter() {
+        if (!bioInput || !bioCounter) return;
+        var len = bioInput.value.length;
+        bioCounter.textContent = len;
+        // Turn the WHOLE counter line red + bold as soon as it crosses 30.
+        if (bioCounterWrap) {
+            if (len > 30) {
+                bioCounterWrap.classList.remove('text-muted');
+                bioCounterWrap.classList.add('text-danger', 'fw-bold');
+            } else {
+                bioCounterWrap.classList.add('text-muted');
+                bioCounterWrap.classList.remove('text-danger', 'fw-bold');
+            }
+        }
+        var err = validateBio(bioInput.value);
+        if (err) showBioError(err); else hideBioError();
+    }
+
+    if (bioInput && bioCounter) {
+        refreshBioCounter(); // initial state (prefilled bios too)
+        // Listen to every input event so the counter ticks each keystroke,
+        // plus paste/cut/drop so programmatic changes are caught as well.
+        ['input', 'keyup', 'change', 'paste', 'cut', 'drop'].forEach(function (evt) {
+            bioInput.addEventListener(evt, function () {
+                // Defer so paste/cut/drop have time to update .value.
+                setTimeout(refreshBioCounter, 0);
+            });
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            var err = validateUsername(input.value);
+            if (err) {
+                e.preventDefault();
+                showUsernameError(err);
+                input.focus();
+                return false;
+            }
+            // Block submit if the bio is over the 30-char limit.
+            var bioErr = bioInput ? validateBio(bioInput.value) : null;
+            if (bioErr) {
+                e.preventDefault();
+                showBioError(bioErr);
+                bioInput.focus();
+                return false;
+            }
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Enregistrement...';
+            }
+        });
+    }
+
+    // Photo upload preview
+    var photoInput = document.querySelector('#profileUploadZone input[type=file]');
+    var preview = document.getElementById('profilePhotoPreview');
+    var previewFallback = document.getElementById('profilePhotoPreviewFallback');
+    var uploadZone = document.getElementById('profileUploadZone');
+
+    if (photoInput) {
+        photoInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    if (preview) {
+                        preview.src = e.target.result;
+                    } else if (previewFallback) {
+                        previewFallback.outerHTML =
+                            '<img src="' + e.target.result + '" id="profilePhotoPreview" ' +
+                            'class="rounded-circle border border-3 border-primary" ' +
+                            'width="100" height="100" style="object-fit:cover" alt="">';
+                    }
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Drag & drop on profile upload zone
+        if (uploadZone) {
+            ['dragenter', 'dragover'].forEach(function (evt) {
+                uploadZone.addEventListener(evt, function (e) {
+                    e.preventDefault();
+                    uploadZone.classList.add('drag-over');
+                });
+            });
+            ['dragleave', 'drop'].forEach(function (evt) {
+                uploadZone.addEventListener(evt, function (e) {
+                    e.preventDefault();
+                    uploadZone.classList.remove('drag-over');
+                });
+            });
+            uploadZone.addEventListener('drop', function (e) {
+                if (e.dataTransfer && e.dataTransfer.files.length) {
+                    try {
+                        var dt = new DataTransfer();
+                        dt.items.add(e.dataTransfer.files[0]);
+                        photoInput.files = dt.files;
+                        photoInput.dispatchEvent(new Event('change'));
+                    } catch (err) {}
+                }
+            });
+        }
+    }
+})();
+</script>
+{% endblock %}

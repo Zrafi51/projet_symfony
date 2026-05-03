@@ -18,3 +18,9 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# User-uploaded media (per-instance, never push to git)
+/public/uploads/
+
+# Claude Code session files
+/.claude/

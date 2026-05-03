@@ -25,4 +25,17 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+    'leaflet' => [
+        'version' => '1.9.4',
+    ],
+    'leaflet/dist/leaflet.min.css' => [
+        'version' => '1.9.4',
+        'type' => 'css',
+    ],
+    '@symfony/ux-map' => [
+        'path' => '@symfony/ux-map/abstract_map_controller.js',
+    ],
+    '@symfony/ux-leaflet-map' => [
+        'path' => '@symfony/ux-leaflet-map/map_controller.js',
+    ],
 ];
