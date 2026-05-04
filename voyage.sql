@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Apr 26, 2026 at 07:18 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Hôte : 127.0.0.1
+-- Généré le : lun. 04 mai 2026 à 15:47
+-- Version du serveur : 10.4.32-MariaDB
+-- Version de PHP : 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `voyage`
+-- Base de données : `voyage`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `activites`
+-- Structure de la table `activites`
 --
 
 CREATE TABLE `activites` (
@@ -38,7 +38,7 @@ CREATE TABLE `activites` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `activites`
+-- Déchargement des données de la table `activites`
 --
 
 INSERT INTO `activites` (`id`, `nom`, `destination_id`, `categorie`, `prix`, `duree_heures`, `description`) VALUES
@@ -126,7 +126,7 @@ INSERT INTO `activites` (`id`, `nom`, `destination_id`, `categorie`, `prix`, `du
 -- --------------------------------------------------------
 
 --
--- Table structure for table `admin_profile_preferences`
+-- Structure de la table `admin_profile_preferences`
 --
 
 CREATE TABLE `admin_profile_preferences` (
@@ -140,17 +140,16 @@ CREATE TABLE `admin_profile_preferences` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `admin_profile_preferences`
+-- Déchargement des données de la table `admin_profile_preferences`
 --
 
 INSERT INTO `admin_profile_preferences` (`id`, `user_email`, `job_title`, `company`, `bio`, `created_at`, `updated_at`) VALUES
-(1, 'zrafimehdi5@gmail.com', 'Super Admin', 'EasyTravel', 'Admin principal de la console EasyTravel. Gestion des operations, du support et des contenus premium.', '2026-04-13 15:55:39', '2026-04-13 15:55:39'),
-(4, 'zrafimehdi@gmail.com', 'Super Admin', 'EasyTravel', 'Admin principal de la console EasyTravel. Gestion des operations, du support et des contenus premium.', '2026-04-26 16:33:04', '2026-04-26 16:33:04');
+(1, 'zrafimehdi5@gmail.com', 'Super Admin', 'EasyTravel', 'Admin principal de la console EasyTravel. Gestion des operations, du support et des contenus premium.', '2026-04-13 15:55:39', '2026-04-13 15:55:39');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `atmosphere_destinations`
+-- Structure de la table `atmosphere_destinations`
 --
 
 CREATE TABLE `atmosphere_destinations` (
@@ -174,7 +173,7 @@ CREATE TABLE `atmosphere_destinations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `atmosphere_destinations`
+-- Déchargement des données de la table `atmosphere_destinations`
 --
 
 INSERT INTO `atmosphere_destinations` (`id`, `atmosphere_type`, `title`, `description`, `video_path`, `ai_interest_tags`, `is_active`, `display_order`, `created_by_admin`, `created_at`, `ai_suggested_destinations`, `ai_suggested_countries`, `ai_suggested_continents`, `ai_score`, `avg_price`, `updated_from_ai_at`, `ai_featured_payload`) VALUES
@@ -186,7 +185,7 @@ INSERT INTO `atmosphere_destinations` (`id`, `atmosphere_type`, `title`, `descri
 -- --------------------------------------------------------
 
 --
--- Table structure for table `comments`
+-- Structure de la table `comments`
 --
 
 CREATE TABLE `comments` (
@@ -200,7 +199,7 @@ CREATE TABLE `comments` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `destinations`
+-- Structure de la table `destinations`
 --
 
 CREATE TABLE `destinations` (
@@ -213,7 +212,7 @@ CREATE TABLE `destinations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `destinations`
+-- Déchargement des données de la table `destinations`
 --
 
 INSERT INTO `destinations` (`id`, `nom`, `pays`, `continent`, `prix_base`, `description`) VALUES
@@ -231,7 +230,7 @@ INSERT INTO `destinations` (`id`, `nom`, `pays`, `continent`, `prix_base`, `desc
 -- --------------------------------------------------------
 
 --
--- Table structure for table `factures`
+-- Structure de la table `factures`
 --
 
 CREATE TABLE `factures` (
@@ -255,7 +254,7 @@ CREATE TABLE `factures` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `factures`
+-- Déchargement des données de la table `factures`
 --
 
 INSERT INTO `factures` (`id`, `numero_facture`, `date_emission`, `client_nom`, `client_email`, `client_adresse`, `destination`, `montant_transport`, `montant_hebergement`, `montant_activites`, `montant_total`, `statut`, `paiement_id`, `type_voyage`, `nb_personnes`, `date_debut`, `date_fin`) VALUES
@@ -269,7 +268,7 @@ INSERT INTO `factures` (`id`, `numero_facture`, `date_emission`, `client_nom`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `favorite_packages`
+-- Structure de la table `favorite_packages`
 --
 
 CREATE TABLE `favorite_packages` (
@@ -291,7 +290,7 @@ CREATE TABLE `favorite_packages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `favorite_packages`
+-- Déchargement des données de la table `favorite_packages`
 --
 
 INSERT INTO `favorite_packages` (`id`, `client_email`, `package_key`, `package_name`, `destination_name`, `country`, `continent`, `description`, `image_path`, `price_amount`, `price_label`, `duration_days`, `duration_label`, `travel_type`, `created_at`) VALUES
@@ -301,7 +300,7 @@ INSERT INTO `favorite_packages` (`id`, `client_email`, `package_key`, `package_n
 -- --------------------------------------------------------
 
 --
--- Table structure for table `featured_destinations`
+-- Structure de la table `featured_destinations`
 --
 
 CREATE TABLE `featured_destinations` (
@@ -324,7 +323,7 @@ CREATE TABLE `featured_destinations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `featured_destinations`
+-- Déchargement des données de la table `featured_destinations`
 --
 
 INSERT INTO `featured_destinations` (`id`, `destination_name`, `country`, `continent`, `description`, `video_path`, `ai_score`, `satisfaction_score`, `avg_price`, `best_season`, `travel_types`, `interests`, `is_featured`, `display_order`, `updated_from_ai_at`, `created_at`) VALUES
@@ -338,7 +337,7 @@ INSERT INTO `featured_destinations` (`id`, `destination_name`, `country`, `conti
 -- --------------------------------------------------------
 
 --
--- Table structure for table `featured_destination_history`
+-- Structure de la table `featured_destination_history`
 --
 
 CREATE TABLE `featured_destination_history` (
@@ -353,7 +352,7 @@ CREATE TABLE `featured_destination_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `featured_destination_history`
+-- Déchargement des données de la table `featured_destination_history`
 --
 
 INSERT INTO `featured_destination_history` (`id`, `featured_destination_id`, `action_type`, `destination_name`, `ai_score`, `note`, `created_by_admin`, `created_at`) VALUES
@@ -379,7 +378,7 @@ INSERT INTO `featured_destination_history` (`id`, `featured_destination_id`, `ac
 -- --------------------------------------------------------
 
 --
--- Table structure for table `forum_comments`
+-- Structure de la table `forum_comments`
 --
 
 CREATE TABLE `forum_comments` (
@@ -392,17 +391,16 @@ CREATE TABLE `forum_comments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `forum_comments`
+-- Déchargement des données de la table `forum_comments`
 --
 
 INSERT INTO `forum_comments` (`id`, `post_id`, `user_id`, `content`, `created_at`, `updated_at`) VALUES
-(2, 1, 14, 'sa7a wassime 👏👏👏🍹', '2026-04-18 15:34:01', '2026-04-18 15:34:01'),
-(3, 2, 16, 'bien wlh tanja7 elforum hethi', '2026-04-26 16:53:11', '2026-04-26 16:53:11');
+(2, 1, 14, 'sa7a wassime 👏👏👏🍹', '2026-04-18 15:34:01', '2026-04-18 15:34:01');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `forum_posts`
+-- Structure de la table `forum_posts`
 --
 
 CREATE TABLE `forum_posts` (
@@ -416,7 +414,7 @@ CREATE TABLE `forum_posts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `forum_posts`
+-- Déchargement des données de la table `forum_posts`
 --
 
 INSERT INTO `forum_posts` (`id`, `user_id`, `title`, `content`, `image_path`, `created_at`, `updated_at`) VALUES
@@ -426,7 +424,7 @@ INSERT INTO `forum_posts` (`id`, `user_id`, `title`, `content`, `image_path`, `c
 -- --------------------------------------------------------
 
 --
--- Table structure for table `forum_reactions`
+-- Structure de la table `forum_reactions`
 --
 
 CREATE TABLE `forum_reactions` (
@@ -439,18 +437,17 @@ CREATE TABLE `forum_reactions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `forum_reactions`
+-- Déchargement des données de la table `forum_reactions`
 --
 
 INSERT INTO `forum_reactions` (`id`, `post_id`, `user_id`, `reaction_code`, `created_at`, `updated_at`) VALUES
 (1, 1, 15, 'LOVE', '2026-04-18 16:39:44', '2026-04-18 16:39:52'),
-(3, 1, 14, 'WOW', '2026-04-18 17:33:45', '2026-04-18 17:33:45'),
-(4, 2, 16, 'LOVE', '2026-04-26 17:52:07', '2026-04-26 17:52:07');
+(3, 1, 14, 'WOW', '2026-04-18 17:33:45', '2026-04-18 17:33:45');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `forum_stories`
+-- Structure de la table `forum_stories`
 --
 
 CREATE TABLE `forum_stories` (
@@ -463,7 +460,7 @@ CREATE TABLE `forum_stories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `forum_stories`
+-- Déchargement des données de la table `forum_stories`
 --
 
 INSERT INTO `forum_stories` (`id`, `user_id`, `caption`, `image_path`, `created_at`, `expires_at`) VALUES
@@ -474,7 +471,7 @@ INSERT INTO `forum_stories` (`id`, `user_id`, `caption`, `image_path`, `created_
 -- --------------------------------------------------------
 
 --
--- Table structure for table `forum_story_views`
+-- Structure de la table `forum_story_views`
 --
 
 CREATE TABLE `forum_story_views` (
@@ -486,7 +483,7 @@ CREATE TABLE `forum_story_views` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `forum_story_views`
+-- Déchargement des données de la table `forum_story_views`
 --
 
 INSERT INTO `forum_story_views` (`id`, `story_id`, `user_id`, `viewer_key`, `viewed_at`) VALUES
@@ -499,7 +496,7 @@ INSERT INTO `forum_story_views` (`id`, `story_id`, `user_id`, `viewer_key`, `vie
 -- --------------------------------------------------------
 
 --
--- Table structure for table `historique_paiements`
+-- Structure de la table `historique_paiements`
 --
 
 CREATE TABLE `historique_paiements` (
@@ -520,7 +517,7 @@ CREATE TABLE `historique_paiements` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `logs_statut_packages`
+-- Structure de la table `logs_statut_packages`
 --
 
 CREATE TABLE `logs_statut_packages` (
@@ -535,54 +532,54 @@ CREATE TABLE `logs_statut_packages` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `map_destinations`
+-- Structure de la table `map_destinations`
 --
 
 CREATE TABLE `map_destinations` (
   `id` int(11) NOT NULL,
-  `city` varchar(100) DEFAULT NULL,
-  `country` varchar(100) DEFAULT NULL,
-  `continent` varchar(50) DEFAULT NULL,
-  `package_name` varchar(150) DEFAULT NULL,
-  `duration` varchar(50) DEFAULT NULL,
-  `price` varchar(50) DEFAULT NULL,
-  `original_price` varchar(50) DEFAULT NULL,
-  `image_path` varchar(255) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `best_period` varchar(100) DEFAULT NULL,
-  `includes` text DEFAULT NULL,
-  `highlight_1` text DEFAULT NULL,
-  `highlight_2` text DEFAULT NULL,
-  `highlight_3` text DEFAULT NULL,
-  `x_percent` decimal(5,3) DEFAULT NULL,
-  `y_percent` decimal(5,3) DEFAULT NULL,
-  `ai_score` decimal(5,2) DEFAULT 0.00,
-  `ai_recommended` tinyint(1) DEFAULT 0,
-  `is_active` tinyint(1) DEFAULT 1,
-  `display_order` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `city` varchar(100) NOT NULL,
+  `country` varchar(100) NOT NULL,
+  `continent` varchar(50) NOT NULL,
+  `package_name` varchar(150) NOT NULL,
+  `duration` varchar(50) NOT NULL,
+  `price` varchar(50) NOT NULL,
+  `original_price` varchar(50) NOT NULL,
+  `image_path` varchar(255) NOT NULL,
+  `description` longtext NOT NULL,
+  `best_period` varchar(100) NOT NULL,
+  `includes` longtext NOT NULL,
+  `highlight_1` longtext NOT NULL,
+  `highlight_2` longtext NOT NULL,
+  `highlight_3` longtext NOT NULL,
+  `x_percent` decimal(5,3) NOT NULL,
+  `y_percent` decimal(5,3) NOT NULL,
+  `ai_score` decimal(5,2) NOT NULL,
+  `ai_recommended` tinyint(4) NOT NULL,
+  `is_active` tinyint(4) NOT NULL,
+  `display_order` int(11) NOT NULL,
+  `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `map_destinations`
+-- Déchargement des données de la table `map_destinations`
 --
 
 INSERT INTO `map_destinations` (`id`, `city`, `country`, `continent`, `package_name`, `duration`, `price`, `original_price`, `image_path`, `description`, `best_period`, `includes`, `highlight_1`, `highlight_2`, `highlight_3`, `x_percent`, `y_percent`, `ai_score`, `ai_recommended`, `is_active`, `display_order`, `created_at`) VALUES
-(1, 'Washington', 'Etats-Unis', 'Amerique', 'Pack Capital Escape', '5 jours / 4 nuits', '2490 EUR', '2890 EUR', '80281906250b49a80467292e998492eb.jpg', 'Une escapade urbaine premium entre monuments iconiques, musees et rooftops confidentiels.', 'Mars a juin', 'Vol, hotel, city pass, transferts', 'Visite guidee de la Maison Blanche', 'Croisiere coucher de soleil sur le Potomac', 'Selection gourmande et shopping', 0.243, 0.269, 91.00, 1, 1, 1, '2026-04-01 00:05:51'),
-(2, 'Bogota', 'Colombie', 'Amerique', 'Pack Andes Panorama', '7 jours / 6 nuits', '1690 EUR', '1990 EUR', 'da89f34fb5595d60358fcefe64fc6659.jpg', 'Un pack vibrant entre art de rue, haute gastronomie et paysages andins a couper le souffle.', 'Decembre a mars', 'Vol, hotel boutique, guide local, excursions', 'Decouverte du quartier La Candelaria', 'Excursion privee a Monserrate', 'Atelier cafe et degustation locale', 0.323, 0.624, 86.00, 1, 1, 2, '2026-04-01 00:05:51'),
-(3, 'Paris', 'France', 'Europe', 'Pack City Lights', '4 jours / 3 nuits', '1890 EUR', '2140 EUR', '3fddde5acc7047afabbb1d9dd69301cd.jpg', 'Le pack ideal pour vivre Paris avec elegance, entre adresses signatures et experiences romantiques.', 'Avril a octobre', 'Hotel 4*, petit-dejeuner, croisiere, transferts', 'Billets coupe-file pour les incontournables', 'Dinner croisiere sur la Seine', 'Guide quartier mode et art de vivre', 0.666, 0.148, 95.00, 1, 1, 3, '2026-04-01 00:05:51'),
-(4, 'Tokyo', 'Japon', 'Asie', 'Pack Neo Tokyo', '8 jours / 7 nuits', '2190 EUR', '2620 EUR', 'bac4bce325c9a10f6fb77f30682cc7fa.jpg', 'Une immersion entre modernite japonaise, temples, quartiers futuristes et experiences food exclusives.', 'Mars a mai', 'Vol, hotel central, JR pass, experiences food', 'Shibuya, Asakusa et teamLab inclus', 'Journee libre a Hakone ou Nikko', 'Selection de restaurants et rooftops', 0.654, 0.302, 93.00, 1, 1, 4, '2026-04-01 00:05:51'),
-(5, 'Sydney', 'Australie', 'Oceanie', 'Pack Harbour Signature', '9 jours / 8 nuits', '3190 EUR', '3690 EUR', 'vaa-720x480-sydney-vivid-sydney-2024-guide.jpg', 'Un grand voyage lifestyle entre baie mythique, plages iconiques et experiences premium au soleil.', 'Septembre a novembre', 'Vol, hotel vue baie, transferts, activites', 'Opera House et harbour cruise', 'Journee a Bondi et Blue Mountains', 'Conciergerie et programme sur mesure', 0.715, 0.306, 88.00, 1, 1, 5, '2026-04-01 00:05:51'),
-(6, 'Algiers', 'Algérie', 'Afrique', 'Evasion Famille Algiers', '7 jours / 6 nuits', '6140 EUR', '7061 EUR', 'b98f59bef70929b9642bc88dd2a56f11.jpg', 'Recommandation IA', 'Juin a octobre', 'Vol,Hôtel,Petit-déjeuner,Activités famille', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.829, 0.763, 97.90, 1, 1, 1, '2026-04-14 05:05:38'),
-(7, 'Berlin', 'Allemagne', 'Europe', 'Escapade Romantique', '7 jours / 6 nuits', '1890 EUR', '2174 EUR', '9b4f03d821c26c149892eb9b646573bc.jpg', 'Une parenthese chic entre capitales de l\'art de vivre, experiences a deux et hebergements de charme.', 'Avril a octobre', 'Vol,Hôtel,Petit-déjeuner,Expériences', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.466, 0.196, 96.10, 1, 1, 2, '2026-04-14 05:05:38'),
-(8, 'Bali', 'Indonésie', 'Asie', 'Aventure Asiatique', '14 jours / 13 nuits', '2490 EUR', '2864 EUR', 'da89f34fb5595d60358fcefe64fc6659.jpg', 'Un circuit energie entre culture locale, food scene vibrante et grandes sensations.', 'Mars a mai', 'Vol,Hôtel,Guide,Excursions', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.809, 0.305, 93.40, 1, 1, 3, '2026-04-14 05:05:38'),
-(9, 'Rio de Janeiro', 'Brésil', 'Amerique', 'Pack Rio de Janeiro', '7 jours / 6 nuits', '1917 EUR', '2205 EUR', '80281906250b49a80467292e998492eb.jpg', 'Rio de Janeiro devient un hotspot premium pour la carte interactive, avec un bon equilibre entre desirabilite, budget et satisfaction.', 'Septembre a novembre', 'Vol,Hotel,Guide', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.198, 0.396, 89.60, 1, 1, 4, '2026-04-14 05:05:38'),
-(10, 'Tunisie', 'Pays', 'Monde', 'Pack Tunisie', '7 jours / 6 nuits', '1490 EUR', '1714 EUR', '3fddde5acc7047afabbb1d9dd69301cd.jpg', 'Tunisie devient un hotspot premium pour la carte interactive, avec un bon equilibre entre desirabilite, budget et satisfaction.', 'Toute l annee', 'Vol,Hotel,Guide', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.439, 0.336, 80.00, 1, 1, 5, '2026-04-14 05:05:38');
+(1, 'Washington', 'Etats-Unis', 'Amerique', 'Pack Capital Escape', '5 jours / 4 nuits', '2490 EUR', '2890 EUR', '80281906250b49a80467292e998492eb.jpg', 'Une escapade urbaine premium entre monuments iconiques, musees et rooftops confidentiels.', 'Mars a juin', 'Vol, hotel, city pass, transferts', 'Visite guidee de la Maison Blanche', 'Croisiere coucher de soleil sur le Potomac', 'Selection gourmande et shopping', 0.243, 0.269, 91.00, 1, 1, 1, '2026-04-01 02:05:51'),
+(2, 'Bogota', 'Colombie', 'Amerique', 'Pack Andes Panorama', '7 jours / 6 nuits', '1690 EUR', '1990 EUR', 'da89f34fb5595d60358fcefe64fc6659.jpg', 'Un pack vibrant entre art de rue, haute gastronomie et paysages andins a couper le souffle.', 'Decembre a mars', 'Vol, hotel boutique, guide local, excursions', 'Decouverte du quartier La Candelaria', 'Excursion privee a Monserrate', 'Atelier cafe et degustation locale', 0.323, 0.624, 86.00, 1, 1, 2, '2026-04-01 02:05:51'),
+(3, 'Paris', 'France', 'Europe', 'Pack City Lights', '4 jours / 3 nuits', '1890 EUR', '2140 EUR', '3fddde5acc7047afabbb1d9dd69301cd.jpg', 'Le pack ideal pour vivre Paris avec elegance, entre adresses signatures et experiences romantiques.', 'Avril a octobre', 'Hotel 4*, petit-dejeuner, croisiere, transferts', 'Billets coupe-file pour les incontournables', 'Dinner croisiere sur la Seine', 'Guide quartier mode et art de vivre', 0.666, 0.148, 95.00, 1, 1, 3, '2026-04-01 02:05:51'),
+(4, 'Tokyo', 'Japon', 'Asie', 'Pack Neo Tokyo', '8 jours / 7 nuits', '2190 EUR', '2620 EUR', 'bac4bce325c9a10f6fb77f30682cc7fa.jpg', 'Une immersion entre modernite japonaise, temples, quartiers futuristes et experiences food exclusives.', 'Mars a mai', 'Vol, hotel central, JR pass, experiences food', 'Shibuya, Asakusa et teamLab inclus', 'Journee libre a Hakone ou Nikko', 'Selection de restaurants et rooftops', 0.654, 0.302, 93.00, 1, 1, 4, '2026-04-01 02:05:51'),
+(5, 'Sydney', 'Australie', 'Oceanie', 'Pack Harbour Signature', '9 jours / 8 nuits', '3190 EUR', '3690 EUR', 'vaa-720x480-sydney-vivid-sydney-2024-guide.jpg', 'Un grand voyage lifestyle entre baie mythique, plages iconiques et experiences premium au soleil.', 'Septembre a novembre', 'Vol, hotel vue baie, transferts, activites', 'Opera House et harbour cruise', 'Journee a Bondi et Blue Mountains', 'Conciergerie et programme sur mesure', 0.715, 0.306, 88.00, 1, 1, 5, '2026-04-01 02:05:51'),
+(6, 'Algiers', 'Algérie', 'Afrique', 'Evasion Famille Algiers', '7 jours / 6 nuits', '6140 EUR', '7061 EUR', 'algiers.jpg', 'Recommandation IA', 'Juin a octobre', 'Vol,Hôtel,Petit-déjeuner,Activités famille', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.829, 0.763, 97.90, 1, 1, 1, '2026-04-14 07:05:38'),
+(7, 'Berlin', 'Allemagne', 'Europe', 'Escapade Romantique', '7 jours / 6 nuits', '1890 EUR', '2174 EUR', 'berlin.jpg', 'Une parenthese chic entre capitales de l\'art de vivre, experiences a deux et hebergements de charme.', 'Avril a octobre', 'Vol,Hôtel,Petit-déjeuner,Expériences', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.466, 0.196, 96.10, 1, 1, 2, '2026-04-14 07:05:38'),
+(8, 'Bali', 'Indonésie', 'Asie', 'Aventure Asiatique', '14 jours / 13 nuits', '2490 EUR', '2864 EUR', 'da89f34fb5595d60358fcefe64fc6659.jpg', 'Un circuit energie entre culture locale, food scene vibrante et grandes sensations.', 'Mars a mai', 'Vol,Hôtel,Guide,Excursions', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.809, 0.305, 93.40, 1, 1, 3, '2026-04-14 07:05:38'),
+(9, 'Rio de Janeiro', 'Brésil', 'Amerique', 'Pack Rio de Janeiro', '7 jours / 6 nuits', '1917 EUR', '2205 EUR', 'rio_de_janeiro.jpg', 'Rio de Janeiro devient un hotspot premium pour la carte interactive, avec un bon equilibre entre desirabilite, budget et satisfaction.', 'Septembre a novembre', 'Vol,Hotel,Guide', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.198, 0.396, 89.60, 1, 1, 4, '2026-04-14 07:05:38'),
+(10, 'Tunisie', 'Pays', 'Monde', 'Pack Tunisie', '7 jours / 6 nuits', '1490 EUR', '1714 EUR', '3fddde5acc7047afabbb1d9dd69301cd.jpg', 'Tunisie devient un hotspot premium pour la carte interactive, avec un bon equilibre entre desirabilite, budget et satisfaction.', 'Toute l annee', 'Vol,Hotel,Guide', 'Top satisfaction voyageurs', 'Budget moyen compatible', 'Diversite geographique forte', 0.439, 0.336, 80.00, 1, 1, 5, '2026-04-14 07:05:38');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `messages`
+-- Structure de la table `messages`
 --
 
 CREATE TABLE `messages` (
@@ -598,7 +595,7 @@ CREATE TABLE `messages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `messages`
+-- Déchargement des données de la table `messages`
 --
 
 INSERT INTO `messages` (`id`, `session_id`, `role`, `content`, `content_json`, `created_at`, `model`, `latency_ms`, `token_count`) VALUES
@@ -618,7 +615,28 @@ INSERT INTO `messages` (`id`, `session_id`, `role`, `content`, `content_json`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `newsletter`
+-- Structure de la table `monument_scan`
+--
+
+CREATE TABLE `monument_scan` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `monument_name` varchar(255) NOT NULL,
+  `city` varchar(255) NOT NULL,
+  `country` varchar(255) NOT NULL,
+  `description` longtext NOT NULL,
+  `image_filename` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `added_to_request` tinyint(4) NOT NULL,
+  `scan_status` varchar(50) NOT NULL,
+  `confidence_score` double NOT NULL,
+  `api_provider` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `newsletter`
 --
 
 CREATE TABLE `newsletter` (
@@ -630,7 +648,7 @@ CREATE TABLE `newsletter` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `packages`
+-- Structure de la table `packages`
 --
 
 CREATE TABLE `packages` (
@@ -656,7 +674,7 @@ CREATE TABLE `packages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `packages`
+-- Déchargement des données de la table `packages`
 --
 
 INSERT INTO `packages` (`id`, `destination_id`, `client_nom`, `client_email`, `date_debut`, `date_fin`, `nb_adultes`, `nb_enfants`, `prix_total`, `statut`, `montant_paye`, `methode_paiement`, `reference_paiement`, `date_reservation`, `montant_bloque`, `admin_validation_note`, `validated_by_admin_email`, `validated_at`, `created_via_admin`) VALUES
@@ -674,13 +692,12 @@ INSERT INTO `packages` (`id`, `destination_id`, `client_nom`, `client_email`, `d
 -- --------------------------------------------------------
 
 --
--- Table structure for table `paiements`
+-- Structure de la table `paiements`
 --
 
 CREATE TABLE `paiements` (
   `id` int(11) NOT NULL,
   `client_nom` varchar(100) NOT NULL,
-  `client_email` varchar(190) DEFAULT NULL,
   `destination` varchar(200) NOT NULL,
   `montant` decimal(10,2) NOT NULL,
   `date_paiement` datetime NOT NULL DEFAULT current_timestamp(),
@@ -692,19 +709,19 @@ CREATE TABLE `paiements` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `paiements`
+-- Déchargement des données de la table `paiements`
 --
 
-INSERT INTO `paiements` (`id`, `client_nom`, `client_email`, `destination`, `montant`, `date_paiement`, `statut`, `reference_transaction`, `package_id`, `numero_carte_masque`, `type_voyage`) VALUES
-(1, 'yassmine aaaa', NULL, 'Algiers, Algérie', 6139.84, '2026-04-01 10:39:52', 'PAYE', 'PAY-1775032792416-7844', 0, '**** **** **** 6565', 'Aventure'),
-(2, 'yassmine aaaa', NULL, 'Rio de Janeiro, Brésil', 1917.28, '2026-04-01 14:23:00', 'PAYE', 'PAY-1775046180971-1903', 0, '**** **** **** 4546', 'Aventure'),
-(3, 'yassmine aaaa', NULL, 'Casablanca, Maroc', 20676.00, '2026-04-01 22:52:15', 'PAYE', 'PAY-1775076735639-9387', 0, '**** **** **** 6793', 'Aventure'),
-(4, 'wassim aaa', NULL, 'Algiers, Algérie', 6139.84, '2026-04-02 17:01:28', 'PAYE', 'PAY-1775142088505-1871', 0, '**** **** **** 5252', 'Aventure');
+INSERT INTO `paiements` (`id`, `client_nom`, `destination`, `montant`, `date_paiement`, `statut`, `reference_transaction`, `package_id`, `numero_carte_masque`, `type_voyage`) VALUES
+(1, 'yassmine aaaa', 'Algiers, Algérie', 6139.84, '2026-04-01 10:39:52', 'PAYE', 'PAY-1775032792416-7844', 0, '**** **** **** 6565', 'Aventure'),
+(2, 'yassmine aaaa', 'Rio de Janeiro, Brésil', 1917.28, '2026-04-01 14:23:00', 'PAYE', 'PAY-1775046180971-1903', 0, '**** **** **** 4546', 'Aventure'),
+(3, 'yassmine aaaa', 'Casablanca, Maroc', 20676.00, '2026-04-01 22:52:15', 'PAYE', 'PAY-1775076735639-9387', 0, '**** **** **** 6793', 'Aventure'),
+(4, 'wassim aaa', 'Algiers, Algérie', 6139.84, '2026-04-02 17:01:28', 'PAYE', 'PAY-1775142088505-1871', 0, '**** **** **** 5252', 'Aventure');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `posts`
+-- Structure de la table `posts`
 --
 
 CREATE TABLE `posts` (
@@ -719,7 +736,392 @@ CREATE TABLE `posts` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `prompts`
+-- Structure de la table `proctor_log`
+--
+
+CREATE TABLE `proctor_log` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `voyage_id` int(11) DEFAULT NULL,
+  `violation_type` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `proctor_log`
+--
+
+INSERT INTO `proctor_log` (`id`, `session_id`, `voyage_id`, `violation_type`, `created_at`) VALUES
+(1, 'quiz_69f6871926f300.04749544', NULL, 'WINDOW_BLUR', '2026-05-02 23:22:32'),
+(2, 'quiz_69f6871926f300.04749544', NULL, 'TAB_SWITCH', '2026-05-02 23:22:44'),
+(3, 'quiz_69f6871926f300.04749544', NULL, 'COPY_ATTEMPT', '2026-05-02 23:23:00'),
+(4, 'quiz_69f6871926f300.04749544', NULL, 'WINDOW_BLUR', '2026-05-02 23:23:01'),
+(5, 'quiz_69f6871926f300.04749544', NULL, 'TAB_SWITCH', '2026-05-02 23:23:02'),
+(6, 'quiz_69f6871926f300.04749544', NULL, 'COPY_ATTEMPT', '2026-05-02 23:23:09'),
+(7, 'quiz_69f6871926f300.04749544', NULL, 'WINDOW_BLUR', '2026-05-02 23:23:12'),
+(8, 'quiz_69f6871926f300.04749544', NULL, 'TAB_SWITCH', '2026-05-02 23:23:13'),
+(9, 'quiz_69f687793f5cf8.36135769', NULL, 'WINDOW_BLUR', '2026-05-02 23:23:44'),
+(10, 'quiz_69f687793f5cf8.36135769', NULL, 'TAB_SWITCH', '2026-05-02 23:23:45'),
+(11, 'quiz_69f687793f5cf8.36135769', NULL, 'WINDOW_BLUR', '2026-05-02 23:24:10'),
+(12, 'quiz_69f687793f5cf8.36135769', NULL, 'TAB_SWITCH', '2026-05-02 23:24:10'),
+(13, 'quiz_69f687793f5cf8.36135769', NULL, 'TAB_SWITCH', '2026-05-02 23:24:11'),
+(14, 'quiz_69f687793f5cf8.36135769', NULL, 'WINDOW_BLUR', '2026-05-02 23:24:23'),
+(15, 'quiz_69f687793f5cf8.36135769', NULL, 'TAB_SWITCH', '2026-05-02 23:24:24'),
+(16, 'quiz_69f687793f5cf8.36135769', NULL, 'WINDOW_BLUR', '2026-05-02 23:24:36'),
+(17, 'quiz_69f6886ad92564.10348723', 1, 'WINDOW_BLUR', '2026-05-02 23:27:52'),
+(18, 'quiz_69f68ac23a6339.33926956', 1, 'WINDOW_BLUR', '2026-05-02 23:37:52'),
+(19, 'quiz_69f68ac23a6339.33926956', 1, 'WINDOW_BLUR', '2026-05-02 23:38:16'),
+(20, 'quiz_69f68ac23a6339.33926956', 1, 'TAB_SWITCH', '2026-05-02 23:38:17'),
+(21, 'quiz_69f68d7d674181.64217188', 2, 'WINDOW_BLUR', '2026-05-02 23:49:37'),
+(22, 'quiz_69f68e8f818b38.78699125', 1, 'WINDOW_BLUR', '2026-05-02 23:54:00'),
+(23, 'quiz_69f68e8f818b38.78699125', 1, 'WINDOW_BLUR', '2026-05-02 23:54:05'),
+(24, 'quiz_69f68e8f818b38.78699125', 1, 'WINDOW_BLUR', '2026-05-02 23:54:19'),
+(25, 'quiz_69f68e8f818b38.78699125', 1, 'WINDOW_BLUR', '2026-05-02 23:54:23'),
+(26, 'quiz_69f68e8f818b38.78699125', 1, 'TAB_SWITCH', '2026-05-02 23:54:24'),
+(27, 'quiz_69f68f3252df00.94922093', 2, 'WINDOW_BLUR', '2026-05-02 23:56:55'),
+(28, 'quiz_69f68f3252df00.94922093', 2, 'TAB_SWITCH', '2026-05-02 23:56:56'),
+(29, 'quiz_69f68f3252df00.94922093', 2, 'TAB_SWITCH', '2026-05-02 23:57:06'),
+(30, 'quiz_69f68f3252df00.94922093', 2, 'WINDOW_BLUR', '2026-05-02 23:57:07'),
+(31, 'quiz_69f68f3252df00.94922093', 2, 'TIME_UP', '2026-05-02 23:57:21'),
+(32, 'quiz_69f68f3252df00.94922093', 2, 'WINDOW_BLUR', '2026-05-02 23:57:32'),
+(33, 'quiz_69f68f3252df00.94922093', 2, 'PASTE_ATTEMPT', '2026-05-02 23:57:37'),
+(34, 'quiz_69f68f3252df00.94922093', 2, 'WINDOW_BLUR', '2026-05-02 23:57:52'),
+(35, 'quiz_69f68f3252df00.94922093', 2, 'TAB_SWITCH', '2026-05-02 23:57:52'),
+(36, 'quiz_69f68f3252df00.94922093', 2, 'TIME_UP', '2026-05-02 23:58:00'),
+(37, 'quiz_69f68f3252df00.94922093', 2, 'WINDOW_BLUR', '2026-05-02 23:58:37'),
+(38, 'quiz_69f68f3252df00.94922093', 2, 'WINDOW_BLUR', '2026-05-02 23:59:07'),
+(39, 'quiz_69f68f3252df00.94922093', 2, 'TAB_SWITCH', '2026-05-02 23:59:07'),
+(40, 'quiz_69f68f3252df00.94922093', 2, 'TIME_UP', '2026-05-02 23:59:08'),
+(41, 'quiz_69f68f3252df00.94922093', 2, 'WINDOW_BLUR', '2026-05-02 23:59:09'),
+(42, 'quiz_69f68f3252df00.94922093', 2, 'FACE_TOO_FAR', '2026-05-02 23:59:12'),
+(43, 'quiz_69f68f3252df00.94922093', 2, 'NO_FACE', '2026-05-02 23:59:13'),
+(44, 'quiz_69f68f3252df00.94922093', 2, 'NO_FACE', '2026-05-02 23:59:14'),
+(45, 'quiz_69f68f3252df00.94922093', 2, 'NO_FACE', '2026-05-02 23:59:15'),
+(46, 'quiz_69f68f3252df00.94922093', 2, 'NO_FACE', '2026-05-02 23:59:16'),
+(47, 'quiz_69f68f3252df00.94922093', 2, 'NO_FACE', '2026-05-02 23:59:17'),
+(48, 'quiz_69f68f3252df00.94922093', 2, 'NO_FACE', '2026-05-02 23:59:17'),
+(49, 'quiz_69f68f3252df00.94922093', 2, 'NO_FACE', '2026-05-02 23:59:18'),
+(50, 'quiz_69f68f3252df00.94922093', 2, 'NO_FACE', '2026-05-02 23:59:19'),
+(51, 'quiz_69f68f3252df00.94922093', 2, 'TAB_SWITCH', '2026-05-02 23:59:19'),
+(52, 'quiz_69f68fe1d9b764.28135912', 2, 'NO_FACE', '2026-05-02 23:59:47'),
+(53, 'quiz_69f68fe1d9b764.28135912', 2, 'NO_FACE', '2026-05-02 23:59:48'),
+(54, 'quiz_69f68fe1d9b764.28135912', 2, 'NO_FACE', '2026-05-02 23:59:49'),
+(55, 'quiz_69f68fe1d9b764.28135912', 2, 'NO_FACE', '2026-05-02 23:59:50'),
+(56, 'quiz_69f68fe1d9b764.28135912', 2, 'NO_FACE', '2026-05-02 23:59:51'),
+(57, 'quiz_69f68fe1d9b764.28135912', 2, 'MULTIPLE_FACES', '2026-05-02 23:59:54'),
+(58, 'quiz_69f68fe1d9b764.28135912', 2, 'MULTIPLE_FACES', '2026-05-02 23:59:55'),
+(59, 'quiz_69f68fe1d9b764.28135912', 2, 'MULTIPLE_FACES', '2026-05-02 23:59:56'),
+(60, 'quiz_69f68fe1d9b764.28135912', 2, 'NO_FACE', '2026-05-03 00:00:08'),
+(61, 'quiz_69f68fe1d9b764.28135912', 2, 'NO_FACE', '2026-05-03 00:00:09'),
+(62, 'quiz_69f68fe1d9b764.28135912', 2, 'NO_FACE', '2026-05-03 00:00:10'),
+(63, 'quiz_69f68fe1d9b764.28135912', 2, 'TIME_UP', '2026-05-03 00:00:13'),
+(64, 'quiz_69f68fe1d9b764.28135912', 2, 'WINDOW_BLUR', '2026-05-03 00:00:16'),
+(65, 'quiz_69f68fe1d9b764.28135912', 2, 'WINDOW_BLUR', '2026-05-03 00:00:20'),
+(66, 'quiz_69f690ac112ee9.44035377', 1, 'NO_FACE', '2026-05-03 00:02:55'),
+(67, 'quiz_69f690ac112ee9.44035377', 1, 'NO_FACE', '2026-05-03 00:02:56'),
+(68, 'quiz_69f690ac112ee9.44035377', 1, 'NO_FACE', '2026-05-03 00:02:57'),
+(69, 'quiz_69f690ac112ee9.44035377', 1, 'NO_FACE', '2026-05-03 00:03:00'),
+(70, 'quiz_69f690ac112ee9.44035377', 2, 'MULTIPLE_FACES', '2026-05-03 00:03:16'),
+(71, 'quiz_69f690ac112ee9.44035377', 2, 'MULTIPLE_FACES', '2026-05-03 00:03:19'),
+(72, 'quiz_69f690ac112ee9.44035377', 2, 'WINDOW_BLUR', '2026-05-03 00:03:25'),
+(73, 'quiz_69f690d81367c1.93287870', 1, 'MULTIPLE_FACES', '2026-05-03 00:03:38'),
+(74, 'quiz_69f690d81367c1.93287870', 1, 'WINDOW_BLUR', '2026-05-03 00:03:47'),
+(75, 'quiz_69f690d81367c1.93287870', 1, 'TAB_SWITCH', '2026-05-03 00:03:48'),
+(76, 'quiz_69f690d81367c1.93287870', 1, 'WINDOW_BLUR', '2026-05-03 00:03:51'),
+(77, 'quiz_69f692146b53b4.30379737', 1, 'TIME_UP', '2026-05-03 00:09:43'),
+(78, 'quiz_69f692146b53b4.30379737', 4, 'WINDOW_BLUR', '2026-05-03 00:09:49'),
+(79, 'quiz_69f694e6e995a2.49504857', 1, 'WINDOW_BLUR', '2026-05-03 00:21:14'),
+(80, 'quiz_69f853b214b562.45929059', NULL, 'WINDOW_BLUR', '2026-05-04 08:08:03'),
+(81, 'quiz_69f853b214b562.45929059', NULL, 'TAB_SWITCH', '2026-05-04 08:08:04'),
+(82, 'quiz_69f853b214b562.45929059', 2, 'WINDOW_BLUR', '2026-05-04 08:08:10'),
+(83, 'quiz_69f853b214b562.45929059', 2, 'TAB_SWITCH', '2026-05-04 08:08:11'),
+(84, 'quiz_69f854364258c6.62665240', 5, 'WINDOW_BLUR', '2026-05-04 08:09:44'),
+(85, 'quiz_69f854364258c6.62665240', 5, 'TAB_SWITCH', '2026-05-04 08:09:45'),
+(86, 'quiz_69f854364258c6.62665240', 5, 'WINDOW_BLUR', '2026-05-04 08:10:30'),
+(87, 'quiz_69f854364258c6.62665240', 5, 'TAB_SWITCH', '2026-05-04 08:10:31'),
+(88, 'quiz_69f854364258c6.62665240', 1, 'TIME_UP', '2026-05-04 08:10:43'),
+(89, 'quiz_69f854364258c6.62665240', 1, 'WINDOW_BLUR', '2026-05-04 08:12:16'),
+(90, 'quiz_69f854364258c6.62665240', 1, 'TAB_SWITCH', '2026-05-04 08:12:17'),
+(91, 'quiz_69f854364258c6.62665240', 1, 'WINDOW_BLUR', '2026-05-04 08:12:49'),
+(92, 'quiz_69f854364258c6.62665240', 1, 'TAB_SWITCH', '2026-05-04 08:12:50'),
+(93, 'quiz_69f856fbbaee56.34539241', 8, 'TAB_SWITCH', '2026-05-04 08:21:35'),
+(94, 'quiz_69f856fbbaee56.34539241', 8, 'WINDOW_BLUR', '2026-05-04 08:21:36'),
+(95, 'quiz_69f856fbbaee56.34539241', 8, 'FACE_TOO_FAR', '2026-05-04 08:21:42'),
+(96, 'quiz_69f8572499ada0.55088384', 2, 'WINDOW_BLUR', '2026-05-04 08:22:19'),
+(97, 'quiz_69f8572499ada0.55088384', 2, 'TAB_SWITCH', '2026-05-04 08:22:20'),
+(98, 'quiz_69f8572499ada0.55088384', 2, 'NO_FACE', '2026-05-04 08:22:24'),
+(99, 'quiz_69f8572499ada0.55088384', 2, 'NO_FACE', '2026-05-04 08:22:27'),
+(100, 'quiz_69f8578f57b508.59261536', 5, 'WINDOW_BLUR', '2026-05-04 08:23:58'),
+(101, 'quiz_69f8578f57b508.59261536', 5, 'TAB_SWITCH', '2026-05-04 08:23:59'),
+(102, 'quiz_69f8578f57b508.59261536', 5, 'NO_FACE', '2026-05-04 08:24:28'),
+(103, 'quiz_69f8578f57b508.59261536', 8, 'WINDOW_BLUR', '2026-05-04 08:24:45'),
+(104, 'quiz_69f8578f57b508.59261536', 8, 'TAB_SWITCH', '2026-05-04 08:24:45'),
+(105, 'quiz_69f8578f57b508.59261536', 8, 'TIME_UP', '2026-05-04 08:25:07'),
+(106, 'quiz_69f858128ebea1.96787524', 3, 'WINDOW_BLUR', '2026-05-04 08:26:02'),
+(107, 'quiz_69f858128ebea1.96787524', 3, 'TAB_SWITCH', '2026-05-04 08:26:03'),
+(108, 'quiz_69f858128ebea1.96787524', 3, 'TAB_SWITCH', '2026-05-04 08:26:03'),
+(109, 'quiz_69f85827b08d49.99331251', 2, 'WINDOW_BLUR', '2026-05-04 08:26:45'),
+(110, 'quiz_69f85827b08d49.99331251', 2, 'TAB_SWITCH', '2026-05-04 08:26:45'),
+(111, 'quiz_69f85827b08d49.99331251', 2, 'WINDOW_BLUR', '2026-05-04 08:26:59'),
+(112, 'quiz_69f85827b08d49.99331251', 2, 'TAB_SWITCH', '2026-05-04 08:27:00'),
+(113, 'quiz_69f85827b08d49.99331251', 2, 'TIME_UP', '2026-05-04 08:27:07'),
+(114, 'quiz_69f858b4083ab3.77412114', 4, 'WINDOW_BLUR', '2026-05-04 08:29:00'),
+(115, 'quiz_69f858b4083ab3.77412114', 4, 'TAB_SWITCH', '2026-05-04 08:29:01'),
+(116, 'quiz_69f858b4083ab3.77412114', 4, 'WINDOW_BLUR', '2026-05-04 08:29:25'),
+(117, 'quiz_69f858b4083ab3.77412114', 4, 'TAB_SWITCH', '2026-05-04 08:29:26'),
+(118, 'quiz_69f858b4083ab3.77412114', 4, 'WINDOW_BLUR', '2026-05-04 08:30:12'),
+(119, 'quiz_69f858b4083ab3.77412114', 4, 'TAB_SWITCH', '2026-05-04 08:30:13'),
+(120, 'quiz_69f85946a14759.10190733', 6, 'WINDOW_BLUR', '2026-05-04 08:31:07'),
+(121, 'quiz_69f859636b1ce4.47625300', NULL, 'WINDOW_BLUR', '2026-05-04 08:31:34'),
+(122, 'quiz_69f859636b1ce4.47625300', NULL, 'TAB_SWITCH', '2026-05-04 08:31:35'),
+(123, 'quiz_69f859636b1ce4.47625300', 6, 'WINDOW_BLUR', '2026-05-04 08:31:46'),
+(124, 'quiz_69f859636b1ce4.47625300', 2, 'WINDOW_BLUR', '2026-05-04 08:32:15'),
+(125, 'quiz_69f859636b1ce4.47625300', 2, 'TAB_SWITCH', '2026-05-04 08:32:16'),
+(126, 'quiz_69f859636b1ce4.47625300', 2, 'WINDOW_BLUR', '2026-05-04 08:32:24'),
+(127, 'quiz_69f859636b1ce4.47625300', 2, 'TAB_SWITCH', '2026-05-04 08:32:25'),
+(128, 'quiz_69f859636b1ce4.47625300', 2, 'TIME_UP', '2026-05-04 08:32:38'),
+(129, 'quiz_69f859636b1ce4.47625300', 2, 'TAB_SWITCH', '2026-05-04 08:34:17'),
+(130, 'quiz_69f859636b1ce4.47625300', 2, 'WINDOW_BLUR', '2026-05-04 08:34:18'),
+(131, 'quiz_69f859636b1ce4.47625300', 2, 'NO_FACE', '2026-05-04 08:35:48'),
+(132, 'quiz_69f85c279b5ed6.13114930', 9, 'WINDOW_BLUR', '2026-05-04 08:43:30'),
+(133, 'quiz_69f85c279b5ed6.13114930', 9, 'TAB_SWITCH', '2026-05-04 08:43:41'),
+(134, 'quiz_69f85c279b5ed6.13114930', 9, 'TIME_UP', '2026-05-04 08:43:51'),
+(135, 'quiz_69f85c279b5ed6.13114930', 3, 'WINDOW_BLUR', '2026-05-04 08:44:29'),
+(136, 'quiz_69f85c279b5ed6.13114930', 3, 'TAB_SWITCH', '2026-05-04 08:44:30'),
+(137, 'quiz_69f85c279b5ed6.13114930', 3, 'TIME_UP', '2026-05-04 08:44:57'),
+(138, 'quiz_69f85cc37861d4.17171037', 2, 'WINDOW_BLUR', '2026-05-04 08:46:00'),
+(139, 'quiz_69f85cc37861d4.17171037', 2, 'WINDOW_BLUR', '2026-05-04 08:46:02'),
+(140, 'quiz_69f85cc37861d4.17171037', 2, 'TAB_SWITCH', '2026-05-04 08:46:03'),
+(141, 'quiz_69f85cc37861d4.17171037', 2, 'TIME_UP', '2026-05-04 08:46:27'),
+(142, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:46:41'),
+(143, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:46:47'),
+(144, 'quiz_69f85cc37861d4.17171037', 2, 'FACE_TOO_FAR', '2026-05-04 08:46:55'),
+(145, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:47:29'),
+(146, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:47:31'),
+(147, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:47:34'),
+(148, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:55:56'),
+(149, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:56:02'),
+(150, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:56:11'),
+(151, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 08:57:09'),
+(152, 'quiz_69f85cc37861d4.17171037', 2, 'NO_FACE', '2026-05-04 09:00:51'),
+(153, 'quiz_69f85cc37861d4.17171037', 2, 'FACE_TOO_FAR', '2026-05-04 09:00:55'),
+(154, 'quiz_69f85cc37861d4.17171037', 2, 'MULTIPLE_FACES', '2026-05-04 09:00:59'),
+(155, 'quiz_69f860abbd0499.16415283', 3, 'WINDOW_BLUR', '2026-05-04 09:02:41'),
+(156, 'quiz_69f860abbd0499.16415283', 3, 'TAB_SWITCH', '2026-05-04 09:02:42'),
+(157, 'quiz_69f860abbd0499.16415283', 3, 'TIME_UP', '2026-05-04 09:03:09'),
+(158, 'quiz_69f862076b7944.27161797', NULL, 'WINDOW_BLUR', '2026-05-04 09:08:33'),
+(159, 'quiz_69f862076b7944.27161797', NULL, 'TAB_SWITCH', '2026-05-04 09:08:43'),
+(160, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:08:48'),
+(161, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:08:50'),
+(162, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:08:52'),
+(163, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:06'),
+(164, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:08'),
+(165, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:10'),
+(166, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:12'),
+(167, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:14'),
+(168, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:16'),
+(169, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:18'),
+(170, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:19'),
+(171, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:21'),
+(172, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:22'),
+(173, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:23'),
+(174, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:24'),
+(175, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:25'),
+(176, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:27'),
+(177, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:28'),
+(178, 'quiz_69f862076b7944.27161797', NULL, 'TAB_SWITCH', '2026-05-04 09:09:29'),
+(179, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:29'),
+(180, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:30'),
+(181, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:32'),
+(182, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:34'),
+(183, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:36'),
+(184, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:38'),
+(185, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:40'),
+(186, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:41'),
+(187, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:42'),
+(188, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:43'),
+(189, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:45'),
+(190, 'quiz_69f862076b7944.27161797', NULL, 'TAB_SWITCH', '2026-05-04 09:09:45'),
+(191, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:46'),
+(192, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:53'),
+(193, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:54'),
+(194, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:56'),
+(195, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:09:59'),
+(196, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:00'),
+(197, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:02'),
+(198, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:04'),
+(199, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:06'),
+(200, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:08'),
+(201, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:11'),
+(202, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:12'),
+(203, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:14'),
+(204, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:17'),
+(205, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:19'),
+(206, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:21'),
+(207, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:22'),
+(208, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:24'),
+(209, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:26'),
+(210, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:28'),
+(211, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:30'),
+(212, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:32'),
+(213, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:36'),
+(214, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:39'),
+(215, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:41'),
+(216, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:42'),
+(217, 'quiz_69f862076b7944.27161797', NULL, 'NO_FACE', '2026-05-04 09:10:47'),
+(218, 'quiz_69f86797215a00.39631405', NULL, 'WINDOW_BLUR', '2026-05-04 09:32:34'),
+(219, 'quiz_69f86797215a00.39631405', NULL, 'TAB_SWITCH', '2026-05-04 09:32:34'),
+(220, 'quiz_69f86797215a00.39631405', NULL, 'MULTIPLE_FACES', '2026-05-04 09:32:43'),
+(221, 'quiz_69f86797215a00.39631405', NULL, 'MULTIPLE_FACES', '2026-05-04 09:32:47'),
+(222, 'quiz_69f87790f01c63.32245229', 4, 'WINDOW_BLUR', '2026-05-04 10:40:28'),
+(223, 'quiz_69f87790f01c63.32245229', 4, 'TAB_SWITCH', '2026-05-04 10:40:38'),
+(224, 'quiz_69f87790f01c63.32245229', 4, 'TIME_UP', '2026-05-04 10:40:52'),
+(225, 'quiz_69f87790f01c63.32245229', 4, 'TAB_SWITCH', '2026-05-04 10:40:54'),
+(226, 'quiz_69f87790f01c63.32245229', 4, 'TAB_SWITCH', '2026-05-04 10:41:22'),
+(227, 'quiz_69f878187fd686.78479242', 6, 'NO_FACE', '2026-05-04 10:42:50'),
+(228, 'quiz_69f878187fd686.78479242', 6, 'WINDOW_BLUR', '2026-05-04 10:42:56'),
+(229, 'quiz_69f878187fd686.78479242', 6, 'WINDOW_BLUR', '2026-05-04 10:42:59'),
+(230, 'quiz_69f878187fd686.78479242', 6, 'TAB_SWITCH', '2026-05-04 10:42:59'),
+(231, 'quiz_69f878187fd686.78479242', 6, 'NO_FACE', '2026-05-04 10:43:03'),
+(232, 'quiz_69f878187fd686.78479242', 6, 'TIME_UP', '2026-05-04 10:43:15'),
+(233, 'quiz_69f878187fd686.78479242', 6, 'TAB_SWITCH', '2026-05-04 10:44:19'),
+(234, 'quiz_69f8788cd458f4.06915560', 9, 'WINDOW_BLUR', '2026-05-04 10:44:54'),
+(235, 'quiz_69f8788cd458f4.06915560', 9, 'TAB_SWITCH', '2026-05-04 10:44:55'),
+(236, 'quiz_69f8788cd458f4.06915560', 9, 'TIME_UP', '2026-05-04 10:45:08'),
+(237, 'quiz_69f8788cd458f4.06915560', 9, 'WINDOW_BLUR', '2026-05-04 10:45:16'),
+(238, 'quiz_69f8788cd458f4.06915560', 9, 'WINDOW_BLUR', '2026-05-04 10:45:24'),
+(239, 'quiz_69f8788cd458f4.06915560', 9, 'TAB_SWITCH', '2026-05-04 10:45:25'),
+(240, 'quiz_69f878d7819c23.75697259', 6, 'WINDOW_BLUR', '2026-05-04 10:45:59'),
+(241, 'quiz_69f878d7819c23.75697259', 6, 'TAB_SWITCH', '2026-05-04 10:46:00'),
+(242, 'quiz_69f878d7819c23.75697259', 6, 'TAB_SWITCH', '2026-05-04 10:46:08'),
+(243, 'quiz_69f878d7819c23.75697259', 6, 'TIME_UP', '2026-05-04 10:46:25'),
+(244, 'quiz_69f878d7819c23.75697259', 6, 'TAB_SWITCH', '2026-05-04 10:46:38'),
+(245, 'quiz_69f878d7819c23.75697259', 6, 'WINDOW_BLUR', '2026-05-04 10:46:38'),
+(246, 'quiz_69f8794f8a3b87.59473392', 7, 'WINDOW_BLUR', '2026-05-04 10:47:48'),
+(247, 'quiz_69f8794f8a3b87.59473392', 4, 'WINDOW_BLUR', '2026-05-04 10:48:13'),
+(248, 'quiz_69f8794f8a3b87.59473392', 4, 'TAB_SWITCH', '2026-05-04 10:48:16'),
+(249, 'quiz_69f8794f8a3b87.59473392', 4, 'WINDOW_BLUR', '2026-05-04 10:48:16'),
+(250, 'quiz_69f879888be340.26029072', 6, 'TAB_SWITCH', '2026-05-04 10:48:43'),
+(251, 'quiz_69f879888be340.26029072', 6, 'WINDOW_BLUR', '2026-05-04 10:48:44'),
+(252, 'quiz_69f897f9d605b1.28745503', 2, 'WINDOW_BLUR', '2026-05-04 12:58:48'),
+(253, 'quiz_69f897f9d605b1.28745503', 2, 'TAB_SWITCH', '2026-05-04 12:58:49'),
+(254, 'quiz_69f897f9d605b1.28745503', 2, 'TIME_UP', '2026-05-04 12:59:22'),
+(255, 'quiz_69f898496c1a49.13049311', 2, 'WINDOW_BLUR', '2026-05-04 12:59:55'),
+(256, 'quiz_69f898496c1a49.13049311', 4, 'WINDOW_BLUR', '2026-05-04 13:00:06'),
+(257, 'quiz_69f898496c1a49.13049311', 4, 'WINDOW_BLUR', '2026-05-04 13:00:11'),
+(258, 'quiz_69f898496c1a49.13049311', 9, 'WINDOW_BLUR', '2026-05-04 13:00:22'),
+(259, 'quiz_69f898496c1a49.13049311', 9, 'WINDOW_BLUR', '2026-05-04 13:00:28'),
+(260, 'quiz_69f898496c1a49.13049311', 7, 'NO_FACE', '2026-05-04 13:00:52'),
+(261, 'quiz_69f89adfaa29f5.66270068', NULL, 'WINDOW_BLUR', '2026-05-04 13:11:08'),
+(262, 'quiz_69f89adfaa29f5.66270068', NULL, 'TAB_SWITCH', '2026-05-04 13:11:08'),
+(263, 'quiz_69f89adfaa29f5.66270068', NULL, 'TAB_SWITCH', '2026-05-04 13:12:24'),
+(264, 'quiz_69f89b88335a50.88828151', NULL, 'WINDOW_BLUR', '2026-05-04 13:13:57'),
+(265, 'quiz_69f89b88335a50.88828151', NULL, 'TAB_SWITCH', '2026-05-04 13:13:59'),
+(266, 'quiz_69f89b88335a50.88828151', NULL, 'WINDOW_BLUR', '2026-05-04 13:14:32'),
+(267, 'quiz_69f89b88335a50.88828151', NULL, 'TAB_SWITCH', '2026-05-04 13:14:32'),
+(268, 'quiz_69f89b88335a50.88828151', NULL, 'MULTIPLE_FACES', '2026-05-04 13:15:27'),
+(269, 'quiz_69f89b88335a50.88828151', NULL, 'NO_FACE', '2026-05-04 13:15:41'),
+(270, 'quiz_69f89b88335a50.88828151', NULL, 'NO_FACE', '2026-05-04 13:15:42'),
+(271, 'quiz_69f89b88335a50.88828151', NULL, 'NO_FACE', '2026-05-04 13:15:57'),
+(272, 'quiz_69f89c20c7b143.49640559', NULL, 'WINDOW_BLUR', '2026-05-04 13:16:25'),
+(273, 'quiz_69f89c20c7b143.49640559', NULL, 'TAB_SWITCH', '2026-05-04 13:16:26'),
+(274, 'quiz_69f89cabe30db3.70795367', NULL, 'WINDOW_BLUR', '2026-05-04 13:18:43'),
+(275, 'quiz_69f89cabe30db3.70795367', NULL, 'TAB_SWITCH', '2026-05-04 13:18:44'),
+(276, 'quiz_69f89cabe30db3.70795367', NULL, 'WINDOW_BLUR', '2026-05-04 13:20:02'),
+(277, 'quiz_69f89cabe30db3.70795367', NULL, 'TAB_SWITCH', '2026-05-04 13:20:05'),
+(278, 'quiz_69f89cabe30db3.70795367', NULL, 'WINDOW_BLUR', '2026-05-04 13:20:06'),
+(279, 'quiz_69f89cabe30db3.70795367', NULL, 'TAB_SWITCH', '2026-05-04 13:20:14'),
+(280, 'quiz_69f89cabe30db3.70795367', NULL, 'WINDOW_BLUR', '2026-05-04 13:20:16'),
+(281, 'quiz_69f89dd6050509.57356529', NULL, 'WINDOW_BLUR', '2026-05-04 13:23:39'),
+(282, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:23:44'),
+(283, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:23:46'),
+(284, 'quiz_69f89dd6050509.57356529', NULL, 'COPY_ATTEMPT', '2026-05-04 13:24:01'),
+(285, 'quiz_69f89dd6050509.57356529', NULL, 'WINDOW_BLUR', '2026-05-04 13:24:07'),
+(286, 'quiz_69f89dd6050509.57356529', NULL, 'WINDOW_BLUR', '2026-05-04 13:24:15'),
+(287, 'quiz_69f89dd6050509.57356529', NULL, 'TAB_SWITCH', '2026-05-04 13:24:15'),
+(288, 'quiz_69f89dd6050509.57356529', NULL, 'TAB_SWITCH', '2026-05-04 13:24:59'),
+(289, 'quiz_69f89dd6050509.57356529', NULL, 'WINDOW_BLUR', '2026-05-04 13:26:52'),
+(290, 'quiz_69f89dd6050509.57356529', NULL, 'TAB_SWITCH', '2026-05-04 13:26:53'),
+(291, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:27:01'),
+(292, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:27:07'),
+(293, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:27:09'),
+(294, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:27:11'),
+(295, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:27:13'),
+(296, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:27:15'),
+(297, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:27:25'),
+(298, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:27:55'),
+(299, 'quiz_69f89dd6050509.57356529', NULL, 'WINDOW_BLUR', '2026-05-04 13:32:08'),
+(300, 'quiz_69f89dd6050509.57356529', NULL, 'TAB_SWITCH', '2026-05-04 13:32:08'),
+(301, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:33:27'),
+(302, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:35:33'),
+(303, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:35:43'),
+(304, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:35:45'),
+(305, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:35:47'),
+(306, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:35:49'),
+(307, 'quiz_69f89dd6050509.57356529', NULL, 'WINDOW_BLUR', '2026-05-04 13:36:57'),
+(308, 'quiz_69f89dd6050509.57356529', NULL, 'TAB_SWITCH', '2026-05-04 13:36:58'),
+(309, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:38:11'),
+(310, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:38:13'),
+(311, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:39:01'),
+(312, 'quiz_69f89dd6050509.57356529', NULL, 'WINDOW_BLUR', '2026-05-04 13:39:07'),
+(313, 'quiz_69f89dd6050509.57356529', NULL, 'TAB_SWITCH', '2026-05-04 13:39:08'),
+(314, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:39:49'),
+(315, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:39:51'),
+(316, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:40:09'),
+(317, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:40:37'),
+(318, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:40:41'),
+(319, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:42:01'),
+(320, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:20'),
+(321, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:22'),
+(322, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:24'),
+(323, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:26'),
+(324, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:28'),
+(325, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:30'),
+(326, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:32'),
+(327, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:34'),
+(328, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:36'),
+(329, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:38'),
+(330, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:40'),
+(331, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:42'),
+(332, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:52'),
+(333, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:43:58'),
+(334, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:00'),
+(335, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:02'),
+(336, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:04'),
+(337, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:44:08'),
+(338, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:18'),
+(339, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:20'),
+(340, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:22'),
+(341, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:24'),
+(342, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:26'),
+(343, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:44:28'),
+(344, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:06'),
+(345, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:08'),
+(346, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:14'),
+(347, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:28'),
+(348, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:30'),
+(349, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:36'),
+(350, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:38'),
+(351, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:40'),
+(352, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:42'),
+(353, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:44'),
+(354, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:54'),
+(355, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:45:56'),
+(356, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:46:14'),
+(357, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:46:42'),
+(358, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:46:44'),
+(359, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:46:48'),
+(360, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:46:52'),
+(361, 'quiz_69f89dd6050509.57356529', NULL, 'NO_FACE', '2026-05-04 13:46:54'),
+(362, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:47:06'),
+(363, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:47:22'),
+(364, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:47:26'),
+(365, 'quiz_69f89dd6050509.57356529', NULL, 'MULTIPLE_FACES', '2026-05-04 13:47:34');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `prompts`
 --
 
 CREATE TABLE `prompts` (
@@ -732,7 +1134,7 @@ CREATE TABLE `prompts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `prompts`
+-- Déchargement des données de la table `prompts`
 --
 
 INSERT INTO `prompts` (`id`, `prompt_key`, `description`, `active_version_id`, `created_at`, `language`) VALUES
@@ -752,7 +1154,7 @@ INSERT INTO `prompts` (`id`, `prompt_key`, `description`, `active_version_id`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `prompt_versions`
+-- Structure de la table `prompt_versions`
 --
 
 CREATE TABLE `prompt_versions` (
@@ -766,7 +1168,7 @@ CREATE TABLE `prompt_versions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `prompt_versions`
+-- Déchargement des données de la table `prompt_versions`
 --
 
 INSERT INTO `prompt_versions` (`id`, `prompt_id`, `version`, `content`, `created_at`, `created_by`, `note`) VALUES
@@ -786,7 +1188,118 @@ INSERT INTO `prompt_versions` (`id`, `prompt_id`, `version`, `content`, `created
 -- --------------------------------------------------------
 
 --
--- Table structure for table `reactions`
+-- Structure de la table `quiz_answer`
+--
+
+CREATE TABLE `quiz_answer` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `voyage_id` int(11) NOT NULL,
+  `user_answer` varchar(255) NOT NULL,
+  `is_correct` tinyint(1) NOT NULL,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `quiz_answer`
+--
+
+INSERT INTO `quiz_answer` (`id`, `session_id`, `voyage_id`, `user_answer`, `is_correct`, `created_at`) VALUES
+(1, 'quiz_69f68ac23a6339.33926956', 1, 'next', 0, '2026-05-02 23:38:06'),
+(2, 'quiz_69f68d7d674181.64217188', 1, 'abb', 0, '2026-05-02 23:49:28'),
+(3, 'quiz_69f68f3252df00.94922093', 1, 'jhhj', 0, '2026-05-02 23:56:41'),
+(4, 'quiz_69f68fe1d9b764.28135912', 1, 'addis ababa', 1, '2026-05-02 23:59:39'),
+(5, 'quiz_69f690ac112ee9.44035377', 1, 'linda', 0, '2026-05-03 00:02:59'),
+(6, 'quiz_69f690d81367c1.93287870', 1, 'linda', 0, '2026-05-03 00:03:43'),
+(7, 'quiz_69f692146b53b4.30379737', 7, 'bali', 0, '2026-05-03 00:09:00'),
+(8, 'quiz_69f694e6e995a2.49504857', 1, 'brr', 0, '2026-05-03 00:21:11'),
+(9, 'quiz_69f854364258c6.62665240', 5, 'ab', 0, '2026-05-04 08:09:38'),
+(10, 'quiz_69f856fbbaee56.34539241', 8, 'tunisie', 0, '2026-05-04 08:21:29'),
+(11, 'quiz_69f8572499ada0.55088384', 2, 'algier', 0, '2026-05-04 08:22:14'),
+(12, 'quiz_69f8578f57b508.59261536', 5, 'bb', 0, '2026-05-04 08:23:52'),
+(13, 'quiz_69f85827b08d49.99331251', 4, 'algier', 0, '2026-05-04 08:26:29'),
+(14, 'quiz_69f858b4083ab3.77412114', 4, 'bb', 0, '2026-05-04 08:28:44'),
+(15, 'quiz_69f859636b1ce4.47625300', 6, 'tunisie', 0, '2026-05-04 08:31:58'),
+(16, 'quiz_69f878187fd686.78479242', 10, 'paris', 1, '2026-05-04 10:42:41'),
+(17, 'quiz_69f8788cd458f4.06915560', 8, 'tunisie', 0, '2026-05-04 10:44:34'),
+(18, 'quiz_69f878d7819c23.75697259', 10, 'paris', 1, '2026-05-04 10:45:50'),
+(19, 'debug_1777891585', 6, 'Wrong Answer', 0, '2026-05-04 12:46:25'),
+(20, 'quiz_69f8794f8a3b87.59473392', 7, 'll', 0, '2026-05-04 10:48:04'),
+(21, 'quiz_69f898496c1a49.13049311', 2, 'shanghai', 1, '2026-05-04 13:00:00'),
+(22, 'quiz_69f898496c1a49.13049311', 4, 'toronto', 1, '2026-05-04 13:00:17'),
+(23, 'quiz_69f898496c1a49.13049311', 9, 'alger', 1, '2026-05-04 13:00:26'),
+(24, 'quiz_69f898496c1a49.13049311', 10, 'paris', 1, '2026-05-04 13:00:36'),
+(25, 'quiz_69f898496c1a49.13049311', 7, 'casablanca', 1, '2026-05-04 13:00:50'),
+(26, 'quiz_69f898496c1a49.13049311', 8, 'tunis', 1, '2026-05-04 13:00:57'),
+(27, 'quiz_69f898496c1a49.13049311', 3, 'berlin', 1, '2026-05-04 13:01:08'),
+(28, 'quiz_69f898496c1a49.13049311', 6, 'rio de janeiro', 1, '2026-05-04 13:01:31');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `quiz_session`
+--
+
+CREATE TABLE `quiz_session` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `score` int(11) NOT NULL,
+  `total_questions` int(11) NOT NULL,
+  `started_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `quiz_session`
+--
+
+INSERT INTO `quiz_session` (`id`, `session_id`, `score`, `total_questions`, `started_at`) VALUES
+(1, 'quiz_69f686f500f579.90059365', 0, 5, '2026-05-02 23:21:25'),
+(2, 'quiz_69f6871926f300.04749544', 0, 5, '2026-05-02 23:22:01'),
+(3, 'quiz_69f687793f5cf8.36135769', 0, 5, '2026-05-02 23:23:37'),
+(4, 'quiz_69f6886ad92564.10348723', 0, 5, '2026-05-02 23:27:38'),
+(5, 'quiz_69f68ac23a6339.33926956', 0, 5, '2026-05-02 23:37:38'),
+(6, 'quiz_69f68d7d674181.64217188', 0, 5, '2026-05-02 23:49:17'),
+(7, 'quiz_69f68e8f818b38.78699125', 0, 5, '2026-05-02 23:53:51'),
+(8, 'quiz_69f68f3252df00.94922093', 0, 5, '2026-05-02 23:56:34'),
+(9, 'quiz_69f68fe1d9b764.28135912', 1, 5, '2026-05-02 23:59:29'),
+(10, 'quiz_69f690ac112ee9.44035377', 0, 5, '2026-05-03 00:02:52'),
+(11, 'quiz_69f690d81367c1.93287870', 0, 5, '2026-05-03 00:03:36'),
+(12, 'quiz_69f692146b53b4.30379737', 0, 5, '2026-05-03 00:08:52'),
+(13, 'quiz_69f694e6e995a2.49504857', 0, 5, '2026-05-03 00:20:54'),
+(14, 'quiz_69f853b214b562.45929059', 0, 5, '2026-05-04 08:07:14'),
+(15, 'quiz_69f854364258c6.62665240', 0, 5, '2026-05-04 08:09:26'),
+(16, 'quiz_69f856fbbaee56.34539241', 0, 5, '2026-05-04 08:21:15'),
+(17, 'quiz_69f8572499ada0.55088384', 0, 5, '2026-05-04 08:21:56'),
+(18, 'quiz_69f8578f57b508.59261536', 0, 5, '2026-05-04 08:23:43'),
+(19, 'quiz_69f858128ebea1.96787524', 0, 5, '2026-05-04 08:25:54'),
+(20, 'quiz_69f85827b08d49.99331251', 0, 5, '2026-05-04 08:26:15'),
+(21, 'quiz_69f858b4083ab3.77412114', 0, 5, '2026-05-04 08:28:36'),
+(22, 'quiz_69f85946a14759.10190733', 0, 5, '2026-05-04 08:31:02'),
+(23, 'quiz_69f859636b1ce4.47625300', 0, 5, '2026-05-04 08:31:31'),
+(24, 'quiz_69f85c279b5ed6.13114930', 0, 5, '2026-05-04 08:43:19'),
+(25, 'quiz_69f85cc37861d4.17171037', 0, 5, '2026-05-04 08:45:55'),
+(26, 'quiz_69f860abbd0499.16415283', 0, 5, '2026-05-04 09:02:35'),
+(27, 'quiz_69f862076b7944.27161797', 0, 5, '2026-05-04 09:08:23'),
+(28, 'quiz_69f86797215a00.39631405', 0, 5, '2026-05-04 09:32:07'),
+(29, 'quiz_69f87790f01c63.32245229', 0, 5, '2026-05-04 10:40:16'),
+(30, 'quiz_69f878187fd686.78479242', 1, 5, '2026-05-04 10:42:32'),
+(31, 'quiz_69f8788cd458f4.06915560', 0, 5, '2026-05-04 10:44:28'),
+(32, 'quiz_69f878d7819c23.75697259', 1, 5, '2026-05-04 10:45:43'),
+(33, 'debug_1777891585', 0, 5, '2026-05-04 12:46:25'),
+(34, 'quiz_69f8794f8a3b87.59473392', 0, 5, '2026-05-04 10:47:43'),
+(35, 'quiz_69f879888be340.26029072', 0, 5, '2026-05-04 10:48:40'),
+(36, 'quiz_69f897f9d605b1.28745503', 0, 5, '2026-05-04 12:58:33'),
+(37, 'quiz_69f898496c1a49.13049311', 8, 5, '2026-05-04 12:59:53'),
+(38, 'quiz_69f89adfaa29f5.66270068', 0, 5, '2026-05-04 13:10:55'),
+(39, 'quiz_69f89b88335a50.88828151', 0, 5, '2026-05-04 13:13:44'),
+(40, 'quiz_69f89c20c7b143.49640559', 0, 5, '2026-05-04 13:16:16'),
+(41, 'quiz_69f89cabe30db3.70795367', 0, 5, '2026-05-04 13:18:35'),
+(42, 'quiz_69f89dd6050509.57356529', 0, 5, '2026-05-04 13:23:34');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `reactions`
 --
 
 CREATE TABLE `reactions` (
@@ -799,204 +1312,7 @@ CREATE TABLE `reactions` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `reclamation`
---
-
-CREATE TABLE `reclamation` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `sujet` varchar(255) NOT NULL,
-  `description` text NOT NULL,
-  `statut` enum('EN_ATTENTE','EN_COURS','RESOLUE','REJETEE') NOT NULL DEFAULT 'EN_ATTENTE',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `reclamation`
---
-
-INSERT INTO `reclamation` (`id`, `user_id`, `sujet`, `description`, `statut`, `created_at`) VALUES
-(1, 14, 'dfdqssf', 'sdjqss;llkkjjqsdjkqsdsfdsqddsfsdsqsqdf', 'RESOLUE', '2026-04-01 00:56:31'),
-(2, 15, 'szmzmzmzzz', 'sqfsfdsdfffddfssqdf', 'RESOLUE', '2026-04-02 14:54:19'),
-(3, 13, 'ftftytf', 'sssreesrers', 'EN_ATTENTE', '2026-04-13 12:01:15'),
-(4, 15, 'bvbvvbbv', 'cvvbvvb bv ljlkjk', 'EN_ATTENTE', '2026-04-18 06:21:47');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `reponse`
---
-
-CREATE TABLE `reponse` (
-  `id` int(11) NOT NULL,
-  `reclamation_id` int(11) NOT NULL,
-  `admin_id` int(11) NOT NULL,
-  `contenu` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `reponse`
---
-
-INSERT INTO `reponse` (`id`, `reclamation_id`, `admin_id`, `contenu`, `created_at`) VALUES
-(1, 1, 13, 'cdssqdsdqsddsddssqdqsdsqd', '2026-04-01 00:57:38'),
-(2, 2, 13, 'qsdfdsfsdqfdfsqfzddsq', '2026-04-02 14:55:44');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `revenus_admin`
---
-
-CREATE TABLE `revenus_admin` (
-  `id` int(11) NOT NULL,
-  `package_id` int(11) DEFAULT NULL,
-  `montant` decimal(10,2) NOT NULL,
-  `source` varchar(255) DEFAULT NULL,
-  `date_reception` datetime DEFAULT current_timestamp(),
-  `statut` varchar(50) DEFAULT 'RECU'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `sessions`
---
-
-CREATE TABLE `sessions` (
-  `id` char(36) NOT NULL,
-  `user_id` char(36) NOT NULL,
-  `title` varchar(255) DEFAULT NULL,
-  `form_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`form_data`)),
-  `agent_state` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`agent_state`)),
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `last_message_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `sessions`
---
-
-INSERT INTO `sessions` (`id`, `user_id`, `title`, `form_data`, `agent_state`, `created_at`, `updated_at`, `last_message_at`) VALUES
-('89d9de0a-00fd-4184-be73-14f8df2ababd', '15', 'Nouvelle discussion 6', '{\"language\":\"en\"}', '{}', '2026-04-02 15:00:11', '2026-04-02 15:00:11', NULL),
-('ae7e150a-f741-48b3-88ef-6b8eb1ceae18', '13', 'Je veux personnaliser ce pack voyage.De...', '{\"language\":\"en\"}', '{}', '2026-04-02 14:15:09', '2026-04-02 14:15:57', '2026-04-02 14:15:57'),
-('b80591d6-f603-4de0-a8b1-cb3d2251632e', '15', 'Je veux personnaliser ce pack voyage.De...', '{\"language\":\"en\"}', '{}', '2026-04-02 15:00:14', '2026-04-20 12:26:59', '2026-04-20 12:26:59'),
-('offline-c8c84c68b325a60a51d821c3e4e3', '14', 'Nouvelle discussion', '{\"language\":\"fr\"}', '{}', '2026-04-20 05:58:10', '2026-04-20 05:58:10', NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `sponsor`
---
-
-CREATE TABLE `sponsor` (
-  `id` int(11) NOT NULL,
-  `nom` varchar(100) NOT NULL,
-  `logo_url` varchar(255) DEFAULT NULL,
-  `logo_blob` mediumblob DEFAULT NULL,
-  `logo_mime_type` varchar(100) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `site_web` varchar(255) DEFAULT NULL,
-  `type` varchar(50) DEFAULT NULL,
-  `montant_sponsoring` decimal(10,2) DEFAULT NULL,
-  `date_debut` date DEFAULT NULL,
-  `date_fin` date DEFAULT NULL,
-  `est_actif` tinyint(1) DEFAULT 1,
-  `nombre_clics` int(11) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `transactions`
---
-
-CREATE TABLE `transactions` (
-  `id` int(11) NOT NULL,
-  `email_source` varchar(255) DEFAULT NULL,
-  `email_destination` varchar(255) DEFAULT NULL,
-  `montant` decimal(10,2) NOT NULL,
-  `description` varchar(500) DEFAULT NULL,
-  `date_transaction` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `travel_favorites`
---
-
-CREATE TABLE `travel_favorites` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `favorite_key` varchar(180) NOT NULL,
-  `destination_id` int(11) DEFAULT NULL,
-  `destination_name` varchar(160) NOT NULL,
-  `country` varchar(120) DEFAULT NULL,
-  `continent` varchar(80) DEFAULT NULL,
-  `image_path` varchar(255) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `duration_label` varchar(80) DEFAULT NULL,
-  `price_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
-  `price_currency` varchar(3) NOT NULL DEFAULT 'TND',
-  `source` varchar(40) NOT NULL DEFAULT 'database',
-  `destination_url` varchar(255) NOT NULL DEFAULT '/destinations',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `travel_favorites`
---
-
-INSERT INTO `travel_favorites` (`id`, `user_id`, `favorite_key`, `destination_id`, `destination_name`, `country`, `continent`, `image_path`, `description`, `duration_label`, `price_amount`, `price_currency`, `source`, `destination_url`, `created_at`) VALUES
-(2, 15, 'flask-barcelona-espagne', 2, 'Barcelona', 'Espagne', 'Europe', '/assets/java/9b4f03d821c26c149892eb9b646573bc.jpg', 'Recommandation IA generee par Flask pour votre profil de voyage.', '8 jours', 5000.00, 'TND', 'flask', '/destinations', '2026-04-20 12:31:30');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `travel_packages`
---
-
-CREATE TABLE `travel_packages` (
-  `id` int(11) NOT NULL,
-  `package_name` varchar(150) DEFAULT NULL,
-  `destinations` text DEFAULT NULL,
-  `continent` varchar(50) DEFAULT NULL,
-  `duration_days` int(11) DEFAULT NULL,
-  `price_from` decimal(10,2) DEFAULT NULL,
-  `price_to` decimal(10,2) DEFAULT NULL,
-  `badge` varchar(50) DEFAULT NULL,
-  `image_path` varchar(255) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `travel_type` varchar(50) DEFAULT NULL,
-  `interests` text DEFAULT NULL,
-  `ai_generated` tinyint(1) DEFAULT 0,
-  `ai_score` decimal(5,2) DEFAULT 0.00,
-  `includes` text DEFAULT NULL,
-  `best_period` varchar(100) DEFAULT NULL,
-  `is_active` tinyint(1) DEFAULT 1,
-  `display_order` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `travel_packages`
---
-
-INSERT INTO `travel_packages` (`id`, `package_name`, `destinations`, `continent`, `duration_days`, `price_from`, `price_to`, `badge`, `image_path`, `description`, `travel_type`, `interests`, `ai_generated`, `ai_score`, `includes`, `best_period`, `is_active`, `display_order`, `created_at`) VALUES
-(1, 'Escapade Romantique', 'Paris, Provence', 'Europe', 7, 1890.00, 2290.00, 'Populaire', '9b4f03d821c26c149892eb9b646573bc.jpg', 'Une parenthese chic entre capitales de l\'art de vivre, experiences a deux et hebergements de charme.', 'couple', 'romance,culture,gastronomie,detente', 1, 91.00, 'Vol,Hôtel,Petit-déjeuner,Expériences', 'Avril a octobre', 1, 1, '2026-04-01 00:05:50'),
-(2, 'Aventure Asiatique', 'Thailande, Vietnam', 'Asie', 14, 2490.00, 2990.00, 'Nouveau', 'da89f34fb5595d60358fcefe64fc6659.jpg', 'Un circuit energie entre culture locale, food scene vibrante et grandes sensations.', 'aventure', 'aventure,nature,photographie,culture', 1, 87.00, 'Vol,Hôtel,Guide,Excursions', 'Mars a mai', 1, 2, '2026-04-01 00:05:50'),
-(3, 'Safari Luxe', 'Kenya, Tanzanie', 'Afrique', 10, 4990.00, 5790.00, 'Exclusif', 'b98f59bef70929b9642bc88dd2a56f11.jpg', 'Un voyage signature pour vivre un safari premium, lodges d\'exception et moments rares.', 'famille', 'culture,nature,detente,gastronomie', 1, 94.00, 'Vol,Hôtel,Petit-déjeuner,Activités famille', 'Juin a octobre', 1, 3, '2026-04-01 00:05:50'),
-(4, 'Evasion Famille Tokyo', 'Tokyo, Japon', 'Asie', 7, 1890.00, 3200.00, 'Exclusif', 'bac4bce325c9a10f6fb77f30682cc7fa.jpg', 'Une aventure urbaine intense entre quartiers futuristes, gastronomie et experiences design.', 'famille', 'culture,nature,detente,gastronomie', 1, 91.00, 'Vol,Hôtel,Petit-déjeuner,Activités famille', 'Mars a mai', 1, 4, '2026-04-02 14:35:30'),
-(5, 'Evasion Famille Algiers', 'Algiers, Algérie', 'Afrique', 7, 6139.84, 7060.82, 'Populaire', 'b98f59bef70929b9642bc88dd2a56f11.jpg', 'Recommandation IA', 'famille', 'culture,nature,detente,gastronomie', 1, 88.50, 'Vol,Hôtel,Petit-déjeuner,Activités famille', 'Juin a octobre', 1, 5, '2026-04-02 14:35:31'),
-(6, 'Evasion Famille Paris', 'Paris, France', 'Afrique', 7, 1200.00, 3200.00, 'Populaire', '9b4f03d821c26c149892eb9b646573bc.jpg', 'Un city break premium entre adresses iconiques, douceur de vivre et experiences sur mesure.', 'famille', 'culture,nature,detente,gastronomie', 1, 88.00, 'Vol,Hôtel,Petit-déjeuner,Activités famille', 'Juin a octobre', 1, 6, '2026-04-02 14:35:31');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `user`
+-- Structure de la table `user`
 --
 
 CREATE TABLE `user` (
@@ -1019,109 +1335,18 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
--- Dumping data for table `user`
+-- Déchargement des données de la table `user`
 --
 
 INSERT INTO `user` (`id`, `nom`, `prenom`, `email`, `password`, `telephone`, `adresse`, `date_naissance`, `role`, `photo_url`, `is_active`, `is_validated`, `validated_at`, `date_inscription`, `created_at`, `updated_at`) VALUES
-(13, 'Zrafi', 'Mehdi', 'zrafimehdi5@gmail.com', 'i7DPbrmxfQ99IrRW8SElfcElTh8BZlNwR2OD6ndt9BQ=', '51418902', 'RUE N° 6', NULL, 'ADMIN', NULL, 1, 1, NULL, '2026-02-22', '2026-02-22 09:12:53', '2026-04-26 17:12:56'),
+(13, 'Zrafi', 'Mehdi', 'zrafimehdi5@gmail.com', 'i7DPbrmxfQ99IrRW8SElfcElTh8BZlNwR2OD6ndt9BQ=', '51418902', 'RUE N° 6', NULL, 'ADMIN', 'file:///C:/Users/seif/.easytravel/profile-photos/zrafimehdi5-gmail-com-20260414002210-9e7cfee3.png', 1, 1, NULL, '2026-02-22', '2026-02-22 09:12:53', '2026-04-13 22:22:12'),
 (14, 'aaaa', 'yassmine', 'yassmine@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', '', 'kairouan', '2016-03-05', 'ADMIN', NULL, 1, 1, '2026-03-31 02:29:38', '2026-03-31', '2026-03-30 23:15:19', '2026-04-02 14:24:58'),
-(15, 'aaa', 'wassim', 'wassim@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', NULL, NULL, NULL, 'USER', NULL, 1, 1, '2026-04-02 14:24:27', '2026-04-02', '2026-04-02 14:22:57', '2026-04-02 14:25:12'),
-(16, 'Zrafi', 'Mehdi', 'zrafimehdi@gmail.com', 'v3BGi7hyZdrY9m6r9LlPeba2RFBdwI5vPgzOa3iL5Mk=', '+21651418902', 'Rue 6 N°436\r\nSuite', '2003-07-14', 'ADMIN', '/uploads/profile-photos/zrafimehdi-gmail-com-20260426190746-5e934ccb.png', 1, 1, NULL, '2026-04-26', '2026-04-26 16:25:32', '2026-04-26 17:07:46');
+(15, 'aaa', 'wassim', 'wassim@gmail.com', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=', NULL, NULL, NULL, 'USER', NULL, 1, 1, '2026-04-02 14:24:27', '2026-04-02', '2026-04-02 14:22:57', '2026-04-02 14:25:12');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_notifications`
---
-
-CREATE TABLE `user_notifications` (
-  `id` int(11) NOT NULL,
-  `recipient_email` varchar(100) NOT NULL,
-  `sender_email` varchar(100) DEFAULT NULL,
-  `sender_role` varchar(20) DEFAULT NULL,
-  `category` varchar(30) NOT NULL DEFAULT 'ACCOUNT',
-  `title` varchar(150) NOT NULL,
-  `message` text NOT NULL,
-  `is_read` tinyint(1) NOT NULL DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `user_notifications`
---
-
-INSERT INTO `user_notifications` (`id`, `recipient_email`, `sender_email`, `sender_role`, `category`, `title`, `message`, `is_read`, `created_at`) VALUES
-(1, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PASSWORD', 'Mot de passe admin modifie', 'Mehdi Zrafi a change son mot de passe admin.', 1, '2026-03-31 01:31:12'),
-(2, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PHOTO', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-03-31 01:31:36'),
-(3, 'yassmine@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Compte valide par l\'administration', 'Votre compte EasyTravel a ete valide. Vous pouvez maintenant vous connecter.', 1, '2026-03-31 02:29:39'),
-(4, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PHOTO', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 1, '2026-03-31 12:35:48'),
-(5, 'zrafimehdi5@gmail.com', 'yassmine@gmail.com', 'USER', 'ACCOUNT', 'Nouvelle reclamation client', 'yassmine aaaa a envoye une reclamation : dfdqssf', 1, '2026-04-01 00:56:32'),
-(6, 'yassmine@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Nouvelle reponse a votre reclamation', 'L\'administration a repondu a votre reclamation \"dfdqssf\".', 1, '2026-04-01 00:57:38'),
-(7, 'yassmine@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Mise a jour de votre reclamation', 'Votre reclamation \"dfdqssf\" est maintenant en cours.', 1, '2026-04-01 00:57:42'),
-(8, 'yassmine@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Mise a jour de votre reclamation', 'Votre reclamation \"dfdqssf\" est maintenant resolue.', 1, '2026-04-01 00:59:42'),
-(9, 'wassim@gmail.com', 'system@easytravel.local', 'SYSTEM', 'ACCOUNT', 'Compte cree en attente de validation', 'Bienvenue wassim, votre compte EasyTravel a ete cree et attend maintenant la validation d\'un administrateur.', 0, '2026-04-02 14:22:57'),
-(10, 'zrafimehdi5@gmail.com', 'wassim@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'wassim aaa a cree un nouveau compte client et attend une validation admin.', 1, '2026-04-02 14:22:58'),
-(11, 'wassim@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Compte valide par l\'administration', 'Votre compte EasyTravel a ete valide. Vous pouvez maintenant vous connecter.', 0, '2026-04-02 14:24:27'),
-(12, 'yassmine@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Votre rôle EasyTravel a été mis à jour', 'Votre compte est désormais configuré avec le rôle ADMIN.', 0, '2026-04-02 14:24:59'),
-(13, 'yassmine@gmail.com', 'wassim@gmail.com', 'USER', 'ACCOUNT', 'Nouvelle reclamation client', 'wassim aaa a envoye une reclamation : szmzmzmzzz', 0, '2026-04-02 14:54:20'),
-(14, 'zrafimehdi5@gmail.com', 'wassim@gmail.com', 'USER', 'ACCOUNT', 'Nouvelle reclamation client', 'wassim aaa a envoye une reclamation : szmzmzmzzz', 0, '2026-04-02 14:54:20'),
-(15, 'wassim@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Nouvelle reponse a votre reclamation', 'L\'administration a repondu a votre reclamation \"szmzmzmzzz\".', 0, '2026-04-02 14:55:44'),
-(16, 'yassmine@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Nouvelle reclamation client', 'Mehdi Zrafi a envoye une reclamation : ftftytf', 0, '2026-04-13 12:01:15'),
-(17, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Nouvelle reclamation client', 'Mehdi Zrafi a envoye une reclamation : ftftytf', 0, '2026-04-13 12:01:15'),
-(18, 'wassim@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'ACCOUNT', 'Mise a jour de votre reclamation', 'Votre reclamation \"szmzmzmzzz\" est maintenant resolue.', 0, '2026-04-13 12:04:35'),
-(19, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PREFERENCES', 'Preferences notifications admin mises a jour', 'Mehdi Zrafi a modifie ses preferences de notification admin.', 0, '2026-04-13 15:37:03'),
-(20, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PASSWORD', 'Mot de passe admin modifie', 'Mehdi Zrafi a change son mot de passe admin.', 0, '2026-04-13 15:55:34'),
-(21, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-13 15:55:39'),
-(22, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PHOTO', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-13 21:38:15'),
-(23, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PHOTO', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-13 22:07:43'),
-(24, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-13 22:21:46'),
-(25, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PHOTO', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-13 22:22:12'),
-(26, 'zrafimehdi5@gmail.com', 'zrafimehdi5@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-14 04:26:57'),
-(27, 'yassmine@gmail.com', 'wassim@gmail.com', 'USER', 'ACCOUNT', 'Nouvelle reclamation client', 'wassim aaa a envoye une reclamation : bvbvvbbv', 0, '2026-04-18 06:21:47'),
-(28, 'zrafimehdi5@gmail.com', 'wassim@gmail.com', 'USER', 'ACCOUNT', 'Nouvelle reclamation client', 'wassim aaa a envoye une reclamation : bvbvvbbv', 0, '2026-04-18 06:21:47'),
-(29, 'zrafimehdi@gmail.com', 'system@easytravel.local', 'SYSTEM', 'ACCOUNT', 'Compte cree en attente de validation', 'Bienvenue Mehdi, votre compte EasyTravel a ete cree et attend maintenant la validation d\'un administrateur.', 1, '2026-04-26 16:25:32'),
-(30, 'yassmine@gmail.com', 'zrafimehdi@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-04-26 16:25:32'),
-(31, 'zrafimehdi5@gmail.com', 'zrafimehdi@gmail.com', 'USER', 'ACCOUNT', 'Nouveau compte client a valider', 'Mehdi Zrafi a cree un nouveau compte client et attend une validation admin.', 0, '2026-04-26 16:25:32'),
-(32, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 16:32:41'),
-(33, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 16:33:04'),
-(34, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 16:34:20'),
-(35, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 16:37:14'),
-(36, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Photo de profil admin mise a jour', 'Mehdi Zrafi a mis a jour son avatar administrateur.', 0, '2026-04-26 17:07:46'),
-(37, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 17:07:50'),
-(38, 'zrafimehdi@gmail.com', 'zrafimehdi@gmail.com', 'ADMIN', 'PROFILE', 'Profil admin mis a jour', 'Mehdi Zrafi a mis a jour son espace administrateur.', 0, '2026-04-26 17:07:55');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `user_notification_preferences`
---
-
-CREATE TABLE `user_notification_preferences` (
-  `id` int(11) NOT NULL,
-  `user_email` varchar(100) NOT NULL,
-  `user_role` varchar(20) NOT NULL,
-  `notify_security` tinyint(1) NOT NULL DEFAULT 1,
-  `notify_booking` tinyint(1) NOT NULL DEFAULT 1,
-  `notify_forum` tinyint(1) NOT NULL DEFAULT 1,
-  `notify_offers` tinyint(1) NOT NULL DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `user_notification_preferences`
---
-
-INSERT INTO `user_notification_preferences` (`id`, `user_email`, `user_role`, `notify_security`, `notify_booking`, `notify_forum`, `notify_offers`, `created_at`, `updated_at`) VALUES
-(1, 'zrafimehdi5@gmail.com', 'ADMIN', 1, 1, 1, 0, '2026-03-31 01:30:47', '2026-03-31 01:30:47'),
-(2, 'yassmine@gmail.com', 'USER', 1, 1, 1, 0, '2026-03-31 02:29:39', '2026-03-31 02:29:39'),
-(3, 'wassim@gmail.com', 'USER', 1, 1, 1, 0, '2026-04-02 14:22:57', '2026-04-02 14:22:57'),
-(11, 'zrafimehdi@gmail.com', 'ADMIN', 1, 1, 1, 0, '2026-04-26 16:25:32', '2026-04-26 16:32:41');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `user_remember_me`
+-- Structure de la table `user_remember_me`
 --
 
 CREATE TABLE `user_remember_me` (
@@ -1134,19 +1359,10 @@ CREATE TABLE `user_remember_me` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `user_remember_me`
---
-
-INSERT INTO `user_remember_me` (`id`, `device_key`, `user_email`, `encrypted_password`, `user_role`, `remembered_at`, `updated_at`) VALUES
-(1, 'fDm2_hwOaYZqUs4LJu1HXeF9Cev2qGiCIyvpLLaJb6g', 'zrafimehdi5@gmail.com', 'y2iJJbROS2uhxQc9Pv2ArRGxXcn8gmMrxOKx06ltToSwbtw=', 'ADMIN', '2026-03-31 01:25:45', '2026-04-18 05:05:16'),
-(98, 'fa8b82501c5acb2396ebc8e9466505b29f68c2fbcebe49e1a92d61f70f6f04c3', 'wassim@gmail.com', '8Mw+fJnJpdw4M+v28Gs/5HAledwj7wVMJpF+HkiIqV1LWg==', 'USER', '2026-04-17 09:23:23', '2026-04-17 09:46:37'),
-(104, '10c30731a0953a9b561ef3cd736c6cadd9bf244db1573d5f46362f586f0e6575', 'wassim@gmail.com', '5xWUnovN13Ptp9cSJ89aXUym/xXJnmFXwUk/g7QBP1lDbQ==', 'USER', '2026-04-18 05:46:08', '2026-04-20 13:29:51');
-
 -- --------------------------------------------------------
 
 --
--- Table structure for table `voyage`
+-- Structure de la table `voyage`
 --
 
 CREATE TABLE `voyage` (
@@ -1163,248 +1379,57 @@ CREATE TABLE `voyage` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `voyage`
+-- Déchargement des données de la table `voyage`
 --
 
 INSERT INTO `voyage` (`idVoyage`, `destination`, `pays`, `dateDepart`, `dateRetour`, `prix`, `moyenTransport`, `hotel`, `nbPlaces`, `disponible`) VALUES
-(1, 'Addis Ababa', 'Éthiopie', '2026-12-01', '2026-12-20', 23520.6, 'Avion', 'Hotel Standard', 9, 1),
+(1, 'Addis Ababa', 'Éthiopie', '2026-12-01', '2026-12-20', 23520.6, 'Avion', 'Hotel Standard', 9, 0),
 (2, 'Shanghai', 'Chine', '2026-06-04', '2026-06-30', 11498.220000000001, 'Avion', 'Hotel Standard', 2, 1),
 (3, 'Berlin', 'Allemagne', '2026-02-10', '2026-03-01', 22052.4, 'Avion', 'Hotel Standard', 6, 1),
 (4, 'Toronto', 'Canada', '2026-02-24', '2026-03-03', 6786.56, 'Avion', 'Hotel Standard', 4, 1),
-(5, 'Algiers', 'Algérie', '2026-05-01', '2026-05-09', 6139.84, 'Avion', 'Hotel Standard', 2, 1),
 (6, 'Rio de Janeiro', 'Brésil', '2026-05-01', '2026-05-09', 1917.28, 'Avion', 'Hotel Standard', 2, 1),
 (7, 'Casablanca', 'Maroc', '2026-04-01', '2026-04-30', 20676, 'Avion', 'Hotel Standard', 5, 1),
-(8, 'Algiers', 'Algérie', '2026-05-02', '2026-05-10', 6139.84, 'Avion', 'Hotel Standard', 2, 1);
+(8, 'Tunis', 'Tunisie', '2026-05-02', '2026-05-10', 6139.84, 'Avion', 'Hotel Standard', 2, 1),
+(9, 'Alger', 'Algérie', NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(10, 'Paris', 'France', NULL, NULL, NULL, NULL, NULL, NULL, 1);
 
 --
--- Indexes for dumped tables
+-- Index pour les tables déchargées
 --
 
 --
--- Indexes for table `activites`
---
-ALTER TABLE `activites`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `destination_id` (`destination_id`);
-
---
--- Indexes for table `admin_profile_preferences`
---
-ALTER TABLE `admin_profile_preferences`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uk_admin_profile_preferences_email` (`user_email`);
-
---
--- Indexes for table `atmosphere_destinations`
---
-ALTER TABLE `atmosphere_destinations`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `destinations`
---
-ALTER TABLE `destinations`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `factures`
---
-ALTER TABLE `factures`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `numero_facture` (`numero_facture`),
-  ADD KEY `idx_numero_facture` (`numero_facture`),
-  ADD KEY `idx_client_nom` (`client_nom`),
-  ADD KEY `idx_date_emission` (`date_emission`);
-
---
--- Indexes for table `favorite_packages`
---
-ALTER TABLE `favorite_packages`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_favorite_package` (`client_email`,`package_key`),
-  ADD KEY `idx_favorite_email` (`client_email`),
-  ADD KEY `idx_favorite_created` (`created_at`);
-
---
--- Indexes for table `featured_destinations`
---
-ALTER TABLE `featured_destinations`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `featured_destination_history`
---
-ALTER TABLE `featured_destination_history`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `forum_comments`
---
-ALTER TABLE `forum_comments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_forum_comments_post` (`post_id`),
-  ADD KEY `idx_forum_comments_user` (`user_id`),
-  ADD KEY `idx_forum_comments_created` (`created_at`);
-
---
--- Indexes for table `forum_posts`
---
-ALTER TABLE `forum_posts`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_forum_posts_user` (`user_id`),
-  ADD KEY `idx_forum_posts_created` (`created_at`);
-
---
--- Indexes for table `forum_reactions`
---
-ALTER TABLE `forum_reactions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uniq_forum_reactions_post_user` (`post_id`,`user_id`),
-  ADD KEY `idx_forum_reactions_post` (`post_id`),
-  ADD KEY `idx_forum_reactions_user` (`user_id`),
-  ADD KEY `idx_forum_reactions_code` (`reaction_code`);
-
---
--- Indexes for table `forum_stories`
---
-ALTER TABLE `forum_stories`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_forum_stories_user` (`user_id`),
-  ADD KEY `idx_forum_stories_expires` (`expires_at`),
-  ADD KEY `idx_forum_stories_created` (`created_at`);
-
---
--- Indexes for table `forum_story_views`
---
-ALTER TABLE `forum_story_views`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uniq_forum_story_views_story_user` (`story_id`,`user_id`),
-  ADD UNIQUE KEY `uniq_forum_story_views_story_viewer` (`story_id`,`viewer_key`),
-  ADD KEY `idx_forum_story_views_story` (`story_id`),
-  ADD KEY `idx_forum_story_views_viewed` (`viewed_at`);
-
---
--- Indexes for table `historique_paiements`
---
-ALTER TABLE `historique_paiements`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_package` (`package_id`),
-  ADD KEY `idx_client` (`client_email`),
-  ADD KEY `idx_statut` (`statut`);
-
---
--- Indexes for table `logs_statut_packages`
---
-ALTER TABLE `logs_statut_packages`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_package_id` (`package_id`),
-  ADD KEY `idx_date_changement` (`date_changement`);
-
---
--- Indexes for table `map_destinations`
+-- Index pour la table `map_destinations`
 --
 ALTER TABLE `map_destinations`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `messages`
+-- Index pour la table `monument_scan`
 --
-ALTER TABLE `messages`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_messages_session_time` (`session_id`,`created_at`);
-
---
--- Indexes for table `newsletter`
---
-ALTER TABLE `newsletter`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
-
---
--- Indexes for table `packages`
---
-ALTER TABLE `packages`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `destination_id` (`destination_id`);
-
---
--- Indexes for table `paiements`
---
-ALTER TABLE `paiements`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `reference_transaction` (`reference_transaction`),
-  ADD KEY `idx_client_nom` (`client_nom`),
-  ADD KEY `idx_date_paiement` (`date_paiement`),
-  ADD KEY `idx_statut` (`statut`);
-
---
--- Indexes for table `prompts`
---
-ALTER TABLE `prompts`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_prompts_key_language` (`prompt_key`,`language`),
-  ADD UNIQUE KEY `uq_prompt_key_language` (`prompt_key`,`language`),
-  ADD KEY `fk_prompts_active_version` (`active_version_id`);
-
---
--- Indexes for table `prompt_versions`
---
-ALTER TABLE `prompt_versions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_prompt_version` (`prompt_id`,`version`);
-
---
--- Indexes for table `reclamation`
---
-ALTER TABLE `reclamation`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Indexes for table `reponse`
---
-ALTER TABLE `reponse`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `reclamation_id` (`reclamation_id`),
-  ADD KEY `admin_id` (`admin_id`);
-
---
--- Indexes for table `revenus_admin`
---
-ALTER TABLE `revenus_admin`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_package` (`package_id`);
-
---
--- Indexes for table `sessions`
---
-ALTER TABLE `sessions`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_sessions_user_updated` (`user_id`,`updated_at`);
-
---
--- Indexes for table `transactions`
---
-ALTER TABLE `transactions`
+ALTER TABLE `monument_scan`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `travel_favorites`
+-- Index pour la table `proctor_log`
 --
-ALTER TABLE `travel_favorites`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uk_travel_favorites_user_key` (`user_id`,`favorite_key`),
-  ADD KEY `idx_travel_favorites_user` (`user_id`),
-  ADD KEY `idx_travel_favorites_created` (`created_at`);
-
---
--- Indexes for table `travel_packages`
---
-ALTER TABLE `travel_packages`
+ALTER TABLE `proctor_log`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `user`
+-- Index pour la table `quiz_answer`
+--
+ALTER TABLE `quiz_answer`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Index pour la table `quiz_session`
+--
+ALTER TABLE `quiz_session`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `UNIQ_quiz_session_session_id` (`session_id`);
+
+--
+-- Index pour la table `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`),
@@ -1413,23 +1438,7 @@ ALTER TABLE `user`
   ADD KEY `idx_user_role` (`role`);
 
 --
--- Indexes for table `user_notifications`
---
-ALTER TABLE `user_notifications`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_user_notifications_recipient` (`recipient_email`),
-  ADD KEY `idx_user_notifications_read` (`is_read`),
-  ADD KEY `idx_user_notifications_created` (`created_at`);
-
---
--- Indexes for table `user_notification_preferences`
---
-ALTER TABLE `user_notification_preferences`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uk_user_notification_preferences_email` (`user_email`);
-
---
--- Indexes for table `user_remember_me`
+-- Index pour la table `user_remember_me`
 --
 ALTER TABLE `user_remember_me`
   ADD PRIMARY KEY (`id`),
@@ -1437,247 +1446,62 @@ ALTER TABLE `user_remember_me`
   ADD KEY `idx_user_remember_me_email` (`user_email`);
 
 --
--- Indexes for table `voyage`
+-- Index pour la table `voyage`
 --
 ALTER TABLE `voyage`
   ADD PRIMARY KEY (`idVoyage`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT pour les tables déchargées
 --
 
 --
--- AUTO_INCREMENT for table `activites`
---
-ALTER TABLE `activites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
-
---
--- AUTO_INCREMENT for table `admin_profile_preferences`
---
-ALTER TABLE `admin_profile_preferences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `atmosphere_destinations`
---
-ALTER TABLE `atmosphere_destinations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `destinations`
---
-ALTER TABLE `destinations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT for table `factures`
---
-ALTER TABLE `factures`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `favorite_packages`
---
-ALTER TABLE `favorite_packages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `featured_destinations`
---
-ALTER TABLE `featured_destinations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
-
---
--- AUTO_INCREMENT for table `featured_destination_history`
---
-ALTER TABLE `featured_destination_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
-
---
--- AUTO_INCREMENT for table `forum_comments`
---
-ALTER TABLE `forum_comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `forum_posts`
---
-ALTER TABLE `forum_posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `forum_reactions`
---
-ALTER TABLE `forum_reactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `forum_stories`
---
-ALTER TABLE `forum_stories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `forum_story_views`
---
-ALTER TABLE `forum_story_views`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `historique_paiements`
---
-ALTER TABLE `historique_paiements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `logs_statut_packages`
---
-ALTER TABLE `logs_statut_packages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `map_destinations`
+-- AUTO_INCREMENT pour la table `map_destinations`
 --
 ALTER TABLE `map_destinations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
--- AUTO_INCREMENT for table `newsletter`
+-- AUTO_INCREMENT pour la table `monument_scan`
 --
-ALTER TABLE `newsletter`
+ALTER TABLE `monument_scan`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `packages`
+-- AUTO_INCREMENT pour la table `proctor_log`
 --
-ALTER TABLE `packages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+ALTER TABLE `proctor_log`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=366;
 
 --
--- AUTO_INCREMENT for table `paiements`
+-- AUTO_INCREMENT pour la table `quiz_answer`
 --
-ALTER TABLE `paiements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+ALTER TABLE `quiz_answer`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
--- AUTO_INCREMENT for table `reclamation`
+-- AUTO_INCREMENT pour la table `quiz_session`
 --
-ALTER TABLE `reclamation`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+ALTER TABLE `quiz_session`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
--- AUTO_INCREMENT for table `reponse`
---
-ALTER TABLE `reponse`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `revenus_admin`
---
-ALTER TABLE `revenus_admin`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `transactions`
---
-ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `travel_favorites`
---
-ALTER TABLE `travel_favorites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `travel_packages`
---
-ALTER TABLE `travel_packages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `user`
+-- AUTO_INCREMENT pour la table `user`
 --
 ALTER TABLE `user`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT for table `user_notifications`
---
-ALTER TABLE `user_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
-
---
--- AUTO_INCREMENT for table `user_notification_preferences`
---
-ALTER TABLE `user_notification_preferences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
-
---
--- AUTO_INCREMENT for table `user_remember_me`
+-- AUTO_INCREMENT pour la table `user_remember_me`
 --
 ALTER TABLE `user_remember_me`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `voyage`
+-- AUTO_INCREMENT pour la table `voyage`
 --
 ALTER TABLE `voyage`
-  MODIFY `idVoyage` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `activites`
---
-ALTER TABLE `activites`
-  ADD CONSTRAINT `activites_ibfk_1` FOREIGN KEY (`destination_id`) REFERENCES `destinations` (`id`);
-
---
--- Constraints for table `historique_paiements`
---
-ALTER TABLE `historique_paiements`
-  ADD CONSTRAINT `historique_paiements_ibfk_1` FOREIGN KEY (`package_id`) REFERENCES `packages` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `messages`
---
-ALTER TABLE `messages`
-  ADD CONSTRAINT `fk_messages_session` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `packages`
---
-ALTER TABLE `packages`
-  ADD CONSTRAINT `packages_ibfk_1` FOREIGN KEY (`destination_id`) REFERENCES `destinations` (`id`);
-
---
--- Constraints for table `prompts`
---
-ALTER TABLE `prompts`
-  ADD CONSTRAINT `fk_prompts_active_version` FOREIGN KEY (`active_version_id`) REFERENCES `prompt_versions` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `prompt_versions`
---
-ALTER TABLE `prompt_versions`
-  ADD CONSTRAINT `fk_prompt_versions_prompt` FOREIGN KEY (`prompt_id`) REFERENCES `prompts` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `reclamation`
---
-ALTER TABLE `reclamation`
-  ADD CONSTRAINT `reclamation_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `reponse`
---
-ALTER TABLE `reponse`
-  ADD CONSTRAINT `reponse_ibfk_1` FOREIGN KEY (`reclamation_id`) REFERENCES `reclamation` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `reponse_ibfk_2` FOREIGN KEY (`admin_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+  MODIFY `idVoyage` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
