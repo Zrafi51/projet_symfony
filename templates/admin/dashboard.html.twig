@@ -1,0 +1,390 @@
+{% extends 'admin-layout.html.twig' %}
+{% import _self as ui %}
+
+{% macro icon(name) %}
+    {% if name == 'dashboard' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3H11V11H3V3ZM13 3H21V8H13V3ZM13 10H21V21H13V10ZM3 13H11V21H3V13Z"/></svg>
+    {% elseif name == 'destination' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22S22 17.52 22 12S17.52 2 12 2ZM8.2 8H5.07C6.09 5.84 7.97 4.24 10.2 3.56C9.3 4.89 8.62 6.37 8.2 8ZM4.26 14C4.09 13.36 4 12.69 4 12C4 11.31 4.09 10.64 4.26 10H8.53C8.38 10.66 8.3 11.32 8.3 12C8.3 12.68 8.38 13.34 8.53 14H4.26ZM5.07 16H8.2C8.62 17.63 9.3 19.11 10.2 20.44C7.97 19.76 6.09 18.16 5.07 16ZM12 19.96C10.83 18.52 9.91 17.02 9.36 16H14.64C14.09 17.02 13.17 18.52 12 19.96ZM15.07 14H8.93C8.75 13.34 8.65 12.67 8.65 12C8.65 11.33 8.75 10.66 8.93 10H15.07C15.25 10.66 15.35 11.33 15.35 12C15.35 12.67 15.25 13.34 15.07 14ZM13.8 3.56C16.03 4.24 17.91 5.84 18.93 8H15.8C15.38 6.37 14.7 4.89 13.8 3.56ZM15.8 16H18.93C17.91 18.16 16.03 19.76 13.8 20.44C14.7 19.11 15.38 17.63 15.8 16ZM16.47 10H19.74C19.91 10.64 20 11.31 20 12C20 12.69 19.91 13.36 19.74 14H16.47C16.62 13.34 16.7 12.68 16.7 12C16.7 11.32 16.62 10.66 16.47 10ZM12 4.04C13.17 5.48 14.09 6.98 14.64 8H9.36C9.91 6.98 10.83 5.48 12 4.04Z"/></svg>
+    {% elseif name == 'users' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11C17.66 11 18.99 9.66 18.99 8S17.66 5 16 5S13 6.34 13 8S14.34 11 16 11ZM8 11C9.66 11 10.99 9.66 10.99 8S9.66 5 8 5S5 6.34 5 8S6.34 11 8 11ZM8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13ZM16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z"/></svg>
+    {% elseif name == 'atmosphere' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C9.24 3 7 5.24 7 8C7 11.03 10.11 14.87 11.41 16.38C11.73 16.75 12.27 16.75 12.59 16.38C13.89 14.87 17 11.03 17 8C17 5.24 14.76 3 12 3ZM12 10.5C10.62 10.5 9.5 9.38 9.5 8S10.62 5.5 12 5.5S14.5 6.62 14.5 8S13.38 10.5 12 10.5ZM6 18H18V20H6V18Z"/></svg>
+    {% elseif name == 'bookings' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5C3.89 3 3 3.89 3 5V19C3 20.1 3.89 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.89 20.1 3 19 3ZM19 19H5V8H19V19ZM19 6H5V5H19V6ZM7 10H11V12H7V10Z"/></svg>
+    {% elseif name == 'payment' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4C2.89 4 2.01 4.89 2.01 6L2 18C2 19.11 2.89 20 4 20H20C21.11 20 22 19.11 22 18V6C22 4.89 21.11 4 20 4ZM20 18H4V12H20V18ZM20 8H4V6H20V8Z"/></svg>
+    {% elseif name == 'settings' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94C19.18 12.63 19.2 12.32 19.2 12C19.2 11.68 19.18 11.37 19.14 11.06L21.17 9.48C21.35 9.34 21.4 9.08 21.28 8.87L19.36 5.55C19.24 5.33 18.98 5.25 18.75 5.34L16.36 6.3C15.86 5.92 15.31 5.62 14.7 5.38L14.31 2.83C14.27 2.59 14.07 2.41 13.82 2.41H9.98C9.73 2.41 9.53 2.59 9.49 2.83L9.1 5.38C8.49 5.62 7.93 5.92 7.43 6.3L5.04 5.34C4.82 5.25 4.56 5.33 4.44 5.55L2.52 8.87C2.4 9.08 2.45 9.34 2.63 9.48L4.66 11.06C4.62 11.37 4.6 11.69 4.6 12C4.6 12.31 4.62 12.63 4.66 12.94L2.63 14.52C2.45 14.66 2.4 14.92 2.52 15.13L4.44 18.45C4.56 18.67 4.82 18.75 5.04 18.66L7.43 17.7C7.93 18.08 8.49 18.38 9.1 18.62L9.49 21.17C9.53 21.41 9.73 21.59 9.98 21.59H13.82C14.07 21.59 14.27 21.41 14.31 21.17L14.7 18.62C15.31 18.38 15.86 18.08 16.36 17.7L18.75 18.66C18.98 18.75 19.24 18.67 19.36 18.45L21.28 15.13C21.4 14.92 21.35 14.66 21.17 14.52L19.14 12.94ZM11.9 15.5C9.97 15.5 8.4 13.93 8.4 12C8.4 10.07 9.97 8.5 11.9 8.5C13.83 8.5 15.4 10.07 15.4 12C15.4 13.93 13.83 15.5 11.9 15.5Z"/></svg>
+    {% elseif name == 'profile' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12C14.76 12 17 9.76 17 7S14.76 2 12 2S7 4.24 7 7S9.24 12 12 12ZM12 14.5C8.67 14.5 2 16.17 2 19.5V22H22V19.5C22 16.17 15.33 14.5 12 14.5Z"/></svg>
+    {% elseif name == 'logout' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17L11.41 15.59L8.83 13H20V11H8.83L11.41 8.41L10 7L5 12L10 17ZM4 5H12V3H4C2.9 3 2 3.9 2 5V19C2 20.1 2.9 21 4 21H12V19H4V5Z"/></svg>
+    {% elseif name == 'chevron_down' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.41 8.59L12 13.17L16.59 8.59L18 10L12 16L6 10L7.41 8.59Z"/></svg>
+    {% elseif name == 'bell' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z"/></svg>
+    {% elseif name == 'search' %}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z"/></svg>
+    {% endif %}
+{% endmacro %}
+
+{% block title %}{{ title|default('Admin Dashboard') }}{% endblock %}
+
+{% block body %}
+{% set counts = overview.counts|default({}) %}
+{% set revenue = overview.revenue|default({}) %}
+{% set performance = overview.performance|default({}) %}
+<div class="admin-shell" data-admin-shell>
+    <aside class="admin-sidebar" data-admin-sidebar>
+        <div class="admin-brand-row">
+            <div class="admin-brand-mark"><span>E</span></div>
+            <div>
+                <strong class="admin-brand-title">EasyTravel</strong>
+                <div class="admin-brand-subtitle">
+                    <span class="admin-brand-dot"></span>
+                    <span>ADMIN PANEL</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="admin-nav">
+            {% for navItem in navItems|default([]) %}
+                <a class="admin-nav-button {{ activeSection == navItem.section ? 'admin-nav-button-active' : '' }}" href="{{ navItem.href }}">
+                    <span class="admin-nav-icon-shell {{ navItem.icon_shell }}">{{ ui.icon(navItem.icon)|raw }}</span>
+                    <span>{{ navItem.label }}</span>
+                    <small class="admin-nav-badge {{ navItem.badge_class|default('') }}">{{ navItem.badge }}</small>
+                </a>
+            {% endfor %}
+        </nav>
+
+        <section class="admin-side-card admin-side-revenue-card">
+            <div class="admin-side-card-head">
+                <span>REVENUS DU JOUR</span>
+                <strong>$</strong>
+            </div>
+            <div class="admin-side-revenue-value" data-money data-money-base="EUR" data-money-amount="{{ revenue.today|default(0) }}">{{ revenue.today_label|default(revenue.today_formatted|default('EUR0')) ?: (revenue.today|default(0) >= 1000000 ? 'EUR' ~ ((revenue.today|default(0) / 1000000)|number_format(1, '.', ' ')) ~ 'M' : (revenue.today|default(0) >= 1000 ? 'EUR' ~ ((revenue.today|default(0) / 1000)|number_format(1, '.', ' ')) ~ 'K' : 'EUR' ~ ((revenue.today|default(0))|number_format(0, '.', ' ')))) }}</div>
+            <div class="admin-side-trend-row">
+                {% set todayChange = revenue.today_change_percent|default(0) %}
+                <span class="admin-side-trend-pill admin-side-trend-pill-{{ todayChange < 0 ? 'negative' : 'positive' }}">
+                    {{ '%+.1f%%'|format(todayChange) }}
+                </span>
+                <span class="admin-side-trend-copy">vs hier</span>
+            </div>
+            <div class="admin-side-bars">
+                {% for barHeight in dailyRevenueHeights|default([12,12,12,12,12,12]) %}
+                    <span style="height: {{ barHeight|number_format(1, '.', '') }}px"></span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="admin-side-card">
+            <div class="admin-side-card-head">
+                <span>PERFORMANCE</span>
+                <strong>{{ performance.percent|default(0)|round }}%</strong>
+            </div>
+            <div class="admin-progress-track">
+                <span class="admin-progress-fill" style="width: {{ performance.percent|default(0)|round(1) }}%"></span>
+            </div>
+            <p class="admin-side-copy">{{ performance.copy|default('Systeme operationnel') }}</p>
+        </section>
+
+        <footer class="admin-sidebar-footer">
+            <div class="admin-sidebar-user-card">
+                <div class="admin-sidebar-avatar">
+                    {% if currentPhotoUrl|default('') is not empty %}
+                        <img src="{{ currentPhotoUrl }}" alt="{{ displayName }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                        <span style="display:none;">{{ currentInitial }}</span>
+                    {% else %}
+                        <span>{{ currentInitial }}</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>{{ displayName }}</strong>
+                    <small>{{ currentEmail }}</small>
+                </div>
+            </div>
+            <button class="admin-toggle-button admin-full-button" type="button" data-admin-sidebar-toggle>&lt; Reduire</button>
+            <a class="admin-return-button admin-full-button" href="/">Retour au site</a>
+        </footer>
+    </aside>
+
+    <main class="admin-main-shell">
+        <header class="admin-topbar">
+            <div class="admin-topbar-main-row">
+                <div class="admin-topbar-title-group">
+                    <h1 class="admin-page-title">{{ pageTitle|default('Dashboard') }}</h1>
+                    <div class="admin-live-pill">LIVE</div>
+                </div>
+
+                <div class="admin-topbar-actions">
+                    {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'adminDashboardCurrencySwitcher'} %}
+
+                    <button id="hand-tracking-toggle" class="hand-toggle-btn" type="button" data-tooltip="Contrôle par la main (Caméra)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                        </svg>
+                        <span class="hand-status-badge"></span>
+                    </button>
+                    <a class="admin-circle-action" href="/admin/settings" title="Parametres">{{ ui.icon('settings')|raw }}</a>
+                    <div class="admin-notification-toggle-shell">
+                        <a class="admin-circle-action" href="{{ notificationRefreshUrl }}" title="Notifications" aria-controls="admin-notification-overlay" aria-expanded="{{ notificationDrawerOpen ? 'true' : 'false' }}" data-notification-toggle>
+                            {{ ui.icon('bell')|raw }}
+                        </a>
+                        {% if unreadCount > 0 %}
+                            <span class="admin-action-counter">{{ unreadCount }}</span>
+                        {% endif %}
+                    </div>
+
+                    <form class="admin-search-shell" method="get" action="/admin/dashboard">
+                        <input type="hidden" name="section" value="users">
+                        <input type="hidden" name="user_filter" value="{{ userFilter }}">
+                        <span class="admin-search-icon">{{ ui.icon('search')|raw }}</span>
+                        <input class="admin-search-field" type="search" name="users_search" value="{{ usersSearch|default('') }}" placeholder="Rechercher...">
+                    </form>
+
+                    <details class="admin-user-menu">
+                        <summary class="admin-user-pill">
+                            <span class="admin-user-pill-avatar">
+                                {% if currentPhotoUrl|default('') is not empty %}
+                                    <img src="{{ currentPhotoUrl }}" alt="{{ displayName }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                                    <span style="display:none;">{{ currentInitial }}</span>
+                                {% else %}
+                                    <span>{{ currentInitial }}</span>
+                                {% endif %}
+                            </span>
+                            <span class="admin-user-pill-copy">
+                                <strong>{{ displayName }}</strong>
+                                <small>{{ currentRole }}</small>
+                            </span>
+                            <span class="admin-user-pill-chevron" aria-hidden="true">{{ ui.icon('chevron_down')|raw }}</span>
+                        </summary>
+                        <div class="admin-user-dropdown">
+                            <div class="admin-user-dropdown-header">
+                                <span class="admin-user-dropdown-avatar">
+                                    {% if currentPhotoUrl|default('') is not empty %}
+                                        <img src="{{ currentPhotoUrl }}" alt="{{ displayName }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                                        <span style="display:none;">{{ currentInitial }}</span>
+                                    {% else %}
+                                        <span>{{ currentInitial }}</span>
+                                    {% endif %}
+                                </span>
+                                <span class="admin-user-dropdown-copy">
+                                    <strong class="admin-user-dropdown-name">{{ displayName }}</strong>
+                                    <small class="admin-user-dropdown-email">{{ currentEmail }}</small>
+                                    <span class="admin-user-dropdown-role">{{ currentRole }}</span>
+                                </span>
+                            </div>
+
+                            <a class="admin-user-menu-item" href="/admin/settings">
+                                <span class="admin-user-menu-icon-shell">{{ ui.icon('profile')|raw }}</span>
+                                <span class="admin-user-menu-item-copy">
+                                    <strong class="admin-user-menu-title">Mon profil</strong>
+                                    <small class="admin-user-menu-copy">Modifier avatar, email et informations admin.</small>
+                                </span>
+                            </a>
+                            <a class="admin-user-menu-item" href="/admin/settings">
+                                <span class="admin-user-menu-icon-shell">{{ ui.icon('settings')|raw }}</span>
+                                <span class="admin-user-menu-item-copy">
+                                    <strong class="admin-user-menu-title">Parametres admin</strong>
+                                    <small class="admin-user-menu-copy">Securite, notifications et configuration de la console.</small>
+                                </span>
+                            </a>
+                            <a class="admin-user-menu-item admin-user-menu-item-danger" href="/logout">
+                                <span class="admin-user-menu-icon-shell admin-user-menu-icon-shell-danger">{{ ui.icon('logout')|raw }}</span>
+                                <span class="admin-user-menu-item-copy">
+                                    <strong class="admin-user-menu-title admin-user-menu-title-danger">Deconnexion</strong>
+                                    <small class="admin-user-menu-copy admin-user-menu-copy-danger">Quitter la session administrateur en gardant le compte memorise.</small>
+                                </span>
+                            </a>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div class="admin-topbar-meta-row">
+                <span class="admin-system-pill"><span class="admin-brand-dot"></span> Systeme operationnel</span>
+                <span class="admin-meta-label">Derniere synchro :</span>
+                <span class="admin-meta-pill">{{ lastDashboardRefreshLabel }}</span>
+                <span class="admin-meta-label">Clients actifs :</span>
+                <span class="admin-meta-pill admin-meta-pill-blue">{{ counts.active_users|default(0) }}</span>
+            </div>
+        </header>
+
+        <div class="admin-content-wrap">
+            {% if databaseError %}
+                <div class="admin-alert admin-alert-error">{{ databaseError }}</div>
+            {% endif %}
+            {% if errorMessage %}
+                <div class="admin-alert admin-alert-error">{{ errorMessage }}</div>
+            {% endif %}
+            {% if statusMessage %}
+                <div class="admin-alert admin-alert-success">{{ statusMessage }}</div>
+            {% endif %}
+
+            {% if activeSection == 'overview' %}
+                <section class="admin-overview-layout">
+                    <section class="admin-overview-stats-grid">
+                        {% for card in summaryCards|default([]) %}
+                            <article class="admin-overview-summary-card admin-overview-summary-card-{{ card.tone }}">
+                                <div class="admin-overview-summary-head">
+                                    <span class="admin-overview-summary-icon admin-overview-summary-icon-{{ card.tone }}">{{ card.abbr }}</span>
+                                    <span class="admin-overview-change-pill admin-overview-change-pill-{{ card.change_tone }}">{{ card.change_copy }}</span>
+                                </div>
+                                <div class="admin-overview-summary-copy">
+                                    <p class="admin-overview-summary-label">{{ card.label }}</p>
+                                    <strong class="admin-overview-summary-value{{ card.hot ? ' admin-overview-summary-value-hot' : '' }}">{{ card.value }}</strong>
+                                </div>
+                                <div class="admin-overview-series">
+                                    {% for barHeight in card.series %}
+                                        <span class="admin-overview-series-bar admin-overview-series-bar-{{ card.tone }}" style="height: {{ barHeight|number_format(1, '.', '') }}px"></span>
+                                    {% endfor %}
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </section>
+
+                    <section class="admin-overview-insights-grid">
+                        <article class="admin-overview-panel admin-overview-revenue-panel">
+                            <div class="admin-overview-panel-head">
+                                <div class="admin-overview-panel-copy">
+                                    <h2>Revenus Mensuels</h2>
+                                    <p>Progression reelle des paiements encaisses sur 6 mois.</p>
+                                </div>
+                                <div class="admin-overview-pill-group">
+                                    <span class="admin-overview-range-pill admin-overview-range-pill-active">6 mois</span>
+                                    <span class="admin-overview-range-pill">Paiements payes</span>
+                                </div>
+                            </div>
+
+                            {% if monthlyRevenuePoints is empty %}
+                                <p class="admin-empty-copy">Aucun revenu mensuel disponible pour le moment.</p>
+                            {% else %}
+                                <div class="admin-overview-month-chart">
+                                    {% for point in monthlyRevenuePoints %}
+                                        <div class="admin-overview-month-column">
+                                            <div class="admin-overview-month-shell">
+                                                <span class="admin-overview-month-fill admin-overview-month-fill-{{ min(loop.index, 6) }}" style="height: {{ monthlyRevenueHeights[loop.index0]|default(44)|number_format(1, '.', '') }}px"></span>
+                                            </div>
+                                            <span class="admin-overview-axis-label">{{ point.label|default('') }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </article>
+
+                        <aside class="admin-overview-panel admin-overview-top-panel">
+                            <div class="admin-overview-panel-copy">
+                                <h2>Top Destinations</h2>
+                                <p>Classement dynamique selon les reservations et revenus.</p>
+                            </div>
+
+                            {% if topDestinations is empty %}
+                                <p class="admin-empty-copy">Aucune destination reservee pour le moment.</p>
+                            {% else %}
+                                <div class="admin-overview-top-list">
+                                    {% for destination in topDestinations %}
+                                        <article class="admin-overview-destination-row">
+                                            <span class="admin-overview-rank-badge admin-overview-rank-badge-{{ destination.rank_tone }}">{{ '#' ~ loop.index }}</span>
+                                            <div class="admin-overview-destination-copy">
+                                                <strong>{{ destination.display_name|default('Destination') }}</strong>
+                                                <span>{{ destination.country_name|default('Pays') }}</span>
+                                                <small>Reservations {{ destination.reservation_count|default(0) }}</small>
+                                            </div>
+                                            <div class="admin-overview-destination-metrics">
+                                                <strong>{{ destination.revenue_label|default('EUR0') }}</strong>
+                                                <span class="admin-overview-growth admin-overview-growth-{{ destination.growth_tone|default('positive') }}">{{ destination.growth_label|default('+0.0%') }}</span>
+                                            </div>
+                                        </article>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </aside>
+                    </section>
+                </section>
+            {% else %}
+                {% set sectionTemplateMap = {
+                    'users': 'admin/sections/users.html.twig',
+                    'destinations': 'admin/sections/destinations.html.twig',
+                    'packages': 'admin/sections/packages.html.twig',
+                    'map': 'admin/sections/map.html.twig',
+                    'reservations': 'admin/sections/reservations.html.twig',
+                    'reclamations': 'admin/sections/reclamations.html.twig',
+                    'paiements': 'admin/sections/paiements.html.twig',
+                    'atmospheres': 'admin/sections/atmospheres.html.twig',
+                    'prompts': 'admin/sections/prompts.html.twig'
+                } %}
+
+                {% if sectionTemplateMap[activeSection]|default(null) %}
+                    {% include sectionTemplateMap[activeSection] %}
+                {% else %}
+                    <section class="admin-panel-card">
+                        <p class="admin-empty-copy">Section introuvable.</p>
+                    </section>
+                {% endif %}
+            {% endif %}
+        </div>
+    </main>
+
+    <div class="admin-notification-overlay {{ notificationDrawerOpen ? 'is-open' : '' }}" id="admin-notification-overlay" data-notification-overlay>
+        <div class="admin-notification-drawer" data-notification-drawer role="dialog" aria-modal="true" aria-labelledby="admin-notification-title">
+            <div class="admin-notification-header">
+                <div>
+                    <h2 class="admin-notification-title" id="admin-notification-title">Alertes admin</h2>
+                    <p class="admin-notification-subtitle">{{ unreadCount > 0 ? unreadCount ~ ' notification(s) non lue(s).' : 'Tout est a jour pour le moment.' }}</p>
+                </div>
+                <div class="admin-notification-header-actions">
+                    {% if unreadCount > 0 %}
+                        <span class="admin-notification-unread-badge">{{ unreadCount }}</span>
+                    {% endif %}
+                    <a class="admin-notification-close" href="{{ notificationCloseUrl }}" aria-label="Fermer les notifications" data-notification-close>X</a>
+                </div>
+            </div>
+
+            <div class="admin-notification-toolbar">
+                <a class="admin-notification-action" href="{{ notificationRefreshUrl }}">Actualiser</a>
+                <form method="post" action="/admin/notifications/read-all">
+                    {% for name, value in notificationFormState|default({}) %}
+                        <input type="hidden" name="{{ name }}" value="{{ value }}">
+                    {% endfor %}
+                    <button class="admin-notification-action admin-notification-action-primary" type="submit" {{ unreadCount <= 0 ? 'disabled' : '' }}>Tout marquer comme lu</button>
+                </form>
+            </div>
+
+            <div class="admin-notification-list">
+                {% if notifications is empty %}
+                    <div class="admin-notification-empty-state">
+                        <strong>Aucune notification</strong>
+                        <p>Aucune notification admin pour le moment.</p>
+                    </div>
+                {% else %}
+                    {% for notification in notifications %}
+                        {% set rawCategory = notification.category|default('')|upper %}
+                        {% set notificationCategory = rawCategory == 'BOOKING' ? 'Reservation' : (rawCategory == 'FORUM' ? 'Forum' : (rawCategory == 'OFFERS' ? 'Offre' : (rawCategory == 'PASSWORD' ? 'Securite' : ((rawCategory == 'PHOTO' or rawCategory == 'PROFILE') ? 'Profil' : (rawCategory == 'PREFERENCES' ? 'Preferences' : 'Compte'))))) %}
+                        {% set notificationCategoryClass = rawCategory == 'BOOKING' ? 'admin-notification-category-booking' : (rawCategory == 'FORUM' ? 'admin-notification-category-forum' : (rawCategory == 'OFFERS' ? 'admin-notification-category-offers' : (rawCategory == 'PASSWORD' ? 'admin-notification-category-password' : ((rawCategory == 'PHOTO' or rawCategory == 'PROFILE') ? 'admin-notification-category-profile' : (rawCategory == 'PREFERENCES' ? 'admin-notification-category-preferences' : 'admin-notification-category-account'))))) %}
+                        {% set notificationRead = notification.is_read|default(false) %}
+                        {% set senderRole = notification.sender_role|default('')|trim %}
+                        {% set senderEmail = notification.sender_email|default('')|trim %}
+                        {% set notificationMeta = senderRole is not empty and senderEmail is not empty ? senderRole ~ ' - ' ~ senderEmail : (senderRole is not empty ? senderRole : (senderEmail is not empty ? senderEmail : 'EasyTravel')) %}
+                        <article class="admin-notification-card {{ notificationRead ? '' : 'admin-notification-card-unread' }}">
+                            <div class="admin-notification-card-top">
+                                <div class="admin-notification-chip-row">
+                                    <span class="admin-notification-status-chip {{ notificationRead ? 'admin-notification-status-read' : 'admin-notification-status-unread' }}">{{ notificationRead ? 'Lu' : 'Nouveau' }}</span>
+                                    <span class="admin-notification-category-chip {{ notificationCategoryClass }}">{{ notificationCategory }}</span>
+                                </div>
+                                <span class="admin-notification-time">{{ notification.created_at|default('') ? notification.created_at|date('d/m/Y H:i') : 'Non renseigne' }}</span>
+                            </div>
+                            <strong class="admin-notification-card-title">{{ notification.title|default('Notification') }}</strong>
+                            <p class="admin-notification-card-message">{{ notification.message|default('') }}</p>
+                            <span class="admin-notification-card-meta">{{ notificationMeta }}</span>
+                        </article>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

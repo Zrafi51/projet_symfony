@@ -1,0 +1,153 @@
+{% set promptStats = promptsAdmin.stats|default({}) %}
+{% set promptItems = promptsAdmin.prompts|default([]) %}
+{% set selectedPrompt = promptsAdmin.selectedPrompt|default(null) %}
+{% set promptVersions = promptsAdmin.versions|default([]) %}
+
+<section class="admin-prompts-shell">
+    <section class="admin-section-hero admin-prompts-hero">
+        <div class="admin-section-hero-copy">
+            <span class="admin-section-kicker">TRAVEL-AI</span>
+            <h2>Prompts du chatbot</h2>
+            <p>Gestion des prompts actifs utilises par le serveur FastAPI: destination, activites, hotels, chat general et generation du pack final.</p>
+        </div>
+        <form method="get" action="/admin/dashboard" class="admin-prompts-filter">
+            <input type="hidden" name="section" value="prompts">
+            <select class="admin-prompts-input" name="prompt_language" onchange="this.form.submit()">
+                <option value="all" {{ promptLanguage == 'all' ? 'selected' : '' }}>Toutes les langues</option>
+                <option value="fr" {{ promptLanguage == 'fr' ? 'selected' : '' }}>Francais</option>
+                <option value="en" {{ promptLanguage == 'en' ? 'selected' : '' }}>English</option>
+            </select>
+        </form>
+    </section>
+
+    <section class="admin-prompts-kpi-grid">
+        <article class="admin-prompts-mini-card"><span>PROMPTS</span><strong>{{ promptStats.prompts|default(0) }}</strong></article>
+        <article class="admin-prompts-mini-card"><span>VERSIONS</span><strong>{{ promptStats.versions|default(0) }}</strong></article>
+        <article class="admin-prompts-mini-card"><span>ACTIFS</span><strong>{{ promptStats.active|default(0) }}</strong></article>
+    </section>
+
+    <section class="admin-prompts-grid">
+        <article class="admin-panel-card admin-prompts-card">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>Catalogue prompts</h2>
+                    <p class="admin-empty-copy">Selectionnez un prompt pour afficher ses versions.</p>
+                </div>
+            </div>
+            <div class="admin-prompts-list">
+                {% for prompt in promptItems %}
+                    <a class="admin-prompts-row {{ selectedPrompt and selectedPrompt.id == prompt.id ? 'is-active' : '' }}" href="/admin/dashboard?section=prompts&prompt_language={{ promptLanguage }}&prompt_id={{ prompt.id }}">
+                        <span class="admin-prompts-lang">{{ prompt.language|upper }}</span>
+                        <div>
+                            <strong>{{ prompt.prompt_key }}</strong>
+                            <small>{{ prompt.description|default('Aucune description') }}</small>
+                        </div>
+                        <em>{{ prompt.active_version_number ? 'v' ~ prompt.active_version_number : 'inactif' }}</em>
+                    </a>
+                {% else %}
+                    <p class="admin-empty-copy">Aucun prompt configure.</p>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="admin-panel-card admin-prompts-card">
+            <div class="admin-panel-head">
+                <div>
+                    <h2>{{ selectedPrompt ? 'Modifier le prompt' : 'Nouveau prompt' }}</h2>
+                    <p class="admin-empty-copy">La cle doit correspondre aux noms attendus par FastAPI.</p>
+                </div>
+            </div>
+            <form class="admin-prompts-form" method="post" action="/admin/prompts/save">
+                <input type="hidden" name="id" value="{{ selectedPrompt.id|default('') }}">
+                <input type="hidden" name="prompt_language" value="{{ promptLanguage }}">
+                <label>
+                    <span>Cle prompt</span>
+                    <input class="admin-prompts-input" name="prompt_key" value="{{ selectedPrompt.prompt_key|default('') }}" placeholder="destination_system" required>
+                </label>
+                <label>
+                    <span>Langue</span>
+                    <select class="admin-prompts-input" name="language">
+                        <option value="fr" {{ selectedPrompt.language|default('fr') == 'fr' ? 'selected' : '' }}>Francais</option>
+                        <option value="en" {{ selectedPrompt.language|default('fr') == 'en' ? 'selected' : '' }}>English</option>
+                    </select>
+                </label>
+                <label class="admin-prompts-span-2">
+                    <span>Description</span>
+                    <textarea class="admin-prompts-textarea" name="description" rows="4">{{ selectedPrompt.description|default('') }}</textarea>
+                </label>
+                <div class="admin-prompts-actions">
+                    <button class="admin-primary-button" type="submit">Sauvegarder</button>
+                    <a class="admin-ghost-button" href="/admin/dashboard?section=prompts&prompt_language={{ promptLanguage }}">Nouveau</a>
+                </div>
+            </form>
+            {% if selectedPrompt %}
+                <form method="post" action="/admin/prompts/{{ selectedPrompt.id }}/delete" onsubmit="return confirm('Supprimer ce prompt et ses versions ?');">
+                    <input type="hidden" name="prompt_language" value="{{ promptLanguage }}">
+                    <button class="admin-danger-button" type="submit">Supprimer le prompt</button>
+                </form>
+            {% endif %}
+        </article>
+    </section>
+
+    <section class="admin-panel-card admin-prompts-card">
+        <div class="admin-panel-head">
+            <div>
+                <h2>Versions</h2>
+                <p class="admin-empty-copy">{{ selectedPrompt ? selectedPrompt.prompt_key ~ ' | ' ~ selectedPrompt.language|upper : 'Selectionnez un prompt pour gerer ses versions.' }}</p>
+            </div>
+        </div>
+
+        {% if selectedPrompt %}
+            <form class="admin-prompts-version-form" method="post" action="/admin/prompts/versions/save">
+                <input type="hidden" name="prompt_id" value="{{ selectedPrompt.id }}">
+                <input type="hidden" name="prompt_language" value="{{ promptLanguage }}">
+                <label>
+                    <span>Nouvelle version</span>
+                    <textarea class="admin-prompts-textarea admin-prompts-code" name="content" rows="8" placeholder="Contenu du prompt..." required></textarea>
+                </label>
+                <div class="admin-prompts-form admin-prompts-form-inline">
+                    <label>
+                        <span>Auteur</span>
+                        <input class="admin-prompts-input" name="created_by" value="{{ displayName|default('Admin') }}">
+                    </label>
+                    <label>
+                        <span>Note</span>
+                        <input class="admin-prompts-input" name="note" placeholder="Initial, correction, test...">
+                    </label>
+                    <label class="admin-prompts-check">
+                        <input type="checkbox" name="set_active" value="1" checked>
+                        <span>Activer apres sauvegarde</span>
+                    </label>
+                </div>
+                <button class="admin-primary-button" type="submit">Ajouter la version</button>
+            </form>
+
+            <div class="admin-prompts-version-list">
+                {% for version in promptVersions %}
+                    <article class="admin-prompts-version-row {{ version.is_active ? 'is-active' : '' }}">
+                        <div class="admin-prompts-version-head">
+                            <strong>v{{ version.version }}</strong>
+                            <span>{{ version.is_active ? 'ACTIVE' : 'ARCHIVE' }}</span>
+                            <small>{{ version.created_at|default('') }}</small>
+                        </div>
+                        <pre>{{ version.content }}</pre>
+                        <div class="admin-prompts-actions">
+                            {% if not version.is_active %}
+                                <form method="post" action="/admin/prompts/{{ selectedPrompt.id }}/versions/{{ version.id }}/active">
+                                    <input type="hidden" name="prompt_language" value="{{ promptLanguage }}">
+                                    <button class="admin-ghost-button" type="submit">Activer</button>
+                                </form>
+                            {% endif %}
+                            <form method="post" action="/admin/prompts/versions/{{ version.id }}/delete" onsubmit="return confirm('Supprimer cette version ?');">
+                                <input type="hidden" name="prompt_language" value="{{ promptLanguage }}">
+                                <button class="admin-danger-button" type="submit">Supprimer</button>
+                            </form>
+                        </div>
+                    </article>
+                {% else %}
+                    <p class="admin-empty-copy">Aucune version pour ce prompt.</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+</section>

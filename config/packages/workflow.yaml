@@ -1,0 +1,37 @@
+framework:
+    workflows:
+        destination_lifecycle:
+            type: 'state_machine'
+            supports:
+                - App\Workflow\DestinationWorkflowSubject
+            initial_marking: draft
+            marking_store:
+                type: method
+                property: currentPlace
+            places:
+                - draft
+                - in_review
+                - rejected
+                - published
+                - archived
+            transitions:
+                submit_review:
+                    from: draft
+                    to: in_review
+                reject:
+                    from: in_review
+                    to: rejected
+                rework:
+                    from: rejected
+                    to: draft
+                publish:
+                    from:
+                        - in_review
+                        - archived
+                    to: published
+                archive:
+                    from: published
+                    to: archived
+                unpublish:
+                    from: published
+                    to: draft

@@ -1,0 +1,197 @@
+{% set paymentTotal = paymentStats.total|default(0) %}
+{% set paymentPaid = paymentStats.paid|default(0) %}
+{% set paymentRevenue = paymentStats.revenue|default(0) %}
+{% set paymentPendingReview = paymentStats.pending_review|default(0) %}
+{% set paymentLastAt = paymentStats.last_payment_at|default('') %}
+
+<section class="admin-billing-shell">
+    <section class="admin-billing-hero-grid">
+        <article class="admin-panel-card admin-billing-hero-card">
+            <div class="admin-reservations-hero-head">
+                <div>
+                    <h2>Gestion des Paiements</h2>
+                    <p>Historique des paiements clients et generation de factures, dans le meme flux que le Java.</p>
+                </div>
+                <div class="admin-section-hero-actions">
+                    <button class="admin-primary-button" type="button" data-payment-dialog-open>+ Nouveau paiement</button>
+                    <a class="admin-primary-button" href="/factures" style="text-decoration: none;">📄 Générer Facture</a>
+                    <button class="admin-secondary-button" type="button" data-invoice-dialog-open>Facture rapide</button>
+                </div>
+            </div>
+
+            <div class="admin-reservations-pill-row">
+                <span class="admin-range-pill admin-range-pill-active">Total {{ paymentTotal }}</span>
+                <span class="admin-range-pill">Payes {{ paymentPaid }}</span>
+                <span class="admin-range-pill">A revoir {{ paymentPendingReview }}</span>
+                <span class="admin-range-pill">Factures {{ invoiceEntries|length }}</span>
+            </div>
+        </article>
+
+        <article class="admin-panel-card admin-billing-side-card">
+            <h2>Statistiques</h2>
+            <div class="admin-billing-side-stats">
+                <div class="admin-reclamation-stat-box">
+                    <span>Total</span>
+                    <strong>{{ paymentTotal }}</strong>
+                </div>
+                <div class="admin-reclamation-stat-box">
+                    <span>Revenus</span>
+                    <strong data-money data-money-base="EUR" data-money-amount="{{ paymentRevenue }}">{{ 'EUR' ~ (paymentRevenue|number_format(0, '.', ' ')) }}</strong>
+                </div>
+            </div>
+            <p>{{ paymentLastAt ? 'Dernier paiement: ' ~ (paymentLastAt|date('d/m/Y H:i')) : 'Aucune transaction enregistree pour le moment.' }}</p>
+        </article>
+    </section>
+
+    <section class="admin-reservations-kpi-grid">
+        <article class="admin-panel-card admin-mini-summary-card">
+            <span>Total paiements</span>
+            <strong>{{ paymentTotal }}</strong>
+        </article>
+        <article class="admin-panel-card admin-mini-summary-card">
+            <span>Payes</span>
+            <strong>{{ paymentPaid }}</strong>
+        </article>
+        <article class="admin-panel-card admin-mini-summary-card">
+            <span>A revoir</span>
+            <strong>{{ paymentPendingReview }}</strong>
+        </article>
+        <article class="admin-panel-card admin-mini-summary-card">
+            <span>Revenus</span>
+            <strong data-money data-money-base="EUR" data-money-amount="{{ paymentRevenue }}">{{ 'EUR' ~ ((paymentRevenue >= 1000 ? (paymentRevenue / 1000) : paymentRevenue)|number_format(paymentRevenue >= 1000 ? 1 : 0, '.', ' ')) ~ (paymentRevenue >= 1000 ? 'K' : '') }}</strong>
+        </article>
+    </section>
+
+    <section class="admin-panel-card admin-billing-list-card">
+        <div class="admin-panel-head">
+            <div>
+                <h2>Historique des paiements</h2>
+                <p>Rendu proche du Java: badge euro, resume carte, montant, statut et action facture.</p>
+            </div>
+            <span class="admin-meta-pill">{{ paymentTotal }} paiements</span>
+        </div>
+
+        {% if paymentEntries is empty %}
+            <p class="admin-empty-copy">Aucun paiement disponible.</p>
+        {% else %}
+            <div class="admin-list-stack admin-billing-list-stack">
+                {% for payment in paymentEntries %}
+                    {% set paymentId = payment.id|default(0) %}
+                    {% set linkedInvoiceId = payment.invoice_id|default(0) %}
+                    {% set linkedInvoiceNumber = payment.invoice_number|default('') %}
+                    <article class="admin-list-row admin-billing-row">
+                        <div class="admin-booking-code {{ payment.code_class|default('admin-booking-code-green') }}">
+                            <span class="admin-booking-code-label">EUR</span>
+                        </div>
+
+                        <div class="admin-list-copy">
+                            <strong>{{ payment.client_nom|default('Client') }} - {{ payment.destination|default('Destination') }}</strong>
+                            <span>{{ payment.summary_copy|default('Reference indisponible') }}</span>
+                        </div>
+
+                        <div class="admin-list-side admin-billing-side">
+                            <strong data-money data-money-base="EUR" data-money-amount="{{ payment.montant|default(0) }}">{{ 'EUR' ~ (payment.montant|default(0)|number_format(2, '.', ' ')) }}</strong>
+                            <span>{{ payment.date_label|default('Non renseigne') }}</span>
+                        </div>
+
+                        <div class="admin-billing-row-actions">
+                            <span class="admin-status-pill {{ payment.status_class|default('admin-status-pill-green') }}">
+                                {{ payment.status_label|default('PAYE') }}
+                            </span>
+                            {% if linkedInvoiceId > 0 %}
+                                <a class="admin-card-action admin-card-action-blue" href="#admin-invoice-panel">Facture {{ linkedInvoiceNumber ? linkedInvoiceNumber : '#' ~ linkedInvoiceId }}</a>
+                            {% else %}
+                                <button class="admin-card-action admin-card-action-orange" type="button" data-invoice-dialog-open data-invoice-payment-id="{{ paymentId }}">Creer facture</button>
+                            {% endif %}
+                            <button
+                                class="admin-card-action admin-card-action-blue"
+                                type="button"
+                                data-payment-edit-open
+                                data-payment-id="{{ paymentId }}"
+                                data-payment-client="{{ payment.client_nom|default('') }}"
+                                data-payment-destination="{{ payment.destination|default('') }}"
+                                data-payment-amount="{{ payment.montant|default(0) }}"
+                                data-payment-date="{{ payment.date_paiement|default('') }}"
+                                data-payment-status="{{ payment.statut|default('PAYE') }}"
+                                data-payment-reference="{{ payment.reference_transaction|default('') }}"
+                                data-payment-package-id="{{ payment.package_id|default(0) }}"
+                                data-payment-card="{{ payment.numero_carte_masque|default('') }}"
+                                data-payment-type="{{ payment.type_voyage|default('Aventure') }}"
+                            >
+                                Modifier
+                            </button>
+                            <form method="post" action="/admin/dashboard/paiements/{{ paymentId }}/delete" onsubmit="return confirm('Supprimer ce paiement ?');">
+                                <input type="hidden" name="section" value="paiements">
+                                <button class="admin-card-action admin-card-action-red" type="submit">Supprimer</button>
+                            </form>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    {% include 'admin/sections/invoices.html.twig' %}
+</section>
+
+<dialog class="admin-package-dialog admin-payment-dialog" data-payment-dialog>
+    <form class="admin-package-dialog-form admin-payment-dialog-form" method="post" action="/admin/dashboard/paiements/save" data-payment-dialog-form>
+        <input type="hidden" name="section" value="paiements">
+        <input type="hidden" name="id" value="0" data-payment-id-input>
+        <div class="admin-package-dialog-head">
+            <div>
+                <h3 data-payment-dialog-title>Nouveau paiement</h3>
+                <p data-payment-dialog-helper>Ajoutez ou modifiez un paiement directement depuis le dashboard admin.</p>
+            </div>
+            <button class="admin-package-dialog-close" type="button" data-payment-dialog-close>X</button>
+        </div>
+
+        <div class="admin-package-dialog-grid">
+            <label>
+                <span>Client</span>
+                <input type="text" name="client_nom" required data-payment-client-input>
+            </label>
+            <label>
+                <span>Destination</span>
+                <input type="text" name="destination" required data-payment-destination-input>
+            </label>
+            <label>
+                <span>Montant</span>
+                <input type="number" name="montant" min="0" step="0.01" required data-payment-amount-input>
+            </label>
+            <label>
+                <span>Date paiement</span>
+                <input type="datetime-local" name="date_paiement" required data-payment-date-input>
+            </label>
+            <label>
+                <span>Statut</span>
+                <select name="statut" data-payment-status-input>
+                    {% for paymentStatus in ['PAYE', 'EN_ATTENTE', 'A_REVOIR', 'REMBOURSE'] %}
+                        <option value="{{ paymentStatus }}">{{ paymentStatus|replace({'_': ' '}) }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Reference</span>
+                <input type="text" name="reference_transaction" data-payment-reference-input>
+            </label>
+            <label>
+                <span>ID package</span>
+                <input type="number" name="package_id" min="0" step="1" data-payment-package-input>
+            </label>
+            <label>
+                <span>Carte masquee</span>
+                <input type="text" name="numero_carte_masque" data-payment-card-input>
+            </label>
+            <label>
+                <span>Type voyage</span>
+                <input type="text" name="type_voyage" data-payment-type-input>
+            </label>
+        </div>
+
+        <div class="admin-package-dialog-actions">
+            <button class="admin-secondary-button" type="button" data-payment-dialog-close>Annuler</button>
+            <button class="admin-primary-button" type="submit">Sauvegarder</button>
+        </div>
+    </form>
+</dialog>

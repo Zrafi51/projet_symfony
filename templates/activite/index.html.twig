@@ -1,0 +1,66 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ title|default('CRUD Activites') }}{% endblock %}
+
+{% block content %}
+    <section class="crud-hero crud-hero--activities">
+        <div>
+            <p class="hero-kicker">Legacy CRUD</p>
+            <h2>Activites</h2>
+            <p>Les activites sont maintenant presentes dans un rendu type dashboard tout en gardant le schema Java.</p>
+        </div>
+        <div class="crud-hero__aside">
+            <div class="hero-stat hero-stat--light">
+                <strong>{{ activites|length }}</strong>
+                <span>activites</span>
+            </div>
+            <a class="button button-gold" href="/activites/new">Ajouter une activite</a>
+        </div>
+    </section>
+
+    {% if activites is empty %}
+        <section class="empty-panel">
+            <h3>Aucune activite disponible</h3>
+            <p>Il faut des destinations existantes et une connexion MySQL active pour retrouver le meme flux que dans Java.</p>
+        </section>
+    {% else %}
+        <section class="activity-board">
+            {% for activite in activites %}
+                <article class="activity-card">
+                    <div class="activity-card__head">
+                        <div>
+                            <p class="activity-card__kicker">Activite #{{ activite.id|default('') }}</p>
+                            <h3>{{ activite.nom|default('') }}</h3>
+                            <span class="tag-pill">{{ activite.destination_nom|default('Destination #' ~ activite.destination_id|default('')) }}</span>
+                        </div>
+                        <span class="activity-price">{{ (activite.prix|default(0))|number_format(2, '.', ' ') }} TND</span>
+                    </div>
+
+                    <div class="activity-metrics">
+                        <div>
+                            <span>Categorie</span>
+                            <strong>{{ activite.categorie|default('') }}</strong>
+                        </div>
+                        <div>
+                            <span>Duree</span>
+                            <strong>{{ activite.duree_heures|default(0) }} h</strong>
+                        </div>
+                        <div>
+                            <span>Origine</span>
+                            <strong>JDBC -> Symfony</strong>
+                        </div>
+                    </div>
+
+                    <p class="activity-description">{{ activite.description|default('') }}</p>
+
+                    <div class="card-actions">
+                        <a class="button button-outline" href="/activites/{{ activite.id|default(0) }}/edit">Modifier</a>
+                        <form method="post" action="/activites/{{ activite.id|default(0) }}/delete">
+                            <button class="button button-danger" type="submit">Supprimer</button>
+                        </form>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+    {% endif %}
+{% endblock %}

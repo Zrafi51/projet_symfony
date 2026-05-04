@@ -1,0 +1,511 @@
+{% extends 'about-layout.html.twig' %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="/forum.css">
+{% endblock %}
+
+{% block content %}
+{% set isAuthenticated = currentUser and currentUser.email|default('') != '' %}
+{% set forumBrandName = 'EasyTravel Social Club' %}
+<section class="forum-page">
+    <div class="forum-hero-grid">
+        <article class="forum-hero-main about-scroll-reveal about-scroll-reveal-hero" data-scroll-reveal>
+            <span class="forum-kicker">{{ forumBrandName }}</span>
+            <h1 class="forum-hero-title">Le salon moderne ou chaque voyage devient une histoire a partager.</h1>
+            <p class="forum-hero-copy">Photos plein cadre, stories elegantes, reactions instantanees et commentaires utiles: tout le forum EasyTravel prend maintenant un look plus premium, plus social et plus vivant.</p>
+            <div class="forum-hero-chips">
+                <span class="forum-chip">Ambiance social lounge</span>
+                <span class="forum-chip">Carnets visuels</span>
+                <span class="forum-chip">Moments en direct</span>
+                <span class="forum-chip">Commentaires premium</span>
+            </div>
+            <div class="forum-hero-actions">
+                {% if isAuthenticated %}
+                    <a href="#forumPostStudio" class="forum-anchor-button">Publier un souvenir</a>
+                {% else %}
+                    <a href="/login" class="forum-anchor-button">Rejoindre le club</a>
+                {% endif %}
+                <a href="#forumStories" class="forum-button-secondary">Explorer les stories</a>
+            </div>
+            <div class="forum-hero-metrics">
+                <article class="forum-hero-metric-card">
+                    <span class="forum-hero-metric-label">Voyageurs actifs</span>
+                    <strong>{{ forumStats.authors|default(0) }}</strong>
+                </article>
+                <article class="forum-hero-metric-card">
+                    <span class="forum-hero-metric-label">Posts premium</span>
+                    <strong>{{ forumStats.posts|default(0) }}</strong>
+                </article>
+                <article class="forum-hero-metric-card">
+                    <span class="forum-hero-metric-label">Reactions live</span>
+                    <strong>{{ forumStats.reactions|default(0) }}</strong>
+                </article>
+            </div>
+        </article>
+
+        <aside class="forum-hero-side forum-hero-side-spotlight about-scroll-reveal about-scroll-reveal-right" data-scroll-reveal>
+            <span class="forum-side-kicker">Signature du moment</span>
+            <h2 class="forum-side-title">{{ forumBrandName }}</h2>
+            <p class="forum-side-copy">Un forum voyage pense comme un reseau social chic: chaque publication, story, reaction et commentaire reste lie a la base de donnees, avec une experience plus immersive.</p>
+            <div class="forum-side-stats">
+                <div class="forum-side-stat">
+                    <span>Posts</span>
+                    <strong>{{ forumStats.posts|default(0) }}</strong>
+                </div>
+                <div class="forum-side-stat">
+                    <span>Commentaires</span>
+                    <strong>{{ forumStats.comments|default(0) }}</strong>
+                </div>
+                <div class="forum-side-stat">
+                    <span>Stories actives</span>
+                    <strong>{{ forumStats.stories|default(0) }}</strong>
+                </div>
+                <div class="forum-side-stat">
+                    <span>Reactions</span>
+                    <strong>{{ forumStats.reactions|default(0) }}</strong>
+                </div>
+            </div>
+            <div class="forum-spotlight-list">
+                <div class="forum-spotlight-item">Stories verticales, plein ecran et compteur de vues.</div>
+                <div class="forum-spotlight-item">Publications avec likes, emojis et discussions.</div>
+                <div class="forum-spotlight-item">Une direction visuelle plus moderne, plus nette, plus premium.</div>
+            </div>
+        </aside>
+    </div>
+
+    <section class="forum-stories-section about-scroll-reveal" data-scroll-reveal id="forumStories">
+        <div class="forum-section-heading">
+            <div>
+                <p class="forum-section-kicker">Stories</p>
+                <h2 class="forum-section-title">Les cartes postales du moment</h2>
+                <p class="forum-section-copy">Un bandeau visuel, rapide et elegant pour voir la communaute bouger en direct.</p>
+            </div>
+            {% if isAuthenticated %}
+                <a href="#forumStoryComposer" class="forum-anchor-button">Publier une story</a>
+            {% endif %}
+        </div>
+
+        <div class="forum-stories-strip">
+            {% if forumStories is empty %}
+                <div class="forum-empty-inline">
+                    <strong>Aucune story active.</strong>
+                    <span>Publiez la premiere story de la communaute avec une image, comme sur un vrai reseau social.</span>
+                </div>
+            {% else %}
+                {% for story in forumStories %}
+                    <article class="forum-story-card">
+                        <div class="forum-story-ring">
+                            <button
+                                type="button"
+                                class="forum-story-launch"
+                                data-story-trigger
+                                data-story-index="{{ loop.index0 }}"
+                                data-story-id="{{ story.id }}"
+                                data-story-image="{{ story.image_path|default('')|e('html_attr') }}"
+                                data-story-author="{{ story.author_display_name|e('html_attr') }}"
+                                data-story-time="{{ (story.created_at ? story.created_at|date('d/m H:i') : 'Maintenant')|e('html_attr') }}"
+                                data-story-caption="{{ (story.caption != '' ? story.caption : 'Nouvelle story')|e('html_attr') }}"
+                                data-story-avatar="{{ story.author_photo_display_url|default('')|e('html_attr') }}"
+                                data-story-initial="{{ story.author_display_name|slice(0, 1)|upper|e('html_attr') }}"
+                                data-story-views="{{ story.view_count|default(0) }}"
+                                data-story-view-url="{{ path('forum_story_view', {storyId: story.id})|e('html_attr') }}"
+                                aria-label="Voir la story de {{ story.author_display_name }}"
+                            >
+                                <div class="forum-story-media" {% if story.image_path %}style="background-image: url('{{ story.image_path }}');"{% endif %}>
+                                    <div class="forum-story-overlay"></div>
+                                    <span class="forum-story-avatar-mini">
+                                        {% if story.author_photo_display_url %}
+                                            <img src="{{ story.author_photo_display_url }}" alt="{{ story.author_display_name }}" class="forum-avatar-image">
+                                        {% else %}
+                                            <span class="forum-avatar-letter">{{ story.author_display_name|slice(0, 1)|upper }}</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </button>
+                            {% if story.can_manage %}
+                                <form method="post" action="/forum/stories/{{ story.id }}/delete" class="forum-story-delete-form">
+                                    <button type="submit" class="forum-story-delete-button" aria-label="Supprimer la story">&times;</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        <div class="forum-story-meta">
+                            <strong>{{ story.author_display_name }}</strong>
+                            <small>{{ story.caption != '' ? story.caption : 'Nouvelle story' }}</small>
+                            <span class="forum-story-views">
+                                <span class="forum-story-views-icon">&#x1F441;&#xFE0F;</span>
+                                <span data-story-view-count-label>{{ story.view_count|default(0) }} {{ story.view_count|default(0) > 1 ? 'vues' : 'vue' }}</span>
+                            </span>
+                        </div>
+                    </article>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="forum-story-viewer" data-story-viewer hidden>
+        <div class="forum-story-viewer-backdrop" data-story-close></div>
+        <div class="forum-story-viewer-dialog" role="dialog" aria-modal="true" aria-labelledby="forumStoryViewerAuthor">
+            <button type="button" class="forum-story-viewer-close" data-story-close aria-label="Fermer la story">&times;</button>
+            <button type="button" class="forum-story-viewer-nav forum-story-viewer-nav-prev" data-story-nav="prev" aria-label="Story precedente">&#8249;</button>
+            <div class="forum-story-viewer-shell">
+                <div class="forum-story-viewer-progress">
+                    <span class="forum-story-viewer-progress-bar"></span>
+                </div>
+                <div class="forum-story-viewer-stage">
+                    <img src="" alt="" class="forum-story-viewer-image" id="forumStoryViewerImage">
+                    <div class="forum-story-viewer-shade"></div>
+                    <div class="forum-story-viewer-header">
+                        <span class="forum-story-viewer-avatar">
+                            <img src="" alt="" class="forum-avatar-image" id="forumStoryViewerAvatarImage" hidden>
+                            <span class="forum-avatar-letter" id="forumStoryViewerAvatarFallback">S</span>
+                        </span>
+                        <div class="forum-story-viewer-copy">
+                            <strong id="forumStoryViewerAuthor">Story</strong>
+                            <small id="forumStoryViewerTime">Maintenant</small>
+                        </div>
+                        <div class="forum-story-viewer-meta">
+                            <span class="forum-story-viewer-count" id="forumStoryViewerCount">1 / 1</span>
+                            <span class="forum-story-viewer-views" id="forumStoryViewerViews">0 vue</span>
+                        </div>
+                    </div>
+                    <div class="forum-story-viewer-caption" id="forumStoryViewerCaption">Nouvelle story</div>
+                </div>
+            </div>
+            <button type="button" class="forum-story-viewer-nav forum-story-viewer-nav-next" data-story-nav="next" aria-label="Story suivante">&#8250;</button>
+        </div>
+    </div>
+
+    <div class="forum-layout">
+        <div class="forum-feed-column">
+            <section class="forum-feed-intro about-scroll-reveal about-scroll-reveal-left" data-scroll-reveal>
+                <div>
+                    <p class="forum-section-kicker forum-section-kicker-dark">Fil principal</p>
+                    <h2 class="forum-feed-title">Le fil EasyTravel</h2>
+                </div>
+                <p class="forum-feed-copy">Des avis inspires, des images fortes, des discussions utiles et une presentation plus moderne comme un vrai reseau social premium.</p>
+            </section>
+
+            <article class="forum-composer-card forum-composer-card-studio about-scroll-reveal about-scroll-reveal-left" data-scroll-reveal id="forumPostStudio">
+                <div class="forum-composer-head">
+                    <div class="forum-author-badge">
+                        <span class="forum-avatar-shell">
+                            {% if photoUrl %}
+                                <img src="{{ photoUrl }}" alt="{{ displayName }}" class="forum-avatar-image">
+                            {% else %}
+                                <span class="forum-avatar-letter">{{ userInitial }}</span>
+                            {% endif %}
+                        </span>
+                        <div>
+                            <h2>Studio de publication</h2>
+                            <p>Transformez un souvenir, une photo ou un conseil pratique en publication qui donne envie de voyager.</p>
+                        </div>
+                    </div>
+                    <span class="forum-pill-tag">Edition premium</span>
+                </div>
+
+                {% if isAuthenticated %}
+                    <form method="post" action="/forum/posts" enctype="multipart/form-data" class="forum-form-stack" data-forum-form>
+                        <input type="text" name="title" class="forum-input forum-title-input" placeholder="Donnez un titre qui donne envie d'ouvrir la publication" required>
+                        <textarea id="forumPostContent" name="content" rows="5" class="forum-input forum-textarea" placeholder="Partagez l'ambiance du lieu, le conseil a retenir ou ce qui a rendu le voyage memorable..." required></textarea>
+                        <div class="forum-emoji-toolbar" data-emoji-toolbar>
+                            <span>Emoji rapide</span>
+                            <button type="button" data-emoji-target="forumPostContent" data-emoji-value="&#x2708;&#xFE0F;">&#x2708;&#xFE0F;</button>
+                            <button type="button" data-emoji-target="forumPostContent" data-emoji-value="&#x1F30D;">&#x1F30D;</button>
+                            <button type="button" data-emoji-target="forumPostContent" data-emoji-value="&#x1F525;">&#x1F525;</button>
+                            <button type="button" data-emoji-target="forumPostContent" data-emoji-value="&#x1F60D;">&#x1F60D;</button>
+                            <button type="button" data-emoji-target="forumPostContent" data-emoji-value="&#x1F4CD;">&#x1F4CD;</button>
+                            <button type="button" data-emoji-target="forumPostContent" data-emoji-value="&#x1F37D;&#xFE0F;">&#x1F37D;&#xFE0F;</button>
+                        </div>
+                        <div class="forum-upload-row">
+                            <label class="forum-upload-button">
+                                <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif" data-file-input data-preview-target="forumPostPreview" data-name-target="forumPostFileName">
+                                Ajouter une image
+                            </label>
+                            <span class="forum-upload-name" id="forumPostFileName">Aucune image</span>
+                        </div>
+                        <div class="forum-image-preview" id="forumPostPreview" hidden></div>
+                        <div class="forum-composer-actions">
+                            <p class="forum-helper-copy">Les messages avec mauvais mots sont bloques automatiquement.</p>
+                            <button type="submit" class="forum-publish-button">Publier maintenant</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="forum-guest-box">
+                        <strong>Connectez-vous pour publier.</strong>
+                        <p>Le feed reste visible pour tous, mais la publication, les stories, les commentaires et les reactions sont reserves aux comptes connectes.</p>
+                        <a href="/login" class="forum-anchor-button">Connexion</a>
+                    </div>
+                {% endif %}
+            </article>
+
+            <div class="forum-feed-list">
+                {% if forumFeed is empty %}
+                    <article class="forum-empty-card">
+                        <strong>Aucune publication pour le moment.</strong>
+                        <p>La base de donnees du forum est prete. Vous pouvez maintenant commencer a publier, commenter et reagir comme sur un vrai reseau social.</p>
+                    </article>
+                {% else %}
+                    {% for post in forumFeed %}
+                        {% set comments = forumCommentsByPost[post.id]|default([]) %}
+                        <article class="forum-post-card about-scroll-reveal" data-scroll-reveal id="forum-post-{{ post.id }}">
+                            <div class="forum-post-header">
+                                <div class="forum-post-author">
+                                    <span class="forum-avatar-shell">
+                                        {% if post.author_photo_display_url %}
+                                            <img src="{{ post.author_photo_display_url }}" alt="{{ post.author_display_name }}" class="forum-avatar-image">
+                                        {% else %}
+                                            <span class="forum-avatar-letter">{{ post.author_display_name|slice(0, 1)|upper }}</span>
+                                        {% endif %}
+                                    </span>
+                                    <div class="forum-post-author-copy">
+                                        <strong>{{ post.author_display_name }}</strong>
+                                        <small>{{ post.created_at ? post.created_at|date('d/m/Y H:i') : 'Maintenant' }}</small>
+                                    </div>
+                                </div>
+                                {% if post.can_manage %}
+                                    <div class="forum-post-tools">
+                                        <details class="forum-edit-details">
+                                            <summary class="forum-icon-button">Modifier</summary>
+                                            <form method="post" action="/forum/posts/{{ post.id }}/update" enctype="multipart/form-data" class="forum-edit-form">
+                                                <input type="text" name="title" class="forum-input" value="{{ post.title }}" required>
+                                                <textarea name="content" rows="4" class="forum-input forum-textarea" id="forumEditContent{{ post.id }}" required>{{ post.content }}</textarea>
+                                                <div class="forum-emoji-toolbar">
+                                                    <span>Emoji</span>
+                                                    <button type="button" data-emoji-target="forumEditContent{{ post.id }}" data-emoji-value="&#x2708;&#xFE0F;">&#x2708;&#xFE0F;</button>
+                                                    <button type="button" data-emoji-target="forumEditContent{{ post.id }}" data-emoji-value="&#x1F319;">&#x1F319;</button>
+                                                    <button type="button" data-emoji-target="forumEditContent{{ post.id }}" data-emoji-value="&#x1F3DD;&#xFE0F;">&#x1F3DD;&#xFE0F;</button>
+                                                    <button type="button" data-emoji-target="forumEditContent{{ post.id }}" data-emoji-value="&#x1F942;">&#x1F942;</button>
+                                                </div>
+                                                <div class="forum-upload-row">
+                                                    <label class="forum-upload-button">
+                                                        <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif">
+                                                        Remplacer l'image
+                                                    </label>
+                                                    <label class="forum-checkbox-row">
+                                                        <input type="checkbox" name="remove_image" value="1">
+                                                        Supprimer l'image actuelle
+                                                    </label>
+                                                </div>
+                                                <button type="submit" class="forum-inline-submit">Sauvegarder</button>
+                                            </form>
+                                        </details>
+                                        <form method="post" action="/forum/posts/{{ post.id }}/delete">
+                                            <button type="submit" class="forum-icon-button forum-icon-button-danger">Supprimer</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if post.image_path %}
+                                <div class="forum-post-media">
+                                    <img src="{{ post.image_path }}" alt="{{ post.title }}" class="forum-post-image">
+                                </div>
+                            {% endif %}
+
+                            <div class="forum-post-body">
+                                <h3>{{ post.title }}</h3>
+                                <p>{{ post.content }}</p>
+                            </div>
+
+                            <div class="forum-post-social-summary">
+                                <div class="forum-post-social-likes">
+                                    {% if post.reaction_breakdown is not empty %}
+                                        <span class="forum-social-icons">
+                                            {% for reaction in post.reaction_breakdown|slice(0, 3) %}
+                                                <span class="forum-social-icon">{{ reaction.emoji_html|raw }}</span>
+                                            {% endfor %}
+                                        </span>
+                                        <span class="forum-social-count">{{ post.reactions_total|default(0) }} reaction(s)</span>
+                                    {% else %}
+                                        <span class="forum-reaction-muted">Aucune reaction pour le moment.</span>
+                                    {% endif %}
+                                </div>
+                                <button type="button" class="forum-post-social-comments" data-comment-focus="forumComment{{ post.id }}">
+                                    {{ post.comment_count }} commentaire(s)
+                                </button>
+                            </div>
+
+                            <div class="forum-post-action-row">
+                                {% if isAuthenticated %}
+                                    <form method="post" action="/forum/posts/{{ post.id }}/reaction" class="forum-post-action-form">
+                                        <input type="hidden" name="reaction" value="{{ post.primary_reaction_code }}">
+                                        <button type="submit" class="forum-post-action-button {{ post.primary_reaction_active ? 'forum-post-action-button-active' : '' }}">
+                                            <span class="forum-post-action-emoji">{{ post.primary_reaction_emoji_html|raw }}</span>
+                                            <span>{{ post.primary_reaction_label }}</span>
+                                        </button>
+                                    </form>
+                                    <button type="button" class="forum-post-action-button forum-post-action-button-secondary" data-comment-focus="forumComment{{ post.id }}">
+                                        <span class="forum-post-action-emoji">&#x1F4AC;</span>
+                                        <span>Commenter</span>
+                                    </button>
+                                {% else %}
+                                    <div class="forum-reaction-muted">Connectez-vous pour aimer ou commenter.</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="forum-post-engagement">
+                                <div class="forum-reaction-summary">
+                                    {% if post.reaction_breakdown is not empty %}
+                                        {% for reaction in post.reaction_breakdown %}
+                                            <span class="forum-reaction-badge {{ post.current_user_reaction == reaction.code ? 'forum-reaction-badge-active' : '' }}">
+                                                <span class="forum-reaction-badge-emoji">{{ reaction.emoji_html|raw }}</span>
+                                                <span>{{ reaction.label }}</span>
+                                                <span>{{ reaction.count }}</span>
+                                            </span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="forum-reaction-muted">Choisissez votre premiere reaction.</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if isAuthenticated %}
+                                    <div class="forum-reaction-picker">
+                                        {% for reaction in forumReactionOptions %}
+                                            <form method="post" action="/forum/posts/{{ post.id }}/reaction" class="forum-reaction-form">
+                                                <input type="hidden" name="reaction" value="{{ reaction.code }}">
+                                                <button type="submit" class="forum-reaction-button {{ post.current_user_reaction == reaction.code ? 'forum-reaction-button-active' : '' }}">
+                                                    <span class="forum-reaction-button-emoji">{{ reaction.emoji_html|raw }}</span>
+                                                    <span>{{ reaction.label }}</span>
+                                                </button>
+                                            </form>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="forum-comments-block">
+                                <div class="forum-comments-heading">
+                                    <strong>Commentaires</strong>
+                                    <span>{{ post.comment_count }}</span>
+                                </div>
+                                {% if comments is empty %}
+                                    <div class="forum-empty-inline forum-empty-inline-comment">
+                                        <strong>Pas encore de commentaire.</strong>
+                                        <span>La discussion commence avec la premiere reponse de la communaute.</span>
+                                    </div>
+                                {% else %}
+                                    {% for comment in comments %}
+                                        <div class="forum-comment-card">
+                                            <div class="forum-comment-main">
+                                                <span class="forum-avatar-shell forum-avatar-shell-small">
+                                                    {% if comment.author_photo_display_url %}
+                                                        <img src="{{ comment.author_photo_display_url }}" alt="{{ comment.author_display_name }}" class="forum-avatar-image">
+                                                    {% else %}
+                                                        <span class="forum-avatar-letter">{{ comment.author_display_name|slice(0, 1)|upper }}</span>
+                                                    {% endif %}
+                                                </span>
+                                                <div class="forum-comment-copy">
+                                                    <div class="forum-comment-meta">
+                                                        <strong>{{ comment.author_display_name }}</strong>
+                                                        <small>{{ comment.created_at ? comment.created_at|date('d/m H:i') : 'Maintenant' }}</small>
+                                                    </div>
+                                                    <p>{{ comment.content }}</p>
+                                                </div>
+                                            </div>
+                                            {% if comment.can_manage %}
+                                                <form method="post" action="/forum/comments/{{ comment.id }}/delete">
+                                                    <button type="submit" class="forum-text-action forum-text-action-danger">Supprimer</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+
+                                {% if isAuthenticated %}
+                                    <form method="post" action="/forum/posts/{{ post.id }}/comments" class="forum-comment-form">
+                                        <textarea name="content" rows="2" class="forum-input forum-comment-input" id="forumComment{{ post.id }}" placeholder="Ajouter un commentaire..." required></textarea>
+                                        <div class="forum-comment-actions">
+                                            <div class="forum-emoji-toolbar">
+                                                <span>Emoji</span>
+                                                <button type="button" data-emoji-target="forumComment{{ post.id }}" data-emoji-value="&#x1F44F;">&#x1F44F;</button>
+                                                <button type="button" data-emoji-target="forumComment{{ post.id }}" data-emoji-value="&#x2728;">&#x2728;</button>
+                                                <button type="button" data-emoji-target="forumComment{{ post.id }}" data-emoji-value="&#x1F60E;">&#x1F60E;</button>
+                                                <button type="button" data-emoji-target="forumComment{{ post.id }}" data-emoji-value="&#x1F379;">&#x1F379;</button>
+                                            </div>
+                                            <button type="submit" class="forum-inline-submit">Envoyer</button>
+                                        </div>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <aside class="forum-sidebar">
+            {% if isAuthenticated %}
+                <article class="forum-side-card forum-side-card-warm about-scroll-reveal about-scroll-reveal-right" data-scroll-reveal id="forumStoryComposer">
+                    <div class="forum-side-card-head">
+                        <p class="forum-side-card-kicker">Story studio</p>
+                        <h3>Publier une story verticale</h3>
+                    </div>
+                    <form method="post" action="/forum/stories" enctype="multipart/form-data" class="forum-form-stack">
+                        <textarea id="forumStoryCaption" name="caption" rows="3" class="forum-input forum-textarea" placeholder="Ajouter une legende si vous voulez (optionnel)"></textarea>
+                        <div class="forum-emoji-toolbar">
+                            <span>Emoji</span>
+                            <button type="button" data-emoji-target="forumStoryCaption" data-emoji-value="&#x1F306;">&#x1F306;</button>
+                            <button type="button" data-emoji-target="forumStoryCaption" data-emoji-value="&#x1F3D6;&#xFE0F;">&#x1F3D6;&#xFE0F;</button>
+                            <button type="button" data-emoji-target="forumStoryCaption" data-emoji-value="&#x1F5FA;&#xFE0F;">&#x1F5FA;&#xFE0F;</button>
+                            <button type="button" data-emoji-target="forumStoryCaption" data-emoji-value="&#x1F4AB;">&#x1F4AB;</button>
+                        </div>
+                        <div class="forum-upload-row">
+                            <label class="forum-upload-button">
+                                <input type="file" name="story_image" accept="image/png,image/jpeg,image/webp,image/gif" required data-file-input data-preview-target="forumStoryPreview" data-name-target="forumStoryFileName">
+                                Choisir une image
+                            </label>
+                            <span class="forum-upload-name" id="forumStoryFileName">Image story requise</span>
+                        </div>
+                        <div class="forum-image-preview forum-image-preview-story" id="forumStoryPreview" hidden></div>
+                        <p class="forum-helper-copy">La photo est obligatoire, la legende est optionnelle.</p>
+                        <button type="submit" class="forum-publish-button forum-publish-button-wide">Publier la story</button>
+                    </form>
+                </article>
+            {% endif %}
+
+            <article class="forum-side-card about-scroll-reveal about-scroll-reveal-right" data-scroll-reveal>
+                <div class="forum-side-card-head">
+                    <p class="forum-side-card-kicker">Direction editoriale</p>
+                    <h3>Le bon ton du club</h3>
+                </div>
+                <p>Les posts les plus utiles parlent d'un quartier, d'un hotel, d'une table ou d'un moment fort avec un vrai detail pratique.</p>
+                <div class="forum-pill-stack">
+                    <span class="forum-chip forum-chip-soft">Hotel coup de coeur</span>
+                    <span class="forum-chip forum-chip-soft">Vue memorable</span>
+                    <span class="forum-chip forum-chip-soft">Budget bien gere</span>
+                    <span class="forum-chip forum-chip-soft">Adresse locale</span>
+                </div>
+            </article>
+
+            <article class="forum-side-card forum-side-card-dark about-scroll-reveal about-scroll-reveal-right" data-scroll-reveal>
+                <div class="forum-side-card-head">
+                    <p class="forum-side-card-kicker forum-side-card-kicker-light">Mini checklist</p>
+                    <h3>Avant de poster</h3>
+                </div>
+                <ul class="forum-checklist">
+                    <li>Un titre fort</li>
+                    <li>Une sensation reelle</li>
+                    <li>Un detail pratique</li>
+                    <li>Une photo propre</li>
+                </ul>
+                <span class="forum-side-badge">Qualite &gt; quantite</span>
+            </article>
+
+            {% if not isAuthenticated %}
+                <article class="forum-side-card about-scroll-reveal about-scroll-reveal-right" data-scroll-reveal>
+                    <div class="forum-side-card-head">
+                        <p class="forum-side-card-kicker">Compte</p>
+                        <h3>Rejoindre la communaute</h3>
+                    </div>
+                    <p>Connectez-vous pour publier des posts, stories, commentaires et gerer vos propres contenus.</p>
+                    <a href="/login" class="forum-anchor-button forum-anchor-button-wide">Connexion</a>
+                </article>
+            {% endif %}
+        </aside>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="/forum.js"></script>
+{% endblock %}

@@ -1,0 +1,232 @@
+{#
+    Stories carousel — Facebook-style. One tile per author (me first), plus a
+    "Créer une story" CTA on the left. Active stories only (24h window).
+
+    Embedded from forum/index.html.twig via:
+      {{ render(path('forum_story_bar')) }}
+
+    Context provided by StoryController::bar():
+      - groups   : [{author, cover: Story, count}]
+      - photoMap : { username: profilePhotoPath }
+      - me       : current username
+      - hasMine  : true when the current user has ≥1 active story
+#}
+<div class="stories-bar-wrapper mb-4">
+    <div class="stories-bar d-flex gap-2 overflow-auto pb-2">
+
+        {# ——— Carte tile — Instagram-style map circle. Entry point to the
+               shared map of friends' pinned locations. Sits first so it's
+               always visible without horizontal scroll. ——— #}
+        <a href="{{ path('forum_map') }}" class="story-tile story-tile-map text-decoration-none"
+           aria-label="Ouvrir la carte des amis">
+            <div class="story-tile-map-media">
+                <i class="fas fa-map-location-dot"></i>
+            </div>
+            <div class="story-tile-label">Carte</div>
+        </a>
+
+        {# ——— Create-story tile ——— #}
+        <a href="{{ path('forum_story_new') }}" class="story-tile story-tile-create text-decoration-none"
+           aria-label="Créer une story">
+            <div class="story-tile-media">
+                {% set mePhoto = photoMap[me] ?? null %}
+                {% if mePhoto %}
+                    <img src="{{ asset('uploads/profiles/' ~ mePhoto) }}" alt="{{ me }}"
+                         style="width:100%;height:100%;object-fit:cover;filter:brightness(0.9);">
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white">
+                        <i class="fas fa-user fa-2x"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="story-tile-plus">
+                <i class="fas fa-plus"></i>
+            </div>
+            <div class="story-tile-label">Créer une story</div>
+        </a>
+
+        {# ——— Author tiles ——— #}
+        {% for g in groups %}
+            {% set isMine = g.author == me %}
+            {% set photo  = photoMap[g.author] ?? null %}
+            <a href="{{ path('forum_story_view', {username: g.author}) }}"
+               class="story-tile text-decoration-none js-open-story"
+               aria-label="Voir les stories de {{ g.author }}">
+                <div class="story-tile-media">
+                    {# Cover = the author's newest active story thumbnail. #}
+                    {% if g.cover.isImage %}
+                        <img src="{{ asset('uploads/stories/' ~ g.cover.filename) }}"
+                             alt="story de {{ g.author }}"
+                             style="width:100%;height:100%;object-fit:cover;">
+                    {% else %}
+                        <video src="{{ asset('uploads/stories/' ~ g.cover.filename) }}"
+                               muted playsinline preload="metadata"
+                               style="width:100%;height:100%;object-fit:cover;"></video>
+                        <div class="story-tile-play">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="story-tile-avatar">
+                    {% if photo %}
+                        <img src="{{ asset('uploads/profiles/' ~ photo) }}" alt="{{ g.author }}"
+                             style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center bg-secondary text-white"
+                             style="width:100%;height:100%;border-radius:50%;">
+                            {{ g.author|first|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="story-tile-label">
+                    {{ isMine ? 'Votre story' : g.author }}
+                </div>
+                {% if g.count > 1 %}
+                    <div class="story-tile-count">{{ g.count }}</div>
+                {% endif %}
+            </a>
+        {% endfor %}
+
+    </div>
+</div>
+
+<style>
+/* Facebook-style stories carousel. Horizontal scroll, fixed-ratio tiles. */
+.stories-bar-wrapper { }
+.stories-bar {
+    scrollbar-width: thin;
+}
+.stories-bar::-webkit-scrollbar { height: 6px; }
+.stories-bar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+.story-tile {
+    flex: 0 0 auto;
+    width: 112px;
+    height: 200px;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    background: #e9ecef;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    color: white;
+    transition: transform .15s ease;
+}
+.story-tile:hover { transform: translateY(-2px); }
+
+.story-tile-media {
+    position: absolute;
+    inset: 0;
+}
+.story-tile-media::after {
+    /* Gradient so the white label stays readable over any photo. */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,.55) 100%);
+    pointer-events: none;
+}
+.story-tile-label {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+    z-index: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.story-tile-avatar {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 36px;
+    height: 36px;
+    border: 3px solid #1877f2; /* facebook blue ring */
+    border-radius: 50%;
+    background: #fff;
+    z-index: 2;
+    overflow: hidden;
+}
+.story-tile-count {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    z-index: 2;
+}
+.story-tile-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 1.4rem;
+    text-shadow: 0 2px 6px rgba(0,0,0,.6);
+    pointer-events: none;
+}
+
+/* "Créer une story" has a blue plus-button banner along the bottom half. */
+.story-tile-create .story-tile-media { height: 65%; }
+.story-tile-create::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 35%;
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    z-index: 1;
+}
+.story-tile-create .story-tile-plus {
+    position: absolute;
+    left: 50%;
+    top: 65%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1877f2;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #fff;
+    z-index: 3;
+    font-size: .9rem;
+}
+.story-tile-create .story-tile-label {
+    color: #222;
+    text-shadow: none;
+    text-align: center;
+    bottom: 10px;
+    z-index: 3;
+}
+
+/* — "Carte" tile — Instagram-style map circle. Blue gradient tile with a
+   big map icon, matching the other tiles in size/shape so the carousel
+   stays visually consistent. */
+.story-tile-map {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.story-tile-map .story-tile-map-media {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 2.6rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.story-tile-map .story-tile-label {
+    text-align: center;
+}
+</style>

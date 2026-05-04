@@ -1,0 +1,77 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Travel-AI - EasyTravel{% endblock %}
+
+{% block content %}
+<section
+    class="chat-root"
+    data-chat-page
+    data-sessions='{{ chatSessions|json_encode|e('html_attr') }}'
+    data-pending-prompt="{{ pendingPrompt|default('')|e('html_attr') }}"
+>
+    <div class="chat-page">
+        <div class="chat-layout">
+            <aside class="history-panel">
+                <a href="/dashboard" class="chat-back-link">Retour au dashboard</a>
+                <div>
+                    <h1 class="history-brand">Travel-AI</h1>
+                    <p class="history-subtitle">Historique des discussions</p>
+                </div>
+                <div class="history-user-card">
+                    <strong class="history-user-name">{{ currentUser.display_name|default(currentUser.prenom|default('Voyageur')) }}</strong>
+                    <span class="history-user-meta">CLIENT | API {{ chatApiBaseUrl }}</span>
+                </div>
+                <div class="history-toolbar">
+                    <span class="history-section-title">Discussions recentes</span>
+                    <button type="button" class="history-primary-action" data-new-chat>+ Nouvelle</button>
+                </div>
+                <div class="history-filter" role="group" aria-label="Filtrer les discussions">
+                    <button type="button" class="history-filter-button is-active" data-history-filter="all">Toutes</button>
+                    <button type="button" class="history-filter-button" data-history-filter="favorites">Favoris</button>
+                </div>
+                <div class="conversation-history" data-chat-history></div>
+                <a href="/" class="history-action">Accueil</a>
+            </aside>
+
+            <main class="chat-shell">
+                <header class="chat-header">
+                    <div class="chat-header-main">
+                        <div class="chat-header-icon"><span class="chat-header-icon-label">AI</span></div>
+                        <div>
+                            <h2 class="chat-header-title">Travel-AI</h2>
+                            <p class="chat-header-status" data-chat-status>Assistant voyage | Reponses rapides et idees de sejour</p>
+                        </div>
+                    </div>
+                    <span class="chat-status-pill">Historique actif</span>
+                </header>
+                <section class="messages-scroll messages-container" data-chat-messages></section>
+                <form class="composer-shell" data-chat-form>
+                    <div class="composer-row">
+                        <input type="text" class="chat-input" data-chat-input placeholder="Posez votre question a Travel-AI..." autocomplete="off">
+                        <button type="submit" class="send-button">Envoyer</button>
+                    </div>
+                    <p class="composer-hint">Exemples : budget 1500 EUR, voyage couple, plage en aout ou city break au Japon.</p>
+                </form>
+            </main>
+
+            <aside class="travel-pack-panel">
+                <div class="travel-pack-head">
+                    <div>
+                        <h2>Pack final</h2>
+                        <p data-pack-status>Selectionnez une discussion.</p>
+                    </div>
+                    <button type="button" class="travel-pack-primary" data-generate-card>Generer</button>
+                </div>
+                <div class="travel-pack-list" data-card-list></div>
+                <div class="travel-pack-detail" data-card-detail>
+                    <div class="chat-empty-state travel-pack-empty">
+                        <strong>Aucun pack</strong>
+                        <span>Le pack final apparaitra ici apres generation.</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+<script src="/chat.js"></script>
+{% endblock %}
