@@ -5,22 +5,22 @@ namespace App\Controller;
 use App\Repository\AdminDashboardRepository;
 use App\Repository\FactureRepository;
 use App\Repository\PaiementRepository;
-use App\Repository\PromptRepository;
 use App\Repository\SupportRepository;
 use App\Repository\UserRepository;
 use App\Service\InvoiceDeliveryService;
 use App\Service\ProfilePhotoStorageService;
 use App\Service\SponsorLogoStorageService;
-use App\Service\TravelAiClient;
 use App\Service\UserNotificationService;
 use App\Validation\LegacyValidator;
 use App\Util\UploadedFileMimeTypeGuesser;
 use App\View\PhpTemplateRenderer;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class AdminDashboardController extends AbstractController
@@ -30,13 +30,11 @@ final class AdminDashboardController extends AbstractController
         private readonly AdminDashboardRepository $adminDashboardRepository,
         private readonly PaiementRepository $paiementRepository,
         private readonly FactureRepository $factureRepository,
-        private readonly PromptRepository $promptRepository,
         private readonly SupportRepository $supportRepository,
         private readonly UserRepository $userRepository,
         private readonly InvoiceDeliveryService $invoiceDeliveryService,
         private readonly ProfilePhotoStorageService $profilePhotoStorageService,
         private readonly SponsorLogoStorageService $sponsorLogoStorageService,
-        private readonly TravelAiClient $travelAiClient,
         private readonly UserNotificationService $notificationService,
     ) {
     }
@@ -55,8 +53,6 @@ final class AdminDashboardController extends AbstractController
         $focusUserId = max(0, (int) $request->query->get('focus_user', 0));
         $focusReclamationId = max(0, (int) $request->query->get('focus_reclamation', 0));
         $selectedPaymentId = max(0, (int) $request->query->get('payment_id', 0));
-        $promptLanguage = $this->sanitizePromptLanguage((string) $request->query->get('prompt_language', 'all'));
-        $selectedPromptId = trim((string) $request->query->get('prompt_id', ''));
         $notificationDrawerOpen = $this->shouldOpenNotificationDrawer((string) $request->query->get('notifications', ''));
 
         $databaseError = null;
@@ -191,13 +187,6 @@ final class AdminDashboardController extends AbstractController
         $users = [];
         $notifications = [];
         $unreadCount = 0;
-        $promptsAdmin = [
-            'language' => $promptLanguage,
-            'prompts' => [],
-            'selectedPrompt' => null,
-            'versions' => [],
-            'stats' => ['prompts' => 0, 'versions' => 0, 'active' => 0],
-        ];
 
         try {
             $freshAdmin = $this->userRepository->getByEmail((string) ($admin['email'] ?? ''));
@@ -218,9 +207,6 @@ final class AdminDashboardController extends AbstractController
             $overview['counts']['factures'] = (int) ($facturesAdmin['stats']['total'] ?? 0);
             $notifications = $this->notificationService->getLatestNotifications((string) ($admin['email'] ?? ''), 20);
             $unreadCount = $this->notificationService->getUnreadCount((string) ($admin['email'] ?? ''));
-            if ($section === 'prompts') {
-                $promptsAdmin = $this->promptRepository->getDashboardData($promptLanguage, $selectedPromptId !== '' ? $selectedPromptId : null);
-            }
         } catch (\Throwable $exception) {
             $databaseError = $exception->getMessage();
         }
@@ -328,7 +314,6 @@ final class AdminDashboardController extends AbstractController
             'reservations' => 'Reservations',
             'reclamations' => 'Reclamations',
             'paiements' => 'Paiements',
-            'prompts' => 'Prompts IA',
         ];
         $notificationParams = ['section' => $section, 'notifications' => 'open'];
         if ($section === 'users') {
@@ -355,7 +340,6 @@ final class AdminDashboardController extends AbstractController
             ['section' => 'reservations', 'label' => 'Reservations', 'icon_shell' => 'admin-nav-icon-bookings', 'icon' => 'bookings', 'badge' => (string) ($overview['counts']['packages'] ?? 0), 'badge_class' => '', 'href' => $this->generateUrl('app_admin_dashboard', ['section' => 'reservations'])],
             ['section' => 'reclamations', 'label' => 'Reclamations', 'icon_shell' => 'admin-nav-icon-users', 'icon' => 'users', 'badge' => (string) ($overview['counts']['reclamations'] ?? 0), 'badge_class' => '', 'href' => $this->generateUrl('app_admin_dashboard', ['section' => 'reclamations'])],
             ['section' => 'paiements', 'label' => 'Paiements', 'icon_shell' => 'admin-nav-icon-payment', 'icon' => 'payment', 'badge' => (string) ($overview['counts']['paiements'] ?? 0), 'badge_class' => '', 'href' => $this->generateUrl('app_admin_dashboard', ['section' => 'paiements'])],
-            ['section' => 'prompts', 'label' => 'Prompts IA', 'icon_shell' => 'admin-nav-icon-atmosphere', 'icon' => 'settings', 'badge' => (string) ($promptsAdmin['stats']['prompts'] ?? 0), 'badge_class' => '', 'href' => $this->generateUrl('app_admin_dashboard', ['section' => 'prompts', 'prompt_language' => $promptLanguage])],
         ];
 
         $viewContext = [
@@ -445,8 +429,6 @@ final class AdminDashboardController extends AbstractController
             )),
             'notifications' => $notifications,
             'unreadCount' => $unreadCount,
-            'promptsAdmin' => $promptsAdmin,
-            'promptLanguage' => $promptLanguage,
             'statusMessage' => $this->consumeFlash($request, 'success') ?? $this->consumeFlash($request, 'info'),
             'errorMessage' => $this->consumeFlash($request, 'error'),
         ];
@@ -472,6 +454,95 @@ final class AdminDashboardController extends AbstractController
         $request->getSession()->getFlashBag()->add('success', 'Les destinations vedettes ont ete rafraichies et synchronisees avec la Home.');
 
         return $this->redirectBackToDashboard($request, 'destinations');
+    }
+
+    #[Route('/admin/sponsors/generate-ai', name: 'app_admin_sponsor_generate_ai', methods: ['POST'])]
+    public function generateSponsorWithAi(Request $request, HttpClientInterface $httpClient): JsonResponse
+    {
+        if ($this->ensureAdminAccess($request)) {
+            return new JsonResponse(['error' => 'Accès refusé.'], 403);
+        }
+
+        $companyName = trim((string) $request->request->get('company_name', ''));
+        if ($companyName === '') {
+            return new JsonResponse(['error' => 'Le nom de la société est requis.'], 400);
+        }
+
+        $system = 'Tu es un assistant marketing. Tu génères des données structurées pour des sponsors de plateformes de voyage. Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, sans balises markdown.';
+        $user   = sprintf(
+            'Génère les données sponsor pour la société : "%s". '
+            . 'Retourne un objet JSON avec exactement ces clés : '
+            . 'description (texte professionnel court en français, 1-2 phrases), '
+            . 'website (URL valide commençant par https://), '
+            . 'type (exactement "Partenaire" ou "Premium"), '
+            . 'montant (nombre entier estimé en euros). '
+            . 'Exemple attendu : {"description":"...","website":"https://...","type":"Premium","montant":5000}',
+            $companyName
+        );
+
+        $raw = null;
+        try {
+            $response = $httpClient->request('POST', 'https://text.pollinations.ai/openai', [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json'    => [
+                    'model'       => 'openai',
+                    'temperature' => 0.7,
+                    'max_tokens'  => 250,
+                    'private'     => true,
+                    'seed'        => random_int(1, 999999),
+                    'messages'    => [
+                        ['role' => 'system', 'content' => $system],
+                        ['role' => 'user',   'content' => $user],
+                    ],
+                ],
+                'timeout'      => 30,
+                'max_duration' => 40,
+            ]);
+            $body = $response->getContent(false);
+            $decoded = json_decode($body, true);
+            $raw = $decoded['choices'][0]['message']['content']
+                ?? $decoded['message']['content']
+                ?? $decoded['content']
+                ?? null;
+        } catch (\Throwable) {
+            // fall through to default
+        }
+
+        // Parse the AI JSON response
+        $data = null;
+        if ($raw !== null) {
+            // Strip possible markdown fences
+            $clean = preg_replace('/^```(?:json)?\s*/i', '', trim($raw));
+            $clean = preg_replace('/\s*```$/', '', trim($clean ?? ''));
+            $data  = json_decode($clean ?? '', true);
+        }
+
+        // Build safe result with fallbacks
+        $description = trim((string) ($data['description'] ?? ''));
+        $website     = trim((string) ($data['website'] ?? ''));
+        $type        = trim((string) ($data['type'] ?? ''));
+        $montant     = (int) ($data['montant'] ?? 0);
+
+        if ($description === '') {
+            $description = sprintf('Partenaire officiel EasyTravel. %s accompagne nos voyageurs avec des solutions de qualité.', $companyName);
+        }
+        if (!filter_var($website, FILTER_VALIDATE_URL)) {
+            $slug    = strtolower(preg_replace('/[^a-z0-9]+/i', '', $companyName) ?? $companyName);
+            $website = 'https://www.' . $slug . '.com';
+        }
+        if (!in_array($type, ['Partenaire', 'Premium'], true)) {
+            $type = 'Partenaire';
+        }
+        if ($montant <= 0) {
+            $montant = 1000;
+        }
+
+        return new JsonResponse([
+            'description' => $description,
+            'website'     => $website,
+            'type'        => $type,
+            'montant'     => $montant,
+        ]);
     }
 
     #[Route('/admin/destinations/featured/{id}/save', name: 'app_admin_featured_destination_save', methods: ['POST'])]
@@ -1100,112 +1171,6 @@ final class AdminDashboardController extends AbstractController
         return $this->redirectBackToDashboard($request, 'paiements');
     }
 
-    #[Route('/admin/prompts/save', name: 'app_admin_prompt_save', methods: ['POST'])]
-    public function savePrompt(Request $request): RedirectResponse
-    {
-        if ($redirect = $this->ensureAdminAccess($request)) {
-            return $redirect;
-        }
-
-        try {
-            $promptId = $this->promptRepository->createOrUpdatePrompt([
-                'id' => trim((string) $request->request->get('id', '')),
-                'prompt_key' => trim((string) $request->request->get('prompt_key', '')),
-                'description' => trim((string) $request->request->get('description', '')),
-                'language' => $this->sanitizePromptLanguage((string) $request->request->get('language', 'fr')) === 'en' ? 'en' : 'fr',
-            ]);
-            $request->getSession()->getFlashBag()->add('success', 'Prompt sauvegarde.');
-            $this->reloadPromptsQuietly();
-
-            return $this->redirectToPromptDashboard($request, $promptId);
-        } catch (\Throwable $exception) {
-            $request->getSession()->getFlashBag()->add('error', 'Impossible de sauvegarder le prompt: '.$exception->getMessage());
-
-            return $this->redirectToPromptDashboard($request);
-        }
-    }
-
-    #[Route('/admin/prompts/{id}/delete', name: 'app_admin_prompt_delete', methods: ['POST'])]
-    public function deletePrompt(string $id, Request $request): RedirectResponse
-    {
-        if ($redirect = $this->ensureAdminAccess($request)) {
-            return $redirect;
-        }
-
-        try {
-            $this->promptRepository->deletePrompt($id);
-            $request->getSession()->getFlashBag()->add('success', 'Prompt supprime.');
-            $this->reloadPromptsQuietly();
-        } catch (\Throwable $exception) {
-            $request->getSession()->getFlashBag()->add('error', 'Impossible de supprimer le prompt: '.$exception->getMessage());
-        }
-
-        return $this->redirectToPromptDashboard($request);
-    }
-
-    #[Route('/admin/prompts/versions/save', name: 'app_admin_prompt_version_save', methods: ['POST'])]
-    public function savePromptVersion(Request $request): RedirectResponse
-    {
-        if ($redirect = $this->ensureAdminAccess($request)) {
-            return $redirect;
-        }
-
-        $promptId = trim((string) $request->request->get('prompt_id', ''));
-        try {
-            $this->promptRepository->createOrUpdateVersion([
-                'id' => trim((string) $request->request->get('id', '')),
-                'prompt_id' => $promptId,
-                'content' => (string) $request->request->get('content', ''),
-                'created_by' => trim((string) $request->request->get('created_by', '')),
-                'note' => trim((string) $request->request->get('note', '')),
-                'set_active' => $request->request->getBoolean('set_active'),
-            ]);
-            $request->getSession()->getFlashBag()->add('success', 'Version de prompt sauvegardee.');
-            $this->reloadPromptsQuietly();
-        } catch (\Throwable $exception) {
-            $request->getSession()->getFlashBag()->add('error', 'Impossible de sauvegarder la version: '.$exception->getMessage());
-        }
-
-        return $this->redirectToPromptDashboard($request, $promptId);
-    }
-
-    #[Route('/admin/prompts/{promptId}/versions/{versionId}/active', name: 'app_admin_prompt_version_active', methods: ['POST'])]
-    public function activatePromptVersion(string $promptId, string $versionId, Request $request): RedirectResponse
-    {
-        if ($redirect = $this->ensureAdminAccess($request)) {
-            return $redirect;
-        }
-
-        try {
-            $this->promptRepository->setActiveVersion($promptId, $versionId);
-            $request->getSession()->getFlashBag()->add('success', 'Version active mise a jour.');
-            $this->reloadPromptsQuietly();
-        } catch (\Throwable $exception) {
-            $request->getSession()->getFlashBag()->add('error', 'Impossible d activer la version: '.$exception->getMessage());
-        }
-
-        return $this->redirectToPromptDashboard($request, $promptId);
-    }
-
-    #[Route('/admin/prompts/versions/{versionId}/delete', name: 'app_admin_prompt_version_delete', methods: ['POST'])]
-    public function deletePromptVersion(string $versionId, Request $request): RedirectResponse
-    {
-        if ($redirect = $this->ensureAdminAccess($request)) {
-            return $redirect;
-        }
-
-        $promptId = null;
-        try {
-            $promptId = $this->promptRepository->deleteVersion($versionId);
-            $request->getSession()->getFlashBag()->add('success', 'Version supprimee.');
-            $this->reloadPromptsQuietly();
-        } catch (\Throwable $exception) {
-            $request->getSession()->getFlashBag()->add('error', 'Impossible de supprimer la version: '.$exception->getMessage());
-        }
-
-        return $this->redirectToPromptDashboard($request, $promptId);
-    }
-
     #[Route('/admin/dashboard/factures/save', name: 'app_admin_dashboard_invoice_save', methods: ['POST'])]
     public function saveDashboardInvoice(Request $request): RedirectResponse
     {
@@ -1606,33 +1571,9 @@ final class AdminDashboardController extends AbstractController
             'reservations',
             'reclamations',
             'paiements',
-            'prompts',
         ];
 
         return in_array($section, $allowed, true) ? $section : 'overview';
-    }
-
-    private function sanitizePromptLanguage(string $language): string
-    {
-        $language = strtolower(trim($language));
-
-        return in_array($language, ['all', 'fr', 'en'], true) ? $language : 'all';
-    }
-
-    private function redirectToPromptDashboard(Request $request, ?string $promptId = null): RedirectResponse
-    {
-        $language = $this->sanitizePromptLanguage((string) $request->request->get('prompt_language', $request->query->get('prompt_language', 'all')));
-        $params = ['section' => 'prompts', 'prompt_language' => $language];
-        if ($promptId !== null && trim($promptId) !== '') {
-            $params['prompt_id'] = $promptId;
-        }
-
-        return $this->redirectToRoute('app_admin_dashboard', $params);
-    }
-
-    private function reloadPromptsQuietly(): void
-    {
-        $this->travelAiClient->reloadPrompts();
     }
 
     private function sanitizeUserFilter(string $filter): string
