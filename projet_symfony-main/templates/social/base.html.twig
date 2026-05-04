@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EasyTravel — Forum{% endblock %}</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    {# ── SAME CSS as main site homepage ── #}
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/about.css">
+    <link rel="stylesheet" href="/currency.css">
+    <link rel="stylesheet" href="/hand-tracking.css">
+    {# Bootstrap + Font Awesome for forum components #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('social/css/style.css') }}?v={{ 'now'|date('YmdHis') }}">
+    {% endblock %}
+    <style>
+        /* Forum pages: light background with the main site's premium feel */
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(207, 176, 122, 0.06), transparent 26%),
+                radial-gradient(circle at top right, rgba(244, 162, 97, 0.05), transparent 26%),
+                var(--bg-color);
+            color: var(--text-color);
+            cursor: default !important;
+        }
+        [data-theme="dark"] body {
+            background:
+                radial-gradient(circle at top left, rgba(207, 176, 122, 0.08), transparent 26%),
+                radial-gradient(circle at top right, rgba(244, 162, 97, 0.06), transparent 26%),
+                linear-gradient(180deg, #030406 0%, #070a0f 36%, #0b1017 100%);
+        }
+        a { cursor: pointer !important; }
+        label, button, select, summary, [role="button"] { cursor: pointer !important; }
+        /* Forum uses the EXACT same navbar as the main site (about-navbar in scrolled state).
+           Do NOT override colors/shape here — keep it identical to /about and /destinations. */
+        .about-navbar-shell { position: sticky; top: 0; }
+        body { padding-top: 0; }
+        /* Push forum content down so the sticky navbar doesn't overlap (matches site rhythm) */
+        main.container { padding-top: 8px; }
+        /* Forum sub-nav pill bar */
+        .forum-subnav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px 18px;
+            margin: 16px auto 8px;
+            max-width: 1200px;
+            background: var(--card-bg);
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .forum-subnav-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .forum-subnav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+        .forum-subnav-link:hover {
+            color: var(--text-color);
+            border-color: var(--primary);
+            background: rgba(11, 60, 93, 0.04);
+        }
+        .forum-subnav-link.is-active {
+            color: #111827;
+            background: linear-gradient(to right, #cfb07a, #f4a261);
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(207, 176, 122, 0.24);
+        }
+        .forum-subnav-link .badge {
+            font-size: 0.6rem;
+        }
+        .forum-subnav-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* Notification bell sitting in the main about-navbar — restyle from
+           btn-outline-light (white-on-blue) to fit the light pill navbar. */
+        .navbar-bell-wrapper { display: inline-flex; align-items: center; }
+        .navbar-bell-wrapper > .dropdown > button.btn {
+            background: rgba(11, 60, 93, 0.06);
+            border: 1px solid rgba(11, 60, 93, 0.18);
+            color: #0b3c5d;
+            border-radius: 999px;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+        .navbar-bell-wrapper > .dropdown > button.btn:hover {
+            background: rgba(11, 60, 93, 0.12);
+            color: #0b3c5d;
+        }
+        .navbar-bell-wrapper .notif-badge {
+            top: -4px !important;
+            right: -4px !important;
+        }
+        [data-theme="dark"] .navbar-bell-wrapper > .dropdown > button.btn {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.18);
+            color: #f8fafc;
+        }
+        [data-theme="dark"] .forum-subnav {
+            background: rgba(11, 16, 23, 0.8);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        [data-theme="dark"] .forum-subnav-link {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+        [data-theme="dark"] .forum-subnav-link:hover {
+            color: #f8fafc;
+            border-color: #cfb07a;
+        }
+        [data-theme="dark"] .forum-subnav-link.is-active {
+            color: #111827;
+        }
+        /* Footer — premium dark style like homepage */
+        .forum-footer {
+            margin-top: auto;
+            padding: 32px 0;
+            background: rgba(4, 5, 7, 0.95);
+            border-top: 1px solid rgba(207, 176, 122, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .forum-footer a {
+            color: #cfb07a;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+        .forum-footer a:hover {
+            color: #f4a261;
+        }
+        .forum-footer strong {
+            color: white;
+        }
+        /* Forum sub-nav offset so sticky main navbar doesn't overlap on scroll */
+        .forum-subnav { margin-top: 24px; }
+    </style>
+</head>
+<body>
+    {# ── EXACT SAME NAVBAR AS HOMEPAGE (about-navbar) ── #}
+    <header class="about-navbar-shell scrolled" id="aboutNavbar">
+        <div class="about-navbar">
+            <div class="about-navbar-brand">
+                <a href="/" class="about-logo-shell" aria-label="Retour a l accueil">
+                    <canvas id="aboutLogoCanvas" width="200" height="60"></canvas>
+                </a>
+            </div>
+
+            <nav class="about-navbar-links" aria-label="Navigation principale">
+                <a href="/" class="about-nav-button">Accueil</a>
+                <a href="/destinations" class="about-nav-button">Destinations</a>
+                <a href="{{ path('forum_forum') }}" class="about-nav-button about-nav-button-active">Forum</a>
+                <a href="/about" class="about-nav-button">A propos</a>
+                <a href="/weather" class="about-nav-button">Météo</a>
+                <a href="/contact" class="about-nav-button">Contact</a>
+            </nav>
+
+
+            <div class="about-navbar-actions">
+                <button type="button" class="about-search-button" id="aboutSearchToggle" aria-label="Ouvrir la recherche">&#128269;</button>
+                {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'forumCurrencySwitcher'} %}
+
+                <button id="hand-tracking-toggle" class="hand-toggle-btn" type="button" data-tooltip="Contrôle par la main (Caméra)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                    </svg>
+                    <span class="hand-status-badge"></span>
+                </button>
+                {% if is_granted('ROLE_USER') %}
+                <div class="navbar-bell-wrapper">
+                    {{ render(controller('App\\Controller\\NotificationController::menu')) }}
+                </div>
+                <div class="account-menu-wrapper" data-account-menu-wrapper>
+                    <button class="connexion-button account-button account-button-logged-in" type="button" data-account-menu-button aria-controls="forumAccountMenu" aria-expanded="false">
+                        <div class="account-button-content">
+                            <div class="account-button-avatar">
+                                {% if app.user.profilePhotoPath %}
+                                    <img src="{{ asset('uploads/profiles/' ~ app.user.profilePhotoPath) }}" alt="{{ app.user.username }}" class="account-avatar-image">
+                                {% else %}
+                                    <span class="account-button-avatar-label">{{ app.user.username|slice(0,1)|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="account-button-name">{{ app.user.username }}</span>
+                            <span class="account-button-arrow">&#9662;</span>
+                        </div>
+                    </button>
+                    <div class="navbar-account-menu" id="forumAccountMenu" data-account-menu hidden>
+                        <div class="account-menu-header">
+                            <div class="account-menu-header-avatar">
+                                {% if app.user.profilePhotoPath %}
+                                    <img src="{{ asset('uploads/profiles/' ~ app.user.profilePhotoPath) }}" alt="{{ app.user.username }}" class="account-menu-avatar-image">
+                                {% else %}
+                                    <span class="account-menu-header-avatar-label">{{ app.user.username|slice(0,1)|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="account-menu-header-text">
+                                <div class="account-menu-header-name">{{ app.user.username }}</div>
+                                <div class="account-menu-header-email">{{ app.user.email|default('Membre du forum') }}</div>
+                            </div>
+                        </div>
+                        <div class="account-menu-separator"></div>
+                        <a href="{{ path('forum_profile') }}" class="account-menu-item">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-profile"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Mon Profil</div>
+                                <div class="account-menu-subtitle">Publications et informations</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="{{ path('forum_messages') }}" class="account-menu-item">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-chat"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Messagerie</div>
+                                <div class="account-menu-subtitle">Messages prives entre voyageurs</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="{{ path('forum_profile_edit') }}" class="account-menu-item">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-profile"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Modifier Profil</div>
+                                <div class="account-menu-subtitle">Photo, bio et confidentialite</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="{{ path('forum_follow_requests') }}" class="account-menu-item">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-chat"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Demandes d'abonnement</div>
+                                <div class="account-menu-subtitle">Approuver les nouveaux abonnes</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <a href="/" class="account-menu-item">
+                            <div class="account-menu-icon-shell"><div class="account-menu-icon-shape account-menu-icon-dashboard"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title">Retour au site</div>
+                                <div class="account-menu-subtitle">Page principale EasyTravel</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                        <div class="account-menu-separator"></div>
+                        <a href="{{ path('forum_logout') }}" class="account-menu-item account-menu-item-danger">
+                            <div class="account-menu-icon-shell account-menu-icon-shell-danger"><div class="account-menu-icon-shape account-menu-icon-shape-danger account-menu-icon-logout"></div></div>
+                            <div class="account-menu-item-labels">
+                                <div class="account-menu-title account-menu-title-danger">Deconnexion</div>
+                                <div class="account-menu-subtitle account-menu-subtitle-danger">Fermer la session forum</div>
+                            </div>
+                            <span class="account-menu-item-chevron">&#8250;</span>
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{{ path('forum_login') }}" class="connexion-button">Connexion</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    {# ── Forum sub-navigation ── #}
+    <div class="container-fluid px-3 px-md-5">
+        <div class="forum-subnav">
+            <div class="forum-subnav-links">
+                <a href="{{ path('forum_forum') }}" class="forum-subnav-link {{ app.request.get('_route') == 'forum_forum' ? 'is-active' : '' }}">
+                    <i class="fas fa-home"></i> Feed
+                </a>
+                {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('forum_profile') }}" class="forum-subnav-link {{ app.request.get('_route') starts with 'forum_profile' ? 'is-active' : '' }}">
+                    <i class="fas fa-user"></i> Profil
+                </a>
+                <a href="{{ path('forum_messages') }}" class="forum-subnav-link {{ app.request.get('_route') starts with 'forum_messages' ? 'is-active' : '' }}">
+                    <i class="fas fa-paper-plane"></i> Messages
+                    <span id="navUnreadBadge" class="badge bg-danger rounded-pill d-none">0</span>
+                </a>
+                <a href="{{ path('forum_map') }}" class="forum-subnav-link {{ app.request.get('_route') == 'forum_map' ? 'is-active' : '' }}">
+                    <i class="fas fa-map"></i> Carte
+                </a>
+                <a href="{{ path('forum_story_new') }}" class="forum-subnav-link">
+                    <i class="fas fa-plus"></i> Story
+                </a>
+                {% endif %}
+                {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('forum_admin_dashboard') }}" class="forum-subnav-link {{ app.request.get('_route') starts with 'forum_admin' ? 'is-active' : '' }}">
+                    <i class="fas fa-cog"></i> Admin
+                </a>
+                {% endif %}
+            </div>
+            <div class="forum-subnav-actions">
+                <button class="btn btn-sm btn-outline-secondary theme-toggle" id="themeToggle" title="Changer le thème" style="border-radius:999px;">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# Flash Messages #}
+    <div class="container mt-2">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{{ label == 'success' ? 'check-circle' : (label == 'error' ? 'exclamation-circle' : 'info-circle') }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    {# Main Content #}
+    <main class="container py-3">
+        {% block body %}{% endblock %}
+    </main>
+
+    {# Global Media Viewer Modal #}
+    <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-0">
+                <div class="modal-header border-0">
+                    <h6 class="modal-title flex-grow-1" id="imageViewerCaption"></h6>
+                    <span class="small text-white-50 me-3" id="imageViewerCounter"></span>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body text-center p-0 position-relative">
+                    <button type="button" class="viewer-nav viewer-prev" id="imageViewerPrev" aria-label="Précédent">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <img id="imageViewerImg" src="" alt="" class="img-fluid d-none" style="max-height:80vh;object-fit:contain;">
+                    <video id="imageViewerVideo" controls class="d-none" style="max-height:80vh;max-width:100%;"></video>
+                    <button type="button" class="viewer-nav viewer-next" id="imageViewerNext" aria-label="Suivant">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Premium Footer (same style as homepage) ── #}
+    <footer class="forum-footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
+                    <strong style="font-size:1.1rem;">✈️ EasyTravel</strong>
+                    <p class="mb-0 mt-1" style="font-size:0.82rem;">Forum communautaire &copy; {{ "now"|date("Y") }}</p>
+                </div>
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <a href="/" class="me-3">Accueil</a>
+                    <a href="/destinations" class="me-3">Destinations</a>
+                    <a href="/about">A propos</a>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <a href="/"><i class="fas fa-arrow-left me-1"></i> Retour au site</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {# ── Account menu JS (same as homepage) ── #}
+    <script>
+    document.querySelectorAll('[data-account-menu-wrapper]').forEach(function(w){
+        var btn = w.querySelector('[data-account-menu-button]');
+        var menu = w.querySelector('[data-account-menu]');
+        if(!btn||!menu) return;
+        btn.addEventListener('click',function(e){
+            e.stopPropagation();
+            var open = !menu.hidden;
+            menu.hidden = open;
+            btn.setAttribute('aria-expanded', !open);
+            if(!open) menu.classList.add('is-open'); else menu.classList.remove('is-open');
+        });
+        document.addEventListener('click',function(e){
+            if(!w.contains(e.target)){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); menu.classList.remove('is-open'); }
+        });
+    });
+    </script>
+
+    {# ── Logo canvas animation (identical to main site /about) ── #}
+    <script>
+    (function(){
+        var logoCanvas = document.getElementById('aboutLogoCanvas');
+        if (!logoCanvas) return;
+        var context = logoCanvas.getContext('2d');
+        var planePos = 0;
+        var navbarScrolled = true; // forum navbar is always in solid/scrolled state
+
+        function drawPin(x, y) {
+            context.fillStyle = '#E89B6D';
+            context.beginPath();
+            context.arc(x, y - 4, 4, 0, Math.PI * 2);
+            context.fill();
+            context.beginPath();
+            context.moveTo(x, y);
+            context.lineTo(x - 3, y + 6);
+            context.lineTo(x + 3, y + 6);
+            context.closePath();
+            context.fill();
+            context.fillStyle = 'white';
+            context.beginPath();
+            context.arc(x, y - 4, 1.5, 0, Math.PI * 2);
+            context.fill();
+        }
+
+        function animateLogo() {
+            planePos += 0.002;
+            if (planePos > 1) planePos = 0;
+
+            context.clearRect(0, 0, 200, 60);
+
+            var logoPrimary = navbarScrolled ? '#0B3C5D' : 'white';
+            context.strokeStyle = logoPrimary;
+            context.lineWidth = 2;
+            context.setLineDash([4, 4]);
+            context.globalAlpha = 0.5;
+            context.beginPath();
+            context.moveTo(15, 30);
+            context.quadraticCurveTo(40, 10, 65, 30);
+            context.quadraticCurveTo(90, 50, 115, 30);
+            context.quadraticCurveTo(135, 15, 155, 30);
+            context.stroke();
+            context.setLineDash([]);
+            context.globalAlpha = 1;
+
+            drawPin(15, 30);
+            drawPin(85, 30);
+            drawPin(155, 30);
+
+            var x, y;
+            if (planePos < 0.33) {
+                var p1 = planePos / 0.33;
+                x = 15 + (65 - 15) * p1;
+                y = 30 - 20 * Math.sin(p1 * Math.PI);
+            } else if (planePos < 0.66) {
+                var p2 = (planePos - 0.33) / 0.33;
+                x = 65 + (115 - 65) * p2;
+                y = 30 + 20 * Math.sin(p2 * Math.PI);
+            } else {
+                var p3 = (planePos - 0.66) / 0.34;
+                x = 115 + (155 - 115) * p3;
+                y = 30 - 15 * Math.sin(p3 * Math.PI);
+            }
+
+            context.fillStyle = logoPrimary;
+            context.beginPath();
+            context.moveTo(x - 5, y);
+            context.lineTo(x + 8, y - 1.5);
+            context.lineTo(x + 6, y + 1.5);
+            context.lineTo(x - 3, y + 1);
+            context.closePath();
+            context.fill();
+
+            context.beginPath();
+            context.moveTo(x - 1, y - 3);
+            context.lineTo(x + 2, y - 1);
+            context.lineTo(x + 1, y + 1);
+            context.closePath();
+            context.fill();
+
+            context.beginPath();
+            context.moveTo(x - 1, y + 3);
+            context.lineTo(x + 2, y + 1);
+            context.lineTo(x + 1, y - 1);
+            context.closePath();
+            context.fill();
+
+            context.beginPath();
+            context.moveTo(x - 5, y - 2);
+            context.lineTo(x - 3, y);
+            context.lineTo(x - 4, y + 2);
+            context.closePath();
+            context.fill();
+
+            context.fillStyle = '#E89B6D';
+            context.beginPath();
+            context.arc(x + 5, y, 1.25, 0, Math.PI * 2);
+            context.fill();
+
+            context.font = 'bold 18px Arial';
+            context.fillStyle = logoPrimary;
+            context.fillText('Easy', 60, 56);
+            context.fillStyle = '#E89B6D';
+            context.fillText('Travel', 100, 56);
+
+            window.requestAnimationFrame(animateLogo);
+        }
+
+        animateLogo();
+    })();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    {% if is_granted('ROLE_USER') %}
+    <script>
+    (function () {
+        var badge = document.getElementById('navUnreadBadge');
+        if (!badge) return;
+        function refresh() {
+            fetch('{{ path('forum_messages_unread') }}', { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (d) {
+                    if (!d) return;
+                    if (d.count > 0) {
+                        badge.textContent = d.count > 99 ? '99+' : d.count;
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
+                    }
+                })
+                .catch(function () {});
+        }
+        refresh();
+        setInterval(refresh, 30000);
+    })();
+    </script>
+    {% endif %}
+
+    {% if is_granted('ROLE_USER') %}
+        {% include 'social/_partials/story_modal.html.twig' %}
+    {% endif %}
+
+    {# Same currency switcher behavior as the main site #}
+    <script src="/currency.js"></script>
+
+    {% block javascripts %}
+        <script src="{{ asset('social/js/app.js') }}?v={{ 'now'|date('YmdHis') }}"></script>
+    {% endblock %}
+
+    <!-- MediaPipe Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="/hand-tracking.js"></script>
+</body>
+</html>

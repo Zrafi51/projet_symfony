@@ -1,0 +1,82 @@
+{% extends 'admin-layout.html.twig' %}
+
+{% block body %}
+<main class="billing-admin-page">
+    <section class="invoice-java-header">
+        <div class="invoice-java-icon">📄</div>
+        <div>
+            <h1>Generation de Facture</h1>
+            <p>Creer, previsualiser et envoyer des factures professionnelles comme dans le flux Java.</p>
+        </div>
+    </section>
+
+    {% if statusMessage|default(null) %}
+        <div class="billing-alert billing-alert-success">{{ statusMessage }}</div>
+    {% endif %}
+    {% if errorMessage|default(null) %}
+        <div class="billing-alert billing-alert-error">{{ errorMessage }}</div>
+    {% endif %}
+
+    <form method="post" action="/admin/factures/save" class="invoice-java-grid" id="adminInvoiceForm">
+        <input type="hidden" name="id" value="{{ formData.id|default(0) }}">
+        <input type="hidden" name="statut" value="{{ formData.statut|default('GENEREE') }}">
+        <input type="hidden" name="type_voyage" value="{{ formData.type_voyage|default('Aventure') }}">
+
+        <section class="invoice-java-card">
+            <h2>📋 Informations Client</h2>
+            <label class="payment-field">
+                <span>Selectionner un paiement</span>
+                <select name="paiement_id" id="paiementSelect" class="billing-input">
+                    <option value="0">Choisir un paiement...</option>
+                    {% for paiement in paiements|default([]) %}
+                        <option
+                            value="{{ paiement.id }}"
+                            data-client="{{ paiement.client_nom }}"
+                            data-destination="{{ paiement.destination }}"
+                            data-montant="{{ paiement.montant }}"
+                            data-type="{{ paiement.type_voyage|default('Aventure') }}"
+                            {{ formData.paiement_id|default(0) == paiement.id ? 'selected' : '' }}
+                        >
+                            {{ paiement.client_nom }} - {{ paiement.destination }} ({{ paiement.montant|number_format(2, '.', ' ') }} TND)
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label class="payment-field"><span>Nom du client</span><input class="billing-input" name="client_nom" id="clientNom" value="{{ formData.client_nom|default('') }}" required></label>
+            <label class="payment-field"><span>Email du client</span><input class="billing-input" type="email" name="client_email" id="clientEmail" value="{{ formData.client_email|default('') }}" required></label>
+            <label class="payment-field"><span>Adresse du client</span><input class="billing-input" name="client_adresse" id="clientAdresse" value="{{ formData.client_adresse|default('') }}"></label>
+
+            <h2>🌍 Details du Voyage</h2>
+            <label class="payment-field"><span>Destination</span><input class="billing-input" name="destination" id="destination" value="{{ formData.destination|default('') }}" required></label>
+            <div class="payment-field-grid">
+                <label class="payment-field"><span>Date debut</span><input class="billing-input" name="date_debut" id="dateDebut" value="{{ formData.date_debut|default('') }}" required></label>
+                <label class="payment-field"><span>Date fin</span><input class="billing-input" name="date_fin" id="dateFin" value="{{ formData.date_fin|default('') }}" required></label>
+            </div>
+            <label class="payment-field"><span>Nombre de personnes</span><input class="billing-input" type="number" min="1" name="nb_personnes" id="nbPersonnes" value="{{ formData.nb_personnes|default(1) }}"></label>
+        </section>
+
+        <section class="invoice-java-card">
+            <h2>💰 Details des Montants</h2>
+            <label class="payment-field"><span>Transport (TND)</span><input class="billing-input" type="number" step="0.01" min="0" name="montant_transport" id="montantTransport" value="{{ formData.montant_transport|default(0) }}" required></label>
+            <label class="payment-field"><span>Hebergement (TND)</span><input class="billing-input" type="number" step="0.01" min="0" name="montant_hebergement" id="montantHebergement" value="{{ formData.montant_hebergement|default(0) }}" required></label>
+            <label class="payment-field"><span>Activites (TND)</span><input class="billing-input" type="number" step="0.01" min="0" name="montant_activites" id="montantActivites" value="{{ formData.montant_activites|default(0) }}" required></label>
+
+            <div class="invoice-total-box">
+                <span>MONTANT TOTAL</span>
+                <strong id="montantTotalDisplay">{{ formData.montant_total|default(0)|number_format(2, '.', ' ') }} TND</strong>
+                <input type="hidden" name="montant_total" id="montantTotal" value="{{ formData.montant_total|default(0) }}">
+                <button type="button" class="payment-button payment-button-green" data-calculate-total>Calculer le total</button>
+            </div>
+
+            <div class="invoice-actions">
+                <button type="submit" name="intent" value="save" class="payment-button payment-button-primary">📄 Generer la Facture</button>
+                <button type="submit" name="intent" value="send" class="payment-button payment-button-green">📧 Enregistrer et envoyer</button>
+                <button type="submit" formaction="/admin/factures/preview" class="payment-button payment-button-blue">👁 Previsualiser</button>
+                <a href="/admin/dashboard?section=paiements" class="payment-button payment-button-secondary">↩ Retour Admin</a>
+            </div>
+        </section>
+    </form>
+</main>
+<script src="/billing.js"></script>
+{% endblock %}

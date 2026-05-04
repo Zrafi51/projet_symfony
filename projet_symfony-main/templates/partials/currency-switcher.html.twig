@@ -1,0 +1,13 @@
+{% set switcherClass = currencySwitcherClass|default('') %}
+<div class="currency-switcher {{ switcherClass }}" data-currency-switcher>
+    <span class="currency-switcher-icon" aria-hidden="true">$</span>
+    <span class="currency-switcher-copy">
+        <label class="currency-switcher-label" for="{{ currencySwitcherId|default('currencySwitcher') }}">Devise</label>
+        <strong class="currency-switcher-current" data-currency-current>TND</strong>
+    </span>
+    <select id="{{ currencySwitcherId|default('currencySwitcher') }}" class="currency-switcher-select" data-currency-select aria-label="Choisir la devise">
+        <option value="TND">TND</option>
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+    </select>
+</div>

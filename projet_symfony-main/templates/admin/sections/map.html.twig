@@ -1,0 +1,342 @@
+{% set mapWorldAsset = '/assets/java/Flag-map_of_the_world_(2018).png' %}
+
+<section class="admin-map-shell">
+    <div class="admin-map-hero-grid">
+        <article class="admin-panel-card admin-map-hero-card">
+            <div class="admin-map-hero-head">
+                <div class="admin-map-hero-copy">
+                    <h2>Carte Interactive</h2>
+                    <p>Cette section pilote `MapSection` sur la Home. Cliquez sur la carte pour ajouter un hotspot, puis glissez-les pour repositionner.</p>
+                </div>
+                <div class="admin-map-hero-actions">
+                    <form method="post" action="/admin/map/optimize-ai">
+                        <input type="hidden" name="section" value="map">
+                        <button class="admin-primary-button" type="submit">Optimiser avec IA</button>
+                    </form>
+                    <a class="admin-card-action admin-card-action-blue" href="/">Voir la Home</a>
+                </div>
+            </div>
+
+            <div class="admin-map-pill-row">
+                <span class="admin-range-pill admin-range-pill-active">Hotspots {{ mapEntries|length }}</span>
+                <span class="admin-range-pill">Actifs {{ mapActiveCount }}</span>
+                <span class="admin-range-pill">IA {{ mapAiCount }}</span>
+            </div>
+
+            <div class="admin-map-kpi-grid">
+                <article class="admin-map-mini-card">
+                    <span>Hotspots</span>
+                    <strong>{{ mapEntries|length }}</strong>
+                </article>
+                <article class="admin-map-mini-card">
+                    <span>Actifs</span>
+                    <strong>{{ mapActiveCount }}</strong>
+                </article>
+                <article class="admin-map-mini-card">
+                    <span>IA</span>
+                    <strong>{{ mapAiCount }}</strong>
+                </article>
+                <article class="admin-map-mini-card">
+                    <span>Score moyen</span>
+                    <strong>{{ mapAverageAiScore|default(0)|number_format(1, '.', '') }}</strong>
+                </article>
+            </div>
+        </article>
+
+        <aside class="admin-panel-card admin-map-side-card">
+            <h2>Mode edition</h2>
+            <p>1. Cliquez sur la carte pour capturer x% / y%.
+                <br>2. Le formulaire se pre-remplit.
+                <br>3. Faites glisser un hotspot pour ajuster sa position.</p>
+
+            <article class="admin-map-mini-card">
+                <span>Source Home</span>
+                <strong>{{ mapSourceCopy }}</strong>
+            </article>
+            <article class="admin-map-mini-card">
+                <span>Edition</span>
+                <strong>{{ mapEditCopy }}</strong>
+            </article>
+            <article class="admin-map-mini-card">
+                <span>MapSection</span>
+                <strong>{{ mapSyncCopy }}</strong>
+            </article>
+        </aside>
+    </div>
+
+    <section class="admin-panel-card admin-map-editor-card">
+        <div class="admin-map-editor-head">
+            <div>
+                <h2>Vue carte avec hotspots</h2>
+                <p>Cliquez dans la carte pour ajouter un hotspot. Les points existants se deplacent directement par glisser-deposer.</p>
+            </div>
+        </div>
+
+        <div class="admin-map-canvas" data-map-editor>
+            <img class="admin-map-canvas-image" src="{{ mapWorldAsset }}" alt="Carte du monde interactive">
+            <div class="admin-map-markers-layer">
+                {% for mapEntry in mapEntries %}
+                    {% set mapEntryId = mapEntry.id|default(0) %}
+                    {% set mapEntryActive = mapEntry.is_active|default(false) %}
+                    {% set mapEntryAi = mapEntry.ai_recommended|default(false) %}
+                    {% set mapMarkerLabel = mapEntry.city|default('H')|slice(0, 1)|upper %}
+                    {% set mapMarkerLeft = ((mapEntry.x_percent|default(0.5)) * 100)|number_format(3, '.', '') %}
+                    {% set mapMarkerTop = ((mapEntry.y_percent|default(0.5)) * 100)|number_format(3, '.', '') %}
+                    <button
+                        class="admin-map-hotspot-marker {{ mapEntryAi ? 'admin-map-hotspot-marker-ai' : '' }} {{ mapEntryActive ? 'admin-map-hotspot-marker-active' : 'admin-map-hotspot-marker-inactive' }}"
+                        type="button"
+                        style="left: calc({{ mapMarkerLeft }}% - 18px); top: calc({{ mapMarkerTop }}% - 18px);"
+                        data-map-hotspot-marker
+                        data-map-target="map-destination-{{ mapEntryId }}"
+                        data-map-position-form="map-position-form-{{ mapEntryId }}"
+                        aria-label="{{ mapEntry.city|default('Hotspot') }}"
+                    >
+                        <span>{{ mapMarkerLabel is not empty ? mapMarkerLabel : 'H' }}</span>
+                    </button>
+
+                    <form id="map-position-form-{{ mapEntryId }}" method="post" action="/admin/map/{{ mapEntryId }}/save" hidden>
+                        <input type="hidden" name="section" value="map">
+                        <input type="hidden" name="x_percent" value="{{ mapEntry.x_percent|default(0.5)|number_format(3, '.', '') }}" data-map-position-x>
+                        <input type="hidden" name="y_percent" value="{{ mapEntry.y_percent|default(0.5)|number_format(3, '.', '') }}" data-map-position-y>
+                        <input type="hidden" name="drag_save" value="1">
+                    </form>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {% if mapEntries is empty %}
+        <section class="admin-panel-card">
+            <h2>Aucun hotspot configure</h2>
+            <p>Utilisez le clic sur la carte ou l optimisation IA pour generer les premiers hotspots de la Home.</p>
+        </section>
+    {% else %}
+        <section class="admin-map-grid">
+            {% for mapEntry in mapEntries %}
+                {% set mapEntryId = mapEntry.id|default(0) %}
+                {% set mapEntryActive = mapEntry.is_active|default(false) %}
+                {% set mapEntryAi = mapEntry.ai_recommended|default(false) %}
+                <form id="map-destination-{{ mapEntryId }}" class="admin-panel-card admin-map-card" method="post" action="/admin/map/{{ mapEntryId }}/save">
+                    <input type="hidden" name="section" value="map">
+                    <input type="hidden" name="display_order" value="{{ mapEntry.display_order|default(loop.index) }}">
+
+                    <div class="admin-map-card-top">
+                        <div class="admin-map-chip-cluster">
+                            <span class="admin-status-pill {{ mapEntryAi ? 'admin-status-pill-blue' : 'admin-status-pill-violet' }}">{{ mapEntryAi ? 'IA' : 'MANUAL' }}</span>
+                            <span class="admin-status-pill {{ mapEntryActive ? 'admin-status-pill-green' : 'admin-status-pill-red' }}">{{ mapEntryActive ? 'ACTIF' : 'INACTIF' }}</span>
+                        </div>
+                        <span class="admin-map-score-pill">Score IA {{ mapEntry.ai_score|default(0)|number_format(1, '.', '') }}</span>
+                    </div>
+
+                    <div class="admin-map-field-grid admin-map-field-grid-2">
+                        <label>
+                            <span>Ville</span>
+                            <input class="admin-map-input" type="text" name="city" value="{{ mapEntry.city|default('') }}">
+                        </label>
+                        <label>
+                            <span>Pays</span>
+                            <input class="admin-map-input" type="text" name="country" value="{{ mapEntry.country|default('') }}">
+                        </label>
+                    </div>
+
+                    <div class="admin-map-field-grid admin-map-field-grid-2">
+                        <label>
+                            <span>Continent</span>
+                            <input class="admin-map-input" type="text" name="continent" value="{{ mapEntry.continent|default('') }}">
+                        </label>
+                        <label>
+                            <span>Package</span>
+                            <input class="admin-map-input" type="text" name="package_name" value="{{ mapEntry.package_name|default('') }}">
+                        </label>
+                    </div>
+
+                    <div class="admin-map-field-grid admin-map-field-grid-3">
+                        <label>
+                            <span>Duree</span>
+                            <input class="admin-map-input" type="text" name="duration" value="{{ mapEntry.duration|default('') }}">
+                        </label>
+                        <label>
+                            <span>Prix</span>
+                            <input class="admin-map-input" type="text" name="price" value="{{ mapEntry.price|default('') }}">
+                        </label>
+                        <label>
+                            <span>Prix barre</span>
+                            <input class="admin-map-input" type="text" name="original_price" value="{{ mapEntry.original_price|default('') }}">
+                        </label>
+                    </div>
+
+                    <label>
+                        <span>Description</span>
+                        <textarea class="admin-map-textarea" name="description" rows="3">{{ mapEntry.description|default('') }}</textarea>
+                    </label>
+
+                    <div class="admin-map-field-grid admin-map-field-grid-2">
+                        <label>
+                            <span>Meilleure periode</span>
+                            <input class="admin-map-input" type="text" name="best_period" value="{{ mapEntry.best_period|default('') }}">
+                        </label>
+                        <label>
+                            <span>Inclus</span>
+                            <input class="admin-map-input" type="text" name="includes" value="{{ mapEntry.includes|default('') }}">
+                        </label>
+                    </div>
+
+                    <div class="admin-map-field-grid admin-map-field-grid-3">
+                        <label>
+                            <span>Highlight 1</span>
+                            <input class="admin-map-input" type="text" name="highlight_1" value="{{ mapEntry.highlight_1|default('') }}">
+                        </label>
+                        <label>
+                            <span>Highlight 2</span>
+                            <input class="admin-map-input" type="text" name="highlight_2" value="{{ mapEntry.highlight_2|default('') }}">
+                        </label>
+                        <label>
+                            <span>Highlight 3</span>
+                            <input class="admin-map-input" type="text" name="highlight_3" value="{{ mapEntry.highlight_3|default('') }}">
+                        </label>
+                    </div>
+
+                    <div class="admin-map-field-grid admin-map-field-grid-2">
+                        <label>
+                            <span>X %</span>
+                            <input id="map-x-{{ mapEntryId }}" class="admin-map-input" type="text" name="x_percent" value="{{ mapEntry.x_percent|default(0.5)|number_format(3, '.', '') }}">
+                        </label>
+                        <label>
+                            <span>Y %</span>
+                            <input id="map-y-{{ mapEntryId }}" class="admin-map-input" type="text" name="y_percent" value="{{ mapEntry.y_percent|default(0.5)|number_format(3, '.', '') }}">
+                        </label>
+                    </div>
+
+                    <div class="admin-map-state-row">
+                        <label class="admin-map-checkbox">
+                            <input type="hidden" name="is_active" value="0">
+                            <input type="checkbox" name="is_active" value="1" {{ mapEntryActive ? 'checked' : '' }}>
+                            <span>Activer sur la Home</span>
+                        </label>
+                    </div>
+
+                    <div class="admin-map-chip-row">
+                        <article class="admin-map-chip admin-map-chip-blue">
+                            <span>Ville</span>
+                            <strong>{{ mapEntry.city|default('N/A') }}</strong>
+                        </article>
+                        <article class="admin-map-chip admin-map-chip-orange">
+                            <span>Score IA</span>
+                            <strong>{{ mapEntry.ai_score|default(0)|number_format(1, '.', '') }}</strong>
+                        </article>
+                        <article class="admin-map-chip admin-map-chip-violet">
+                            <span>Carte</span>
+                            <strong>{{ mapEntry.position_copy|default('Positionnee') }}</strong>
+                        </article>
+                    </div>
+
+                    <div class="admin-map-card-footer">
+                        <button class="admin-card-action admin-card-action-green" type="submit">Sauvegarder</button>
+                    </div>
+                </form>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    <dialog class="admin-package-dialog admin-map-create-dialog" data-map-create-dialog>
+        <form class="admin-package-dialog-form admin-map-dialog-form" method="post" action="/admin/map/create">
+            <input type="hidden" name="section" value="map">
+            <div class="admin-package-dialog-head">
+                <div>
+                    <h2>Ajouter un hotspot</h2>
+                    <p>Le clic sur la carte pre-remplit la position. Vous pouvez ajuster les infos avant la sauvegarde.</p>
+                </div>
+                <button class="admin-package-dialog-close" type="button" data-map-create-close>X</button>
+            </div>
+
+            <div class="admin-map-field-grid admin-map-field-grid-2">
+                <label>
+                    <span>Ville</span>
+                    <input class="admin-map-input" type="text" name="city" data-map-create-city>
+                </label>
+                <label>
+                    <span>Pays</span>
+                    <input class="admin-map-input" type="text" name="country" data-map-create-country>
+                </label>
+            </div>
+
+            <div class="admin-map-field-grid admin-map-field-grid-2">
+                <label>
+                    <span>Continent</span>
+                    <input class="admin-map-input" type="text" name="continent" data-map-create-continent>
+                </label>
+                <label>
+                    <span>Package</span>
+                    <input class="admin-map-input" type="text" name="package_name" data-map-create-package value="Package signature">
+                </label>
+            </div>
+
+            <div class="admin-map-field-grid admin-map-field-grid-3">
+                <label>
+                    <span>Duree</span>
+                    <input class="admin-map-input" type="text" name="duration" value="7 jours / 6 nuits">
+                </label>
+                <label>
+                    <span>Prix</span>
+                    <input class="admin-map-input" type="text" name="price" value="1490 EUR">
+                </label>
+                <label>
+                    <span>Prix barre</span>
+                    <input class="admin-map-input" type="text" name="original_price" value="1714 EUR">
+                </label>
+            </div>
+
+            <div class="admin-map-field-grid admin-map-field-grid-2">
+                <label>
+                    <span>Meilleure periode</span>
+                    <input class="admin-map-input" type="text" name="best_period" data-map-create-best-period>
+                </label>
+                <label>
+                    <span>Inclus</span>
+                    <input class="admin-map-input" type="text" name="includes" value="Vol,Hotel,Guide">
+                </label>
+            </div>
+
+            <div class="admin-map-field-grid admin-map-field-grid-2">
+                <label>
+                    <span>X %</span>
+                    <input class="admin-map-input" type="text" name="x_percent" value="0.500" data-map-create-x>
+                </label>
+                <label>
+                    <span>Y %</span>
+                    <input class="admin-map-input" type="text" name="y_percent" value="0.500" data-map-create-y>
+                </label>
+            </div>
+
+            <label>
+                <span>Description</span>
+                <textarea class="admin-map-textarea" name="description" rows="3" data-map-create-description>Destination mise en avant pour la carte interactive Home.</textarea>
+            </label>
+
+            <div class="admin-map-field-grid admin-map-field-grid-3">
+                <label>
+                    <span>Highlight 1</span>
+                    <input class="admin-map-input" type="text" name="highlight_1" value="Experience signature">
+                </label>
+                <label>
+                    <span>Highlight 2</span>
+                    <input class="admin-map-input" type="text" name="highlight_2" value="Budget bien calibre">
+                </label>
+                <label>
+                    <span>Highlight 3</span>
+                    <input class="admin-map-input" type="text" name="highlight_3" value="Suggestion IA">
+                </label>
+            </div>
+
+            <input type="hidden" name="display_order" value="{{ mapEntries|length + 1 }}">
+            <input type="hidden" name="ai_score" value="86.0" data-map-create-score>
+            <input type="hidden" name="ai_recommended" value="1">
+            <input type="hidden" name="is_active" value="1">
+
+            <div class="admin-package-dialog-actions">
+                <button class="admin-card-action admin-card-action-blue" type="button" data-map-create-close>Annuler</button>
+                <button class="admin-primary-button" type="submit">Sauvegarder</button>
+            </div>
+        </form>
+    </dialog>
+</section>
