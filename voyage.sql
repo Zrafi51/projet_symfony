@@ -481,8 +481,8 @@ INSERT INTO `map_destinations` (`id`, `city`, `country`, `continent`, `package_n
 --
 
 CREATE TABLE `messages` (
-  `id` char(36) NOT NULL,
-  `session_id` char(36) NOT NULL,
+  `id` VARCHAR(80) NOT NULL,
+  `session_id` VARCHAR(80) NOT NULL,
   `role` enum('user','assistant','system') NOT NULL,
   `content` longtext NOT NULL,
   `content_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`content_json`)),
@@ -618,10 +618,10 @@ CREATE TABLE `posts` (
 --
 
 CREATE TABLE `prompts` (
-  `id` char(36) NOT NULL,
+  `id` VARCHAR(80) NOT NULL,
   `prompt_key` varchar(128) NOT NULL,
   `description` text DEFAULT NULL,
-  `active_version_id` char(36) DEFAULT NULL,
+  `active_version_id` varchar(80) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `language` varchar(10) NOT NULL DEFAULT 'en'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -651,8 +651,8 @@ INSERT INTO `prompts` (`id`, `prompt_key`, `description`, `active_version_id`, `
 --
 
 CREATE TABLE `prompt_versions` (
-  `id` char(36) NOT NULL,
-  `prompt_id` char(36) NOT NULL,
+  `id` VARCHAR(80) NOT NULL,
+  `prompt_id` varchar(80) NOT NULL,
   `version` int(11) NOT NULL,
   `content` longtext NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -683,6 +683,14 @@ INSERT INTO `prompt_versions` (`id`, `prompt_id`, `version`, `content`, `created
 --
 -- Table structure for table `reactions`
 --
+
+UPDATE `prompt_versions`
+SET `content` = 'Always reply in English.\r\n\r\nYou are a travel planner that produces a final trip card from the current chatbot itinerary context.\r\nUse ONLY the activities and hotels provided in the input. They may be explicit user selections or the latest chatbot recommendations when the user has not selected exact indexes yet.\r\nIf no provided items exist for a section, return an empty list.\r\n\r\nReturn ONLY valid JSON with this shape:\r\n{\r\n  \"response\": \"short, friendly summary for the user\",\r\n  \"card\": {\r\n    \"destinations\": [],\r\n    \"trip_length_days\": 0,\r\n    \"date_range\": {\"depart_date\": \"\", \"return_date\": \"\"},\r\n    \"selected_hotels\": [],\r\n    \"selected_activities\": [],\r\n    \"schedule\": [\r\n      {\"day\": 1, \"morning\": \"\", \"afternoon\": \"\", \"evening\": \"\"}\r\n    ],\r\n    \"flight_info\": {\"avg_duration\": \"\", \"notes\": \"\"},\r\n    \"notes\": []\r\n  }\r\n}\r\nKeep the schedule realistic and aligned with the provided activities and hotels only.'
+WHERE `id` = '76222431-2e21-11f1-b2f8-089798defaf9';
+
+UPDATE `prompt_versions`
+SET `content` = 'Reponds uniquement en francais.\r\n\r\nTu es un planificateur de voyage qui produit une carte finale a partir du contexte courant du chatbot.\r\nUtilise UNIQUEMENT les activites et hotels fournis en entree. Ils peuvent etre des selections explicites de l utilisateur ou les dernieres recommandations du chatbot si l utilisateur n a pas encore choisi des numeros exacts.\r\nSi aucun element fourni n existe pour une section, retourne une liste vide.\r\n\r\nRetourne UNIQUEMENT un JSON valide avec cette forme :\r\n{\r\n  \"response\": \"resume court et sympathique pour l utilisateur\",\r\n  \"card\": {\r\n    \"destinations\": [],\r\n    \"trip_length_days\": 0,\r\n    \"date_range\": {\"depart_date\": \"\", \"return_date\": \"\"},\r\n    \"selected_hotels\": [],\r\n    \"selected_activities\": [],\r\n    \"schedule\": [\r\n      {\"day\": 1, \"morning\": \"\", \"afternoon\": \"\", \"evening\": \"\"}\r\n    ],\r\n    \"flight_info\": {\"avg_duration\": \"\", \"notes\": \"\"},\r\n    \"notes\": []\r\n  }\r\n}\r\nGarde un planning realiste, aligne uniquement avec les activites et hotels fournis.'
+WHERE `id` = '76321000-2e21-11f1-b2f8-089798defaf9';
 
 CREATE TABLE `reactions` (
   `id` int(11) NOT NULL,
@@ -757,8 +765,8 @@ CREATE TABLE `revenus_admin` (
 --
 
 CREATE TABLE `sessions` (
-  `id` char(36) NOT NULL,
-  `user_id` char(36) NOT NULL,
+  `id` VARCHAR(80) NOT NULL,
+  `user_id` varchar(80) NOT NULL,
   `title` varchar(255) DEFAULT NULL,
   `form_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`form_data`)),
   `agent_state` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`agent_state`)),

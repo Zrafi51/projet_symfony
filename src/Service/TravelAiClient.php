@@ -10,7 +10,7 @@ final class TravelAiClient
 
     public function __construct(?string $baseUrl = null)
     {
-        $candidate = trim((string) ($baseUrl ?: getenv('EASY_TRAVEL_AGENT_URL') ?: 'http://127.0.0.1:8000'));
+        $candidate = trim((string) ($baseUrl ?: $_ENV['EASY_TRAVEL_AGENT_URL'] ?? getenv('EASY_TRAVEL_AGENT_URL') ?: 'http://127.0.0.1:8001'));
         $this->baseUrl = rtrim($candidate, '/');
     }
 
