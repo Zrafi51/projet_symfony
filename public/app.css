@@ -337,7 +337,8 @@ img {
     display: flex;
     justify-content: center;
     gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
 }
 
 .site-nav a {
@@ -346,6 +347,7 @@ img {
     color: rgba(255, 255, 255, 0.88);
     font-size: 0.95rem;
     font-weight: 700;
+    white-space: nowrap;
     transition: 0.18s ease;
 }
 

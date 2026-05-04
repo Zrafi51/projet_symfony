@@ -762,6 +762,8 @@ CREATE TABLE `sessions` (
   `title` varchar(255) DEFAULT NULL,
   `form_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`form_data`)),
   `agent_state` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`agent_state`)),
+  `is_favorite` tinyint(1) NOT NULL DEFAULT 0,
+  `favorited_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `last_message_at` timestamp NULL DEFAULT NULL

@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const adultsFilter = document.getElementById('destinationsAdultsFilter');
     const childrenFilter = document.getElementById('destinationsChildrenFilter');
     const feedback = document.getElementById('destinationsFilterFeedback');
+    const agentHandoff = document.getElementById('destinationsAgentHandoff');
+    const agentButton = document.getElementById('destinationsAgentButton');
     const summaryCopy = document.getElementById('destinationsSummaryCopy');
     const visibleCount = document.getElementById('destinationsVisibleCount');
     const emptyState = document.getElementById('destinationsEmptyState');
@@ -50,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let flaskAbortController = null;
     let lastRecommendationSignature = '';
     let inFlightRecommendationSignature = '';
+    let hasUserEditedPreferences = false;
 
     const normalize = (value) => (value || '')
         .toString()
@@ -266,6 +269,49 @@ document.addEventListener('DOMContentLoaded', () => {
         interets: selectedInterestLabels(),
     });
 
+    const markPreferencesEdited = () => {
+        hasUserEditedPreferences = true;
+        updateAgentHandoff();
+    };
+
+    const buildAgentPromptFromFilters = () => {
+        const payload = getFilterPayload();
+        const interests = payload.interets.length > 0 ? payload.interets.join(', ') : 'non precise';
+        const budget = `${payload.budget_min || 0} TND a ${payload.budget_max || 0} TND`;
+        const dates = payload.date_debut !== '' || payload.date_fin !== ''
+            ? `${payload.date_debut || 'depart flexible'} vers ${payload.date_fin || 'retour flexible'}`
+            : 'dates flexibles';
+        const destination = [payload.search, payload.continent].filter(Boolean).join(' / ') || 'destination a choisir';
+
+        return [
+            'Je viens du formulaire de recommandations EasyTravel.',
+            `Destination ou zone souhaitee: ${destination}.`,
+            `Budget: ${budget}.`,
+            `Dates: ${dates}.`,
+            `Type de voyage: ${payload.type_voyage || 'Tous les profils'}.`,
+            `Voyageurs: ${payload.nb_adultes} adultes et ${payload.nb_enfants} enfants.`,
+            `Centres d interet: ${interests}.`,
+            'Aide-moi a personnaliser ce voyage et propose des recommandations adaptees.',
+        ].join('\n');
+    };
+
+    const buildAgentUrlFromFilters = () => {
+        const params = new URLSearchParams();
+        params.set('prompt', buildAgentPromptFromFilters());
+        params.set('trip_profile', JSON.stringify(getFilterPayload()));
+
+        return `/chat?${params.toString()}`;
+    };
+
+    const updateAgentHandoff = () => {
+        if (!agentHandoff || !agentButton) {
+            return;
+        }
+
+        agentHandoff.hidden = false;
+        agentButton.href = buildAgentUrlFromFilters();
+    };
+
     const buildRecommendationSignature = (payload) => JSON.stringify({
         ...payload,
         search: normalize(payload.search || ''),
@@ -392,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (options.syncWithFlask !== false) {
             scheduleFlaskSync();
         }
+        updateAgentHandoff();
     };
 
     const buildReserveUrl = (card) => {
@@ -912,13 +959,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bindFilters = () => {
         if (searchField) {
-            searchField.addEventListener('input', applyFilters);
+            searchField.addEventListener('input', () => {
+                markPreferencesEdited();
+                applyFilters();
+            });
         }
         if (continentFilter) {
-            continentFilter.addEventListener('change', applyFilters);
+            continentFilter.addEventListener('change', () => {
+                markPreferencesEdited();
+                applyFilters();
+            });
         }
         if (budgetMinFilter) {
             budgetMinFilter.addEventListener('input', () => {
+                markPreferencesEdited();
                 const budgetMin = Math.max(0, parseNumber(budgetMinFilter.value, 500));
                 const budgetMax = Math.max(0, parseNumber(budgetMaxFilter ? budgetMaxFilter.value : 0, 5000));
                 if (budgetMin > budgetMax && budgetMaxFilter) {
@@ -928,10 +982,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         if (budgetMaxFilter) {
-            budgetMaxFilter.addEventListener('input', applyFilters);
+            budgetMaxFilter.addEventListener('input', () => {
+                markPreferencesEdited();
+                applyFilters();
+            });
         }
         if (departureFilter) {
             departureFilter.addEventListener('change', () => {
+                markPreferencesEdited();
                 if (returnFilter) {
                     returnFilter.min = departureFilter.value;
                     if (returnFilter.value !== '' && returnFilter.value < departureFilter.value) {
@@ -942,21 +1000,37 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         if (returnFilter) {
-            returnFilter.addEventListener('change', applyFilters);
+            returnFilter.addEventListener('change', () => {
+                markPreferencesEdited();
+                applyFilters();
+            });
         }
         if (travelTypeFilter) {
             travelTypeFilter.addEventListener('change', () => {
+                markPreferencesEdited();
                 syncTravelTypeRules();
                 applyFilters();
             });
         }
         if (adultsFilter) {
-            adultsFilter.addEventListener('input', applyFilters);
-            adultsFilter.addEventListener('change', applyFilters);
+            adultsFilter.addEventListener('input', () => {
+                markPreferencesEdited();
+                applyFilters();
+            });
+            adultsFilter.addEventListener('change', () => {
+                markPreferencesEdited();
+                applyFilters();
+            });
         }
         if (childrenFilter) {
-            childrenFilter.addEventListener('input', applyFilters);
-            childrenFilter.addEventListener('change', applyFilters);
+            childrenFilter.addEventListener('input', () => {
+                markPreferencesEdited();
+                applyFilters();
+            });
+            childrenFilter.addEventListener('change', () => {
+                markPreferencesEdited();
+                applyFilters();
+            });
         }
     };
 
@@ -972,6 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             button.classList.toggle('is-active', selectedInterests.has(interestKey));
+            markPreferencesEdited();
             applyFilters();
         });
     });
@@ -983,6 +1058,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             searchField.value = button.dataset.popularDestination || '';
+            markPreferencesEdited();
             applyFilters();
 
             if (grid) {

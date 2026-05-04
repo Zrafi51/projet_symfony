@@ -4559,6 +4559,199 @@
     gap: 25px !important;
 }
 
+.admin-prompts-shell,
+.admin-prompts-list,
+.admin-prompts-form,
+.admin-prompts-version-form,
+.admin-prompts-version-list {
+    display: grid;
+    gap: 18px;
+}
+
+.admin-prompts-hero,
+.admin-prompts-card {
+    gap: 18px;
+}
+
+.admin-prompts-filter {
+    min-width: 220px;
+}
+
+.admin-prompts-kpi-grid,
+.admin-prompts-grid,
+.admin-prompts-form-inline {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-prompts-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+}
+
+.admin-prompts-mini-card,
+.admin-prompts-row,
+.admin-prompts-version-row {
+    padding: 16px;
+    border: 1px solid #dfe8f0;
+    border-radius: 20px;
+    background: linear-gradient(to bottom right, #f9fbfe, #ffffff);
+}
+
+.admin-prompts-mini-card span,
+.admin-prompts-form label span,
+.admin-prompts-version-form label span,
+.admin-prompts-check span {
+    display: block;
+    color: #7f96aa;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.admin-prompts-mini-card strong {
+    display: block;
+    margin-top: 6px;
+    color: #0b3c5d;
+    font-size: 1.4rem;
+    font-weight: 900;
+}
+
+.admin-prompts-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.admin-prompts-row.is-active {
+    border-color: rgba(231, 111, 81, 0.45);
+    background: linear-gradient(to bottom right, #fff7ed, #ffffff);
+}
+
+.admin-prompts-row strong,
+.admin-prompts-version-head strong {
+    color: #0b3c5d;
+    font-weight: 900;
+}
+
+.admin-prompts-row small,
+.admin-prompts-row em,
+.admin-prompts-version-head small {
+    color: #7f96aa;
+    font-size: 0.74rem;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.admin-prompts-lang,
+.admin-prompts-version-head span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    color: #2563eb;
+    background: #eff6ff;
+    font-size: 0.68rem;
+    font-weight: 900;
+}
+
+.admin-prompts-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-prompts-span-2,
+.admin-prompts-actions,
+.admin-prompts-version-form > label {
+    grid-column: 1 / -1;
+}
+
+.admin-prompts-input,
+.admin-prompts-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d9e5ef;
+    border-radius: 16px;
+    color: #35556c;
+    background: #f9fbfd;
+    font: inherit;
+}
+
+.admin-prompts-textarea {
+    resize: vertical;
+}
+
+.admin-prompts-code,
+.admin-prompts-version-row pre {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.admin-prompts-input:focus,
+.admin-prompts-textarea:focus {
+    outline: none;
+    border-color: #f4a261;
+    box-shadow: 0 0 0 4px rgba(244, 162, 97, 0.14);
+}
+
+.admin-prompts-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-prompts-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-prompts-version-row {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-prompts-version-row.is-active {
+    border-color: rgba(37, 99, 235, 0.36);
+    background: linear-gradient(to bottom right, #eff6ff, #ffffff);
+}
+
+.admin-prompts-version-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-prompts-version-row pre {
+    max-height: 260px;
+    margin: 0;
+    padding: 14px;
+    overflow: auto;
+    white-space: pre-wrap;
+    color: #35556c;
+    border-radius: 16px;
+    background: #f8fbfd;
+}
+
+@media (max-width: 1180px) {
+    .admin-prompts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 920px) {
+    .admin-prompts-kpi-grid,
+    .admin-prompts-form,
+    .admin-prompts-form-inline {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* === ADMIN FACE ID SETUP === */
 .admin-face-id-setup-container {
     display: flex;
