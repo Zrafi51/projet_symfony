@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Quiz - Test Your Knowledge</title>
+    <link rel="stylesheet" href="{{ asset('css/quiz.css') }}">
+</head>
+<body>
+    <div class="quiz-container">
+        <!-- Header -->
+        <header class="quiz-header">
+            <h1>Travel Destination Quiz</h1>
+            <div class="quiz-info">
+                <div class="score-display">
+                    Score: <span id="score">0</span> / <span id="total-questions">5</span>
+                </div>
+                <div class="timer-display">
+                    Time: <span id="timer">30</span>s
+                </div>
+            </div>
+        </header>
+
+        <!-- Webcam Preview -->
+        <div class="webcam-container">
+            <video id="webcam" width="160" height="120" autoplay muted></video>
+            <div class="webcam-status" id="webcam-status">
+                <div class="status-dot"></div>
+                <span>Monitoring</span>
+            </div>
+        </div>
+
+        <!-- Main Quiz Area -->
+        <main class="quiz-main">
+            <!-- Start Screen -->
+            <div id="start-screen" class="screen active">
+                <div class="start-content">
+                    <h2>Test Your Travel Knowledge!</h2>
+                    <p>Identify travel destinations from images around the world.</p>
+                    <div class="rules">
+                        <h3>Rules:</h3>
+                        <ul>
+                            <li>📍 Identify the destination shown in the image</li>
+                            <li>⏱️ You have 30 seconds per question</li>
+                            <li>👤 Webcam monitoring is required</li>
+                            <li>🚫 No cheating - face must be visible</li>
+                            <li>📝 Type your answer and submit</li>
+                        </ul>
+                    </div>
+                    <button id="start-btn" class="btn btn-primary">Start Quiz</button>
+                </div>
+            </div>
+
+            <!-- Question Screen -->
+            <div id="question-screen" class="screen">
+                <div class="question-content">
+                    <div class="image-container">
+                        <img id="destination-image" src="" alt="Travel destination" oncontextmenu="return false;">
+                        <div class="image-placeholder" id="image-placeholder">
+                            <div class="loading-spinner"></div>
+                            <p>Loading image...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="answer-section">
+                        <div class="question-text">
+                            <h3>What destination is shown in this image?</h3>
+                        </div>
+                        
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                id="answer-input" 
+                                placeholder="Enter destination name..." 
+                                autocomplete="off"
+                                oncopy="return false"
+                                onpaste="return false"
+                                oncut="return false"
+                            >
+                            <div class="input-hint">Type the exact destination name</div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="submit-btn" class="btn btn-success">Submit Answer</button>
+                            <button id="next-btn" class="btn btn-secondary" style="display: none;">Next Question</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Screen -->
+            <div id="result-screen" class="screen">
+                <div class="result-content">
+                    <h2>Quiz Complete!</h2>
+                    <div class="final-score">
+                        <div class="score-circle">
+                            <span id="final-score">0</span>
+                        </div>
+                        <p>out of <span id="final-total">5</span></p>
+                    </div>
+                    
+                    <div class="result-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Accuracy:</span>
+                            <span class="stat-value" id="accuracy">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Violations:</span>
+                            <span class="stat-value" id="violations">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Time:</span>
+                            <span class="stat-value" id="total-time">0s</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-actions">
+                        <button id="restart-btn" class="btn btn-primary">Try Again</button>
+                        <button id="home-btn" class="btn btn-secondary">Home</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="quiz-footer">
+            <div class="proctoring-status">
+                <span id="proctoring-indicator">🔴 Proctoring Active</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Initializing quiz...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+    <script src="{{ asset('js/quiz.js') }}"></script>
+</body>
+</html>

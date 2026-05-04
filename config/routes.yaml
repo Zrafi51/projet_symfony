@@ -3,3 +3,34 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+# Quiz routes
+quiz:
+    path: /quiz
+    controller: App\Controller\QuizController::index
+    methods: GET
+
+quiz_start:
+    path: /api/quiz/start
+    controller: App\Controller\QuizController::startQuiz
+    methods: POST
+
+quiz_question:
+    path: /api/quiz/question
+    controller: App\Controller\QuizController::getQuestion
+    methods: GET
+
+quiz_check:
+    path: /api/quiz/check
+    controller: App\Controller\QuizController::checkAnswer
+    methods: POST
+
+quiz_proctoring_log:
+    path: /api/proctoring/log
+    controller: App\Controller\QuizController::logProctoringViolation
+    methods: POST
+
+quiz_results:
+    path: /api/quiz/results/{sessionId}
+    controller: App\Controller\QuizController::getResults
+    methods: GET
