@@ -124,8 +124,56 @@
             </label>
             <div class="admin-destinations-sponsor-form-actions">
                 <button class="admin-primary-button" type="submit">Ajouter logo sponsor</button>
+                <button class="admin-primary-button" type="button" id="sponsorAiBtn" onclick="generateSponsorWithAi()">✨ Générer avec IA</button>
             </div>
         </form>
+        <div id="sponsorAiMsg" style="display:none;margin-top:8px;font-size:13px;"></div>
+
+        <script>
+        function generateSponsorWithAi() {
+            var form = document.querySelector('.admin-destinations-sponsor-form');
+            var nomInput = form.querySelector('input[name="nom"]');
+            if (!nomInput || nomInput.value.trim() === '') {
+                alert('Veuillez entrer le nom de la société en premier.');
+                nomInput && nomInput.focus();
+                return;
+            }
+            var btn = document.getElementById('sponsorAiBtn');
+            var msg = document.getElementById('sponsorAiMsg');
+            btn.disabled = true;
+            btn.textContent = '⏳ Génération…';
+            msg.style.display = 'none';
+
+            var fd = new FormData();
+            fd.append('company_name', nomInput.value.trim());
+
+            fetch('/admin/sponsors/generate-ai', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.error) { throw new Error(data.error); }
+                    var descTA = form.querySelector('textarea[name="description"]');
+                    if (descTA) descTA.value = data.description || '';
+                    var siteIn = form.querySelector('input[name="site_web"]');
+                    if (siteIn) siteIn.value = data.website || '';
+                    var typeIn = form.querySelector('input[name="type"]');
+                    if (typeIn) typeIn.value = data.type || 'Partenaire';
+                    var montantIn = form.querySelector('input[name="montant_sponsoring"]');
+                    if (montantIn) montantIn.value = data.montant || 0;
+                    msg.style.display = 'block';
+                    msg.style.color   = '#22c55e';
+                    msg.textContent   = '✅ Données générées par IA. Vérifiez et soumettez le formulaire.';
+                })
+                .catch(function(err) {
+                    msg.style.display = 'block';
+                    msg.style.color   = '#ef4444';
+                    msg.textContent   = '❌ Erreur IA : ' + err.message;
+                })
+                .finally(function() {
+                    btn.disabled = false;
+                    btn.textContent = '✨ Générer avec IA';
+                });
+        }
+        </script>
 
         {% if sponsors is empty %}
             <p class="admin-empty-copy">Aucun sponsor configure. Cliquez sur "Ajouter logo sponsor" pour alimenter la section Home.</p>
