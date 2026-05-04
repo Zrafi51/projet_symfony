@@ -44,7 +44,7 @@ body:has(.chat-root) .page-backdrop {
     max-width: 1280px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 280px minmax(0, 700px) 260px;
+    grid-template-columns: 280px minmax(0, 640px) 320px;
     justify-content: center;
     gap: 24px;
     align-items: stretch;
@@ -378,10 +378,10 @@ body:has(.chat-root) .page-backdrop {
 .travel-pack-panel {
     min-height: 0;
     height: 100%;
-    padding: 22px;
+    padding: 18px;
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr);
-    gap: 16px;
+    gap: 12px;
     overflow: hidden;
     box-shadow: 0 12px 26px rgba(11, 60, 93, 0.10);
 }
@@ -402,7 +402,7 @@ body:has(.chat-root) .page-backdrop {
 }
 
 .travel-pack-head h2 {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .travel-pack-head p,
@@ -424,7 +424,8 @@ body:has(.chat-root) .page-backdrop {
 }
 
 .travel-pack-primary {
-    padding: 9px 13px;
+    flex: 0 0 auto;
+    padding: 9px 12px;
     color: white;
     background: linear-gradient(to right, #f4a261, #e76f51);
     font-size: 12px;
@@ -436,16 +437,24 @@ body:has(.chat-root) .page-backdrop {
 }
 
 .travel-pack-list {
+    min-height: 0;
+    max-height: 116px;
     display: grid;
     gap: 10px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(11, 60, 93, 0.22) transparent;
 }
 
 .travel-pack-item {
     display: grid;
-    gap: 6px;
-    padding: 13px;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 4px 8px;
+    padding: 10px 11px;
     border: 1px solid rgba(11, 60, 93, 0.08);
-    border-radius: 18px;
+    border-radius: 14px;
     background: #f7fafc;
 }
 
@@ -458,9 +467,15 @@ body:has(.chat-root) .page-backdrop {
     color: #173f59;
     font-size: 13px;
     font-weight: 900;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .travel-pack-item button {
+    grid-row: 1 / span 2;
+    grid-column: 2;
     width: fit-content;
     padding: 5px 0;
     color: #e76f51;
@@ -470,15 +485,18 @@ body:has(.chat-root) .page-backdrop {
 
 .travel-pack-detail {
     min-height: 0;
-    overflow: auto;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(11, 60, 93, 0.22) transparent;
 }
 
 .travel-pack-card {
     display: grid;
     gap: 14px;
-    padding: 16px;
+    padding: 14px;
     border: 1px solid #dfe8f0;
-    border-radius: 22px;
+    border-radius: 18px;
     background: linear-gradient(to bottom right, #ffffff, #f9fbfe);
 }
 
@@ -506,21 +524,59 @@ body:has(.chat-root) .page-backdrop {
 
 .travel-pack-card h3 {
     margin-top: 4px;
-    font-size: 16px;
+    font-size: 15px;
+    line-height: 1.25;
 }
 
-.travel-pack-body,
-.travel-pack-body ul {
+.travel-pack-body {
     display: grid;
-    gap: 10px;
+    gap: 12px;
 }
 
-.travel-pack-body ul {
+.travel-pack-section {
+    display: grid;
+    gap: 9px;
+    padding: 12px;
+    border: 1px solid rgba(11, 60, 93, 0.08);
+    border-radius: 15px;
+    background: #ffffff;
+}
+
+.travel-pack-section h4 {
     margin: 0;
-    padding-left: 18px;
+    color: #0b3c5d;
+    font-size: 12px;
+    font-weight: 900;
 }
 
-.travel-pack-body li,
+.travel-pack-array {
+    display: grid;
+    gap: 8px;
+}
+
+.travel-pack-array-item {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    padding: 9px;
+    border-radius: 12px;
+    background: rgba(11, 60, 93, 0.04);
+}
+
+.travel-pack-array-index {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(231, 111, 81, 0.12);
+    color: #e76f51;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.travel-pack-text,
 .travel-pack-field span {
     color: #35556c;
     font-size: 12px;
@@ -531,16 +587,19 @@ body:has(.chat-root) .page-backdrop {
 .travel-pack-field {
     display: grid;
     gap: 5px;
-    padding: 10px;
-    border-radius: 14px;
-    background: rgba(11, 60, 93, 0.04);
+    padding: 8px 0;
+    border-top: 1px solid rgba(11, 60, 93, 0.07);
+}
+
+.travel-pack-field:first-child {
+    border-top: 0;
+    padding-top: 0;
 }
 
 .travel-pack-field strong {
     color: #0b3c5d;
     font-size: 11px;
     font-weight: 900;
-    text-transform: capitalize;
 }
 
 .travel-pack-empty {
@@ -700,15 +759,86 @@ body:has(.chat-root) .page-backdrop {
     box-shadow: 0 0 0 4px rgba(231, 111, 81, 0.10);
 }
 
+.speech-button,
 .send-button {
     padding: 14px 20px;
     border: none;
     border-radius: 18px;
-    background: linear-gradient(to right, #f4a261, #e76f51);
-    color: white;
     font-size: 13px;
     font-weight: 800;
     cursor: pointer;
+}
+
+.speech-button {
+    min-width: 86px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid rgba(11, 60, 93, 0.10);
+    background: #ffffff;
+    color: #0b3c5d;
+    box-shadow: 0 8px 18px rgba(11, 60, 93, 0.08);
+}
+
+.speech-button:hover {
+    border-color: rgba(231, 111, 81, 0.30);
+    background: #fff7ed;
+    color: #e76f51;
+}
+
+.speech-button:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+}
+
+.speech-button.is-listening {
+    border-color: rgba(231, 111, 81, 0.36);
+    background: linear-gradient(to right, rgba(244, 162, 97, 0.16), rgba(231, 111, 81, 0.14));
+    color: #c75134;
+}
+
+.speech-button-icon {
+    position: relative;
+    width: 12px;
+    height: 18px;
+    border: 2px solid currentColor;
+    border-radius: 999px;
+}
+
+.speech-button-icon::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -7px;
+    width: 16px;
+    height: 9px;
+    border: 2px solid currentColor;
+    border-top: 0;
+    border-radius: 0 0 999px 999px;
+    transform: translateX(-50%);
+}
+
+.speech-button-icon::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -12px;
+    width: 2px;
+    height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+    transform: translateX(-50%);
+}
+
+.speech-button.is-listening .speech-button-icon {
+    animation: speechPulse 1s ease-in-out infinite;
+}
+
+.send-button {
+    background: linear-gradient(to right, #f4a261, #e76f51);
+    color: white;
 }
 
 .send-button:hover {
@@ -752,6 +882,16 @@ body:has(.chat-root) .page-backdrop {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes speechPulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(231, 111, 81, 0.26);
+    }
+    50% {
+        box-shadow: 0 0 0 7px rgba(231, 111, 81, 0);
     }
 }
 

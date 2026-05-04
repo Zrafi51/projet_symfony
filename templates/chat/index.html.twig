@@ -48,9 +48,13 @@
                 <form class="composer-shell" data-chat-form>
                     <div class="composer-row">
                         <input type="text" class="chat-input" data-chat-input placeholder="Posez votre question a Travel-AI..." autocomplete="off">
+                        <button type="button" class="speech-button" data-speech-toggle aria-label="Dicter le message" title="Dicter le message">
+                            <span class="speech-button-icon" aria-hidden="true"></span>
+                            <span class="speech-button-label">Voix</span>
+                        </button>
                         <button type="submit" class="send-button">Envoyer</button>
                     </div>
-                    <p class="composer-hint">Exemples : budget 1500 EUR, voyage couple, plage en aout ou city break au Japon.</p>
+                    <p class="composer-hint" data-speech-status>Exemples : budget 1500 EUR, voyage couple, plage en aout ou city break au Japon.</p>
                 </form>
             </main>
 

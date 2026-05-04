@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = page.querySelector('[data-chat-input]');
     const status = page.querySelector('[data-chat-status]');
     const newButton = page.querySelector('[data-new-chat]');
+    const speechButton = page.querySelector('[data-speech-toggle]');
+    const speechStatus = page.querySelector('[data-speech-status]');
     const generateCardButton = page.querySelector('[data-generate-card]');
     const cardList = page.querySelector('[data-card-list]');
     const cardDetail = page.querySelector('[data-card-detail]');
@@ -21,6 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let isSending = false;
     let pendingPromptSubmitted = false;
     let historyFilter = 'all';
+    let recognition = null;
+    let isListening = false;
+    let speechBaseValue = '';
+    let speechTranscript = '';
+    let speechHeardAudio = false;
+    let speechHadError = false;
+    let speechStopTimer = null;
+    const defaultSpeechHint = speechStatus ? speechStatus.textContent : '';
 
     try {
         sessions = JSON.parse(page.dataset.sessions || '[]');
@@ -37,6 +47,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const nowTime = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const activeCards = () => (activeSession && Array.isArray(activeSession.cards)) ? activeSession.cards : [];
+    const setSpeechStatus = (message) => {
+        if (speechStatus) {
+            speechStatus.textContent = message || defaultSpeechHint;
+        }
+    };
+
+    const setListeningState = (listening) => {
+        isListening = listening;
+        speechButton?.classList.toggle('is-listening', listening);
+        speechButton?.setAttribute('aria-pressed', listening ? 'true' : 'false');
+        if (speechButton) {
+            speechButton.disabled = isSending;
+        }
+    };
+
+    const clearSpeechTimer = () => {
+        if (speechStopTimer) {
+            window.clearTimeout(speechStopTimer);
+            speechStopTimer = null;
+        }
+    };
+
     const visibleSessions = () => (
         historyFilter === 'favorites'
             ? sessions.filter((session) => Boolean(session.isFavorite))
@@ -55,27 +87,63 @@ document.addEventListener('DOMContentLoaded', () => {
         return payload.title || payload.destination || payload.destination_name || payload.name || 'Pack voyage';
     };
 
-    const renderCardValue = (value) => {
+    const formatCardKey = (key) => key
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+    const hasCardValue = (value) => {
+        if (value === null || value === undefined || value === '') {
+            return false;
+        }
+        if (Array.isArray(value)) {
+            return value.some(hasCardValue);
+        }
+        if (typeof value === 'object') {
+            return Object.values(value).some(hasCardValue);
+        }
+        return true;
+    };
+
+    const renderCardValue = (value, depth = 0) => {
         if (Array.isArray(value)) {
             if (value.length === 0) {
                 return '<span class="travel-pack-muted">Aucune entree.</span>';
             }
-            return `<ul>${value.map((item) => `<li>${renderCardValue(item)}</li>`).join('')}</ul>`;
+            const items = value.filter(hasCardValue);
+            if (items.length === 0) {
+                return '<span class="travel-pack-muted">Aucune entree.</span>';
+            }
+            return `<div class="travel-pack-array">${items.map((item, index) => `
+                <div class="travel-pack-array-item">
+                    <span class="travel-pack-array-index">${index + 1}</span>
+                    <div>${renderCardValue(item, depth + 1)}</div>
+                </div>
+            `).join('')}</div>`;
         }
         if (value && typeof value === 'object') {
-            const entries = Object.entries(value);
+            const entries = Object.entries(value).filter(([, item]) => hasCardValue(item));
             if (entries.length === 0) {
                 return '<span class="travel-pack-muted">Non renseigne.</span>';
             }
+
+            if (depth === 0) {
+                return entries.map(([key, item]) => `
+                    <section class="travel-pack-section">
+                        <h4>${escapeHtml(formatCardKey(key))}</h4>
+                        <div>${renderCardValue(item, depth + 1)}</div>
+                    </section>
+                `).join('');
+            }
+
             return entries.map(([key, item]) => `
                 <div class="travel-pack-field">
-                    <strong>${escapeHtml(key.replace(/_/g, ' '))}</strong>
-                    <span>${renderCardValue(item)}</span>
+                    <strong>${escapeHtml(formatCardKey(key))}</strong>
+                    <span>${renderCardValue(item, depth + 1)}</span>
                 </div>
             `).join('');
         }
 
-        return escapeHtml(value || '');
+        return `<span class="travel-pack-text">${escapeHtml(value || '')}</span>`;
     };
 
     const renderHistory = () => {
@@ -228,6 +296,103 @@ document.addEventListener('DOMContentLoaded', () => {
         return data.session;
     };
 
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (speechButton && !SpeechRecognition) {
+        speechButton.disabled = true;
+        speechButton.classList.add('is-unavailable');
+        speechButton.setAttribute('title', 'Dictee vocale indisponible sur ce navigateur');
+        setSpeechStatus('Dictee vocale indisponible sur ce navigateur. Vous pouvez toujours taper votre message.');
+    } else if (speechButton && SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            speechBaseValue = input ? input.value.trim() : '';
+            speechTranscript = '';
+            speechHeardAudio = false;
+            speechHadError = false;
+            setListeningState(true);
+            setSpeechStatus('Ecoute en cours... parlez maintenant, puis marquez une courte pause.');
+            clearSpeechTimer();
+            speechStopTimer = window.setTimeout(() => {
+                if (recognition && isListening) {
+                    recognition.stop();
+                }
+            }, 14000);
+        };
+
+        recognition.onaudiostart = () => {
+            speechHeardAudio = true;
+            setSpeechStatus('Micro actif. Je vous ecoute...');
+        };
+
+        recognition.onsoundstart = () => {
+            speechHeardAudio = true;
+            setSpeechStatus('Son detecte, transcription en cours...');
+        };
+
+        recognition.onspeechstart = () => {
+            speechHeardAudio = true;
+            setSpeechStatus('Parole detectee, continuez...');
+        };
+
+        recognition.onresult = (event) => {
+            let finalTranscript = '';
+            let interimTranscript = '';
+            for (let index = 0; index < event.results.length; index++) {
+                const result = event.results[index];
+                const text = result[0] ? result[0].transcript.trim() : '';
+                if (result.isFinal) {
+                    finalTranscript += ` ${text}`;
+                } else {
+                    interimTranscript += ` ${text}`;
+                }
+            }
+
+            speechTranscript = `${finalTranscript} ${interimTranscript}`.trim();
+            if (input) {
+                input.value = [speechBaseValue, speechTranscript].filter(Boolean).join(' ');
+                input.focus();
+            }
+            if (speechTranscript) {
+                setSpeechStatus(`Texte detecte : "${speechTranscript}"`);
+            }
+        };
+
+        recognition.onnomatch = () => {
+            setSpeechStatus('Son detecte, mais aucun texte clair. Rapprochez-vous du micro et reessayez.');
+        };
+
+        recognition.onerror = (event) => {
+            speechHadError = true;
+            const messages = {
+                'not-allowed': 'Micro refuse. Autorisez le micro dans le navigateur puis reessayez.',
+                'service-not-allowed': 'Service vocal bloque par le navigateur. Essayez Chrome/Edge sur localhost.',
+                'no-speech': 'Aucune parole detectee. Cliquez sur Voix, parlez clairement, puis faites une pause.',
+                'audio-capture': 'Aucun micro detecte. Verifiez le micro du navigateur ou du systeme.',
+                network: 'Service de dictee indisponible. Pour du 100% local, il faudra ajouter Whisper/Vosk cote serveur.',
+            };
+            setSpeechStatus(messages[event.error] || 'Dictee vocale interrompue. Reessayez dans quelques secondes.');
+        };
+
+        recognition.onend = () => {
+            clearSpeechTimer();
+            setListeningState(false);
+            if (speechTranscript || (input && input.value.trim() !== speechBaseValue)) {
+                setSpeechStatus('Texte detecte. Verifiez puis envoyez.');
+            } else if (!speechHadError && speechHeardAudio) {
+                setSpeechStatus('J ai entendu du son, mais aucun texte clair. Essayez une phrase courte en francais.');
+            } else if (!speechHadError) {
+                setSpeechStatus('Aucun son detecte. Verifiez l autorisation micro puis reessayez.');
+            } else {
+                speechHadError = false;
+            }
+        };
+    }
+
     if (sessions.length > 0) {
         activeSession = sessions[0];
     }
@@ -307,6 +472,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    speechButton?.addEventListener('click', () => {
+        if (!recognition || isSending) {
+            return;
+        }
+
+        if (isListening) {
+            clearSpeechTimer();
+            recognition.stop();
+            return;
+        }
+
+        try {
+            recognition.start();
+        } catch (error) {
+            setSpeechStatus('Dictee deja en cours. Patientez une seconde puis reessayez.');
+        }
+    });
+
     generateCardButton?.addEventListener('click', async () => {
         if (!activeSession || isSending) {
             return;
@@ -362,7 +545,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const prompt = input.value.trim();
         input.value = '';
+        if (recognition && isListening) {
+            recognition.stop();
+        }
         isSending = true;
+        if (speechButton) {
+            speechButton.disabled = true;
+        }
         if (!activeSession) {
             try {
                 activeSession = await createSession();
@@ -405,10 +594,14 @@ document.addEventListener('DOMContentLoaded', () => {
             renderMessages();
         } finally {
             isSending = false;
+            if (speechButton && SpeechRecognition) {
+                speechButton.disabled = false;
+            }
             renderCards();
             if (status) {
                 status.textContent = 'Assistant voyage | Reponses rapides et idees de sejour';
             }
+            setSpeechStatus();
             input.focus();
         }
     });
