@@ -86,7 +86,7 @@ class QuizController extends AbstractController
         if ($quizImage && $quizImage->getImageFilename()) {
             // Direct path to upload folder
             $imagePath = '/uploads/quiz_img/' . $quizImage->getImageFilename();
-            $fullPath = 'public' . $imagePath;
+            $fullPath = __DIR__ . '/../../public' . $imagePath;
             
             if (file_exists($fullPath)) {
                 $imageUrl = $imagePath;
@@ -100,7 +100,7 @@ class QuizController extends AbstractController
             if ($quizImage && $quizImage->getImageFilename()) {
                 // Direct path to upload folder
                 $imagePath = '/uploads/quiz_img/' . $quizImage->getImageFilename();
-                $fullPath = 'public' . $imagePath;
+                $fullPath = __DIR__ . '/../../public' . $imagePath;
                 
                 if (file_exists($fullPath)) {
                     $imageUrl = $imagePath;

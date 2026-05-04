@@ -229,6 +229,7 @@ class TravelQuiz {
             // Reset UI for new question
             document.getElementById('answer-input').value = '';
             document.getElementById('answer-input').disabled = false;
+            document.getElementById('submit-btn').disabled = false;
             document.getElementById('submit-btn').style.display = 'inline-block';
             document.getElementById('next-btn').style.display = 'none';
             document.getElementById('destination-image').style.display = 'none';
