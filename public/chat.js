@@ -91,6 +91,204 @@ document.addEventListener('DOMContentLoaded', () => {
         .replace(/_/g, ' ')
         .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
+    const normalizeList = (value) => {
+        if (Array.isArray(value)) {
+            return value.filter((item) => item !== null && item !== undefined && item !== '');
+        }
+        if (value && typeof value === 'object') {
+            return Object.values(value).filter((item) => item !== null && item !== undefined && item !== '');
+        }
+        return value ? [value] : [];
+    };
+
+    const valueFrom = (item, keys, fallback = '') => {
+        if (!item || typeof item !== 'object') {
+            return fallback;
+        }
+        for (const key of keys) {
+            if (item[key] !== null && item[key] !== undefined && item[key] !== '') {
+                return item[key];
+            }
+        }
+        return fallback;
+    };
+
+    const stripMarkup = (value) => (value || '').toString()
+        .replace(/<br\s*\/?>/gi, ' ')
+        .replace(/<\/p>/gi, ' ')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const shortText = (value, maxLength = 170) => {
+        const text = stripMarkup(value);
+        if (text.length <= maxLength) {
+            return text;
+        }
+        return `${text.slice(0, maxLength).replace(/\s+\S*$/, '')}...`;
+    };
+
+    const renderChipList = (items) => {
+        const values = normalizeList(items).map((item) => {
+            if (item && typeof item === 'object') {
+                return valueFrom(item, ['name', 'title', 'destination', 'city', 'City'], '');
+            }
+            return item;
+        }).filter(Boolean);
+
+        if (values.length === 0) {
+            return '<span class="travel-pack-muted">Non renseigne.</span>';
+        }
+
+        return `<div class="travel-pack-chip-list">${values.map((item) => `<span class="travel-pack-chip">${escapeHtml(item)}</span>`).join('')}</div>`;
+    };
+
+    const renderHotelCard = (hotel, index) => {
+        const name = hotel && typeof hotel === 'object' ? valueFrom(hotel, ['name', 'Name', 'hotelName', 'title'], `Hotel ${index + 1}`) : hotel;
+        const city = valueFrom(hotel, ['city', 'City', 'destination'], '');
+        const address = valueFrom(hotel, ['address', 'Address'], '');
+        const stars = valueFrom(hotel, ['stars', 'Stars', 'starRating'], '');
+        const rating = valueFrom(hotel, ['rating', 'Rating'], '');
+        const reviews = valueFrom(hotel, ['reviewCount', 'ReviewCount'], '');
+        const photo = valueFrom(hotel, ['thumbnail', 'Thumbnail', 'main_photo', 'mainPhoto', 'Main Photo'], '');
+        const description = shortText(valueFrom(hotel, ['notes', 'description', 'Description', 'hotelDescription', 'HotelDescription'], ''), 155);
+        const meta = [
+            city || address,
+            stars ? `${stars} etoiles` : '',
+            rating ? `Note ${rating}${reviews ? ` (${reviews} avis)` : ''}` : '',
+        ].filter(Boolean).join(' | ');
+
+        return `
+            <article class="travel-pack-compact-card travel-pack-hotel-card">
+                ${photo ? `<img src="${escapeHtml(photo)}" alt="" class="travel-pack-hotel-thumb" loading="lazy">` : ''}
+                <div class="travel-pack-compact-content">
+                    <span class="travel-pack-array-index">${index + 1}</span>
+                    <div>
+                        <h5>${escapeHtml(name || `Hotel ${index + 1}`)}</h5>
+                        ${meta ? `<p class="travel-pack-card-meta">${escapeHtml(meta)}</p>` : ''}
+                        ${description ? `<p>${escapeHtml(description)}</p>` : ''}
+                    </div>
+                </div>
+            </article>
+        `;
+    };
+
+    const hotelsFromMessageMetadata = (metadata) => {
+        if (!metadata || metadata.last_list_type !== 'hotels') {
+            return [];
+        }
+
+        const directHotels = normalizeList(metadata.hotels);
+        if (directHotels.length > 0) {
+            return directHotels;
+        }
+
+        const grouped = metadata.hotels_by_destination;
+        if (!grouped || typeof grouped !== 'object') {
+            return [];
+        }
+
+        return Object.entries(grouped).flatMap(([destination, items]) => normalizeList(items).map((hotel) => {
+            if (hotel && typeof hotel === 'object' && !hotel.destination) {
+                return { ...hotel, destination };
+            }
+            return hotel;
+        }));
+    };
+
+    const renderMessageHotelCards = (message) => {
+        const hotels = hotelsFromMessageMetadata(message.metadata || {});
+        if (hotels.length === 0) {
+            return '';
+        }
+
+        return `<div class="message-hotel-grid">${hotels.slice(0, 5).map(renderHotelCard).join('')}</div>`;
+    };
+
+    const renderActivityCard = (activity, index) => {
+        const name = activity && typeof activity === 'object' ? valueFrom(activity, ['name', 'Name', 'title'], `Activite ${index + 1}`) : activity;
+        const location = valueFrom(activity, ['location', 'Location', 'place'], '');
+        const time = valueFrom(activity, ['time', 'Time', 'timing', 'Timing', 'moment'], '');
+        const description = shortText(valueFrom(activity, ['description', 'Description', 'notes'], ''), 170);
+        const meta = [location, time].filter(Boolean).join(' | ');
+
+        return `
+            <article class="travel-pack-compact-card">
+                <div class="travel-pack-compact-content">
+                    <span class="travel-pack-array-index">${index + 1}</span>
+                    <div>
+                        <h5>${escapeHtml(name || `Activite ${index + 1}`)}</h5>
+                        ${meta ? `<p class="travel-pack-card-meta">${escapeHtml(meta)}</p>` : ''}
+                        ${description ? `<p>${escapeHtml(description)}</p>` : ''}
+                    </div>
+                </div>
+            </article>
+        `;
+    };
+
+    const renderSchedule = (schedule) => {
+        const days = normalizeList(schedule);
+        if (days.length === 0) {
+            return '<span class="travel-pack-muted">Planning a completer.</span>';
+        }
+
+        return `<div class="travel-pack-schedule">${days.map((day, index) => {
+            if (!day || typeof day !== 'object') {
+                return `<article class="travel-pack-day"><strong>Jour ${index + 1}</strong><p>${escapeHtml(day)}</p></article>`;
+            }
+            const dayLabel = valueFrom(day, ['day', 'Day'], index + 1);
+            const slots = [
+                ['Matin', valueFrom(day, ['morning', 'Morning'], '')],
+                ['Apres-midi', valueFrom(day, ['afternoon', 'Afternoon'], '')],
+                ['Soir', valueFrom(day, ['evening', 'Evening'], '')],
+            ].filter(([, text]) => text);
+            return `
+                <article class="travel-pack-day">
+                    <strong>Jour ${escapeHtml(dayLabel)}</strong>
+                    ${slots.map(([label, text]) => `<p><span>${label}</span>${escapeHtml(text)}</p>`).join('')}
+                </article>
+            `;
+        }).join('')}</div>`;
+    };
+
+    const renderTravelPack = (payload) => {
+        const card = payload || {};
+        const destinations = normalizeList(card.destinations || card.destination || card.destination_name);
+        const hotels = normalizeList(card.selected_hotels || card.hotels);
+        const activities = normalizeList(card.selected_activities || card.activities);
+        const tripLength = card.trip_length_days || card.duration_days || '';
+        const dateRange = card.date_range && typeof card.date_range === 'object'
+            ? [card.date_range.depart_date, card.date_range.return_date].filter(Boolean).join(' -> ')
+            : '';
+
+        return `
+            <section class="travel-pack-section travel-pack-overview">
+                <h4>Resume</h4>
+                <div class="travel-pack-summary-grid">
+                    <div><strong>Destinations</strong>${renderChipList(destinations)}</div>
+                    ${tripLength ? `<div><strong>Duree</strong><span>${escapeHtml(tripLength)} jours</span></div>` : ''}
+                    ${dateRange ? `<div><strong>Dates</strong><span>${escapeHtml(dateRange)}</span></div>` : ''}
+                </div>
+            </section>
+            <section class="travel-pack-section">
+                <h4>Hotels retenus</h4>
+                ${hotels.length ? `<div class="travel-pack-card-grid">${hotels.map(renderHotelCard).join('')}</div>` : '<span class="travel-pack-muted">Aucun hotel retenu pour le moment.</span>'}
+            </section>
+            <section class="travel-pack-section">
+                <h4>Activites ajoutees au pack</h4>
+                ${activities.length ? `<div class="travel-pack-card-grid">${activities.map(renderActivityCard).join('')}</div>` : '<span class="travel-pack-muted">Aucune activite ajoutee pour le moment.</span>'}
+            </section>
+            <section class="travel-pack-section">
+                <h4>Programme suggere</h4>
+                ${renderSchedule(card.schedule)}
+            </section>
+        `;
+    };
+
     const hasCardValue = (value) => {
         if (value === null || value === undefined || value === '') {
             return false;
@@ -211,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="message-row ${message.role === 'user' ? 'is-user' : 'is-ai'}">
                 <div class="message-bubble ${message.role === 'user' ? 'message-user' : 'message-ai'}">
                     <p class="message-text">${escapeHtml(message.content)}</p>
+                    ${message.role === 'user' ? '' : renderMessageHotelCards(message)}
                     <time class="message-time ${message.role === 'user' ? 'message-time-user' : 'message-time-ai'}">${escapeHtml(message.time || nowTime())}</time>
                 </div>
             </div>
@@ -258,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <span class="travel-pack-pill">${escapeHtml(current.status || 'generated')}</span>
                 </div>
-                <div class="travel-pack-body">${renderCardValue(current.card || {})}</div>
+                <div class="travel-pack-body">${renderTravelPack(current.card || {})}</div>
             </article>
         `;
     };

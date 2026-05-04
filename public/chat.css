@@ -533,6 +533,128 @@ body:has(.chat-root) .page-backdrop {
     gap: 12px;
 }
 
+.travel-pack-summary-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.travel-pack-summary-grid > div {
+    display: grid;
+    gap: 6px;
+}
+
+.travel-pack-summary-grid strong,
+.travel-pack-card-meta {
+    color: #7b91a3;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.travel-pack-summary-grid span {
+    color: #173f59;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.travel-pack-chip-list,
+.travel-pack-card-grid,
+.travel-pack-schedule {
+    display: grid;
+    gap: 9px;
+}
+
+.travel-pack-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.travel-pack-chip {
+    width: fit-content;
+    max-width: 100%;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: rgba(11, 60, 93, 0.07);
+    color: #0b3c5d;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.travel-pack-compact-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(11, 60, 93, 0.08);
+    border-radius: 14px;
+    background: linear-gradient(to bottom right, #f9fbfd, #ffffff);
+}
+
+.travel-pack-hotel-card {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+}
+
+.travel-pack-hotel-thumb {
+    width: 76px;
+    height: 100%;
+    min-height: 104px;
+    object-fit: cover;
+    background: #e8eff4;
+}
+
+.travel-pack-compact-content {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+}
+
+.travel-pack-compact-card h5 {
+    margin: 0;
+    color: #0b3c5d;
+    font-size: 13px;
+    font-weight: 950;
+    line-height: 1.25;
+}
+
+.travel-pack-compact-card p {
+    margin: 5px 0 0;
+    color: #35556c;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
+.travel-pack-day {
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 13px;
+    background: rgba(11, 60, 93, 0.04);
+}
+
+.travel-pack-day strong {
+    color: #e76f51;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.travel-pack-day p {
+    margin: 0;
+    color: #35556c;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
+.travel-pack-day p span {
+    display: block;
+    color: #0b3c5d;
+    font-size: 10px;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
 .travel-pack-section {
     display: grid;
     gap: 9px;
@@ -709,6 +831,25 @@ body:has(.chat-root) .page-backdrop {
     font-size: 14px;
     font-weight: 600;
     line-height: 1.6;
+}
+
+.message-hotel-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.message-hotel-grid .travel-pack-compact-card {
+    background: #ffffff;
+}
+
+.message-hotel-grid .travel-pack-hotel-card {
+    grid-template-columns: 92px minmax(0, 1fr);
+}
+
+.message-hotel-grid .travel-pack-hotel-thumb {
+    width: 92px;
+    min-height: 112px;
 }
 
 .message-time {
