@@ -1,0 +1,56 @@
+﻿{% extends 'social/base.html.twig' %}
+
+{% block title %}Messagerie - Forum Voyage{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0"><i class="fas fa-paper-plane me-2 text-primary"></i>Messagerie</h3>
+            <a href="{{ path('forum_forum') }}" class="btn btn-link text-muted"><i class="fas fa-arrow-left me-1"></i>Retour</a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                {% if conversations is empty %}
+                    <div class="text-center py-5">
+                        <i class="far fa-comments text-muted fs-1"></i>
+                        <p class="text-muted mt-3 mb-1">Aucune conversation</p>
+                        <small class="text-muted">Abonnez-vous à d'autres voyageurs pour leur envoyer un message.</small>
+                    </div>
+                {% else %}
+                    <div class="list-group list-group-flush conversation-list">
+                        {% for c in conversations %}
+                            <a href="{{ path('forum_messages_thread', {username: c.peer}) }}"
+                               class="list-group-item list-group-item-action d-flex align-items-center py-3 gap-3">
+                                {% set photo = photoMap[c.peer] ?? null %}
+                                {% if photo %}
+                                    <img src="{{ asset('uploads/profiles/' ~ photo) }}"
+                                         class="rounded-circle" style="width:52px;height:52px;object-fit:cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center"
+                                         style="width:52px;height:52px;">
+                                        <span class="text-white fw-bold">{{ c.peer|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>{{ c.peer }}</strong>
+                                        <small class="text-muted">{{ c.last_at|date('d/m H:i') }}</small>
+                                    </div>
+                                    <div class="text-muted text-truncate small {{ c.unread > 0 ? 'fw-semibold text-dark' : '' }}">
+                                        {{ c.last_message|slice(0, 80) }}{% if c.last_message|length > 80 %}…{% endif %}
+                                    </div>
+                                </div>
+                                {% if c.unread > 0 %}
+                                    <span class="badge bg-primary rounded-pill">{{ c.unread }}</span>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

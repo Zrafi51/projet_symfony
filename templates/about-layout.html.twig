@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default('A propos - EasyTravel') }}</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/about.css">
+    <link rel="stylesheet" href="/currency.css">
+    <link rel="stylesheet" href="/hand-tracking.css">
+    {% block extra_head %}{% endblock %}
+</head>
+{% set currentUser = current_user(currentUser|default(null)) %}
+{% set photoUrl = currentUser.photo_display_url|default(currentUser.photo_url|default(''))|trim %}
+{% set fullName = (currentUser.prenom|default('') ~ ' ' ~ currentUser.nom|default(''))|trim %}
+{% set displayName = currentUser.display_name|default(fullName) %}
+{% if displayName == '' %}
+    {% set displayName = currentUser.email|default('Voyageur') %}
+{% endif %}
+{% set accountButtonName = currentUser.prenom|default('')|trim %}
+{% if accountButtonName == '' %}
+    {% set accountButtonName = currentUser.nom|default('')|trim %}
+{% endif %}
+{% if accountButtonName == '' %}
+    {% set accountButtonName = displayName %}
+{% endif %}
+{% if '@' in accountButtonName %}
+    {% set accountButtonName = accountButtonName|split('@')|first %}
+{% endif %}
+{% set userInitial = (currentUser.prenom|default(displayName)|slice(0, 1))|upper %}
+{% set userRole = currentUser.role|default('USER')|upper %}
+{% set isAdminUser = userRole == 'ADMIN' %}
+{% set accountDashboardPath = isAdminUser ? '/admin/dashboard' : '/dashboard' %}
+{% set accountProfilePath = isAdminUser ? '/admin/settings' : '/profile' %}
+{% set accountProfileTitle = isAdminUser ? 'Parametres admin' : 'Gerer profil' %}
+{% set accountProfileSubtitle = isAdminUser ? 'Securite et informations du compte' : 'Vos informations personnelles' %}
+{% set accountDashboardTitle = isAdminUser ? 'Dashboard admin' : 'Dashboard' %}
+{% set accountDashboardSubtitle = isAdminUser ? 'Piloter la plateforme' : 'Votre espace client' %}
+{% set footerNewsletterAction = footerNewsletterAction|default('/about') %}
+{% set footerNewsletterStatusMessage = footerNewsletterStatusMessage|default(null) %}
+{% set footerNewsletterErrorMessage = footerNewsletterErrorMessage|default(null) %}
+{% set footerCtaHref = footerCtaHref|default('/') %}
+{% set footerCtaLabel = footerCtaLabel|default('Commencer mon voyage') %}
+{% set footerContactEmail = footerContactEmail|default('contact@easytravel.com') %}
+{% set footerContactPhone = footerContactPhone|default('+33 1 23 45 67 89') %}
+{% set footerContactLocation = footerContactLocation|default('Paris, France') %}
+{% set footerBrandText = footerBrandText|default("Createur d'experiences de voyage uniques avec l'intelligence artificielle depuis 2024.") %}
+<body class="{{ pageBodyClass|default('about-page-body') }}">
+    <div class="about-page-shell">
+        <header class="about-navbar-shell" id="aboutNavbar">
+            <div class="about-navbar">
+                <div class="about-navbar-brand">
+                    <a href="/" class="about-logo-shell" aria-label="Retour a l accueil">
+                        <canvas id="aboutLogoCanvas" width="200" height="60"></canvas>
+                    </a>
+                </div>
+
+                <nav class="about-navbar-links" aria-label="Navigation principale">
+                    <a href="/" class="about-nav-button {{ path|default('/') == '/' ? 'about-nav-button-active' : '' }}">Accueil</a>
+                    <a href="/destinations" class="about-nav-button {{ path|default('/') starts with '/destinations' ? 'about-nav-button-active' : '' }}">Destinations</a>
+                    <a href="/about" class="about-nav-button {{ path|default('/') starts with '/about' ? 'about-nav-button-active' : '' }}">A propos</a>
+                    <a href="{{ path('forum_forum') }}" class="about-nav-button {{ path|default('/') starts with '/social/forum' ? 'about-nav-button-active' : '' }}">Forum</a>
+                    <a href="/contact" class="about-nav-button {{ path|default('/') starts with '/contact' ? 'about-nav-button-active' : '' }}">Contact</a>
+                </nav>
+
+                <div class="about-navbar-actions">
+                    <button type="button" class="about-search-button" id="aboutSearchToggle" aria-label="Ouvrir la recherche">&#128269;</button>
+                    {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-nav', currencySwitcherId: 'aboutCurrencySwitcher'} %}
+
+                    <button id="hand-tracking-toggle" class="hand-toggle-btn" type="button" data-tooltip="Contrôle par la main (Caméra)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                        </svg>
+                        <span class="hand-status-badge"></span>
+                    </button>
+                    {% if currentUser %}
+                        <div class="account-menu-wrapper" data-account-menu-wrapper>
+                            <button
+                                class="connexion-button account-button account-button-logged-in"
+                                type="button"
+                                data-account-menu-button
+                                aria-controls="aboutAccountMenu"
+                                aria-expanded="false"
+                            >
+                                <div class="account-button-content">
+                                    <div class="account-button-avatar">
+                                        {% if photoUrl %}
+                                            <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-avatar-image">
+                                        {% else %}
+                                            <span class="account-button-avatar-label">{{ userInitial }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="account-button-name">{{ accountButtonName }}</span>
+                                    <span class="account-button-arrow">&#9662;</span>
+                                </div>
+                            </button>
+
+                            <div class="navbar-account-menu" id="aboutAccountMenu" data-account-menu hidden>
+                                <div class="account-menu-header">
+                                    <div class="account-menu-header-avatar">
+                                        {% if photoUrl %}
+                                            <img src="{{ photoUrl }}" alt="{{ displayName }}" class="account-menu-avatar-image">
+                                        {% else %}
+                                            <span class="account-menu-header-avatar-label">{{ userInitial }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="account-menu-header-text">
+                                        <div class="account-menu-header-name">{{ displayName }}</div>
+                                        <div class="account-menu-header-email">{{ currentUser.email|default('Compte utilisateur') }}</div>
+                                    </div>
+                                </div>
+                                <div class="account-menu-separator"></div>
+                                <a href="{{ accountProfilePath }}" class="account-menu-item">
+                                    <div class="account-menu-icon-shell">
+                                        <div class="account-menu-icon-shape account-menu-icon-profile"></div>
+                                    </div>
+                                    <div class="account-menu-item-labels">
+                                        <div class="account-menu-title">{{ accountProfileTitle }}</div>
+                                        <div class="account-menu-subtitle">{{ accountProfileSubtitle }}</div>
+                                    </div>
+                                    <span class="account-menu-item-chevron">&#8250;</span>
+                                </a>
+                                <a href="{{ path('forum_forum') }}" class="account-menu-item">
+                                    <div class="account-menu-icon-shell">
+                                        <div class="account-menu-icon-shape account-menu-icon-forum"></div>
+                                    </div>
+                                    <div class="account-menu-item-labels">
+                                        <div class="account-menu-title">Forum</div>
+                                        <div class="account-menu-subtitle">Discussions et echanges voyageurs</div>
+                                    </div>
+                                    <span class="account-menu-item-chevron">&#8250;</span>
+                                </a>
+                                <a href="{{ accountDashboardPath }}" class="account-menu-item">
+                                    <div class="account-menu-icon-shell">
+                                        <div class="account-menu-icon-shape account-menu-icon-dashboard"></div>
+                                    </div>
+                                    <div class="account-menu-item-labels">
+                                        <div class="account-menu-title">{{ accountDashboardTitle }}</div>
+                                        <div class="account-menu-subtitle">{{ accountDashboardSubtitle }}</div>
+                                    </div>
+                                    <span class="account-menu-item-chevron">&#8250;</span>
+                                </a>
+                                <div class="account-menu-separator"></div>
+                                <a href="/logout" class="account-menu-item account-menu-item-danger">
+                                    <div class="account-menu-icon-shell account-menu-icon-shell-danger">
+                                        <div class="account-menu-icon-shape account-menu-icon-shape-danger account-menu-icon-logout"></div>
+                                    </div>
+                                    <div class="account-menu-item-labels">
+                                        <div class="account-menu-title account-menu-title-danger">Deconnexion</div>
+                                        <div class="account-menu-subtitle account-menu-subtitle-danger">Fermer la session active et garder le compte memorise</div>
+                                    </div>
+                                    <span class="account-menu-item-chevron">&#8250;</span>
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="/login" class="connexion-button">Connexion</a>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <main class="about-main">
+            {% if showImmersiveAlerts|default(true) and (databaseError|default(null) or statusMessage or errorMessage) %}
+                <div class="about-alert-stack">
+                    {% if databaseError|default(null) %}
+                        <div class="about-alert about-alert-error">{{ databaseError }}</div>
+                    {% endif %}
+                    {% if statusMessage %}
+                        <div class="about-alert about-alert-success">{{ statusMessage }}</div>
+                    {% endif %}
+                    {% if errorMessage %}
+                        <div class="about-alert about-alert-error">{{ errorMessage }}</div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <div class="dashboard-footer-wrap">
+            <footer class="dashboard-footer">
+                <div class="footer-cta">
+                    <h2 class="footer-cta-title">Pret pour l'aventure ?</h2>
+                    <p class="footer-cta-subtitle">Contactez-nous pour creer votre voyage sur mesure</p>
+                    <a href="{{ footerCtaHref }}" class="cta-button">{{ footerCtaLabel|raw }}</a>
+                </div>
+
+                <div class="footer-content">
+                    <div class="footer-column">
+                        <h3 class="footer-brand">EasyTravel</h3>
+                        <p class="footer-brand-text">{{ footerBrandText }}</p>
+                        <div class="footer-social">
+                            <button class="social-button" type="button">f</button>
+                            <button class="social-button" type="button">&#128247;</button>
+                            <button class="social-button" type="button">&#128038;</button>
+                        </div>
+                    </div>
+
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Liens rapides</h4>
+                        <a href="/destinations" class="footer-link">Destinations</a>
+                        <a href="#" class="footer-link">Nos services</a>
+                        <a href="#" class="footer-link">Offres speciales</a>
+                        <a href="/about" class="footer-link">A propos</a>
+                        <a href="#" class="footer-link">Blog</a>
+                    </div>
+
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Support</h4>
+                        <a href="#" class="footer-link">FAQ</a>
+                        <a href="/contact" class="footer-link">Contact</a>
+                        <a href="#" class="footer-link">Conditions generales</a>
+                        <a href="#" class="footer-link">Politique de confidentialite</a>
+                        <a href="#" class="footer-link">Mentions legales</a>
+                    </div>
+
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Newsletter</h4>
+                        <p class="footer-newsletter-text">Recevez nos meilleures offres</p>
+                        <form method="post" action="{{ footerNewsletterAction }}" class="footer-newsletter-form">
+                            <input type="email" name="newsletter_email" class="footer-newsletter-input" placeholder="Votre email" required>
+                            <button type="submit" class="cta-button">S'abonner</button>
+                        </form>
+                        {% if footerNewsletterStatusMessage %}
+                            <p class="footer-newsletter-feedback footer-newsletter-feedback-success">{{ footerNewsletterStatusMessage }}</p>
+                        {% endif %}
+                        {% if footerNewsletterErrorMessage %}
+                            <p class="footer-newsletter-feedback footer-newsletter-feedback-error">{{ footerNewsletterErrorMessage }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="footer-contact">
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">&#9993;</span>
+                        <span class="footer-contact-text">{{ footerContactEmail }}</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">&#9742;</span>
+                        <span class="footer-contact-text">{{ footerContactPhone }}</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">&#128205;</span>
+                        <span class="footer-contact-text">{{ footerContactLocation }}</span>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p class="footer-copyright">&#169; 2024 EasyTravel - Tous droits reserves</p>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <button type="button" id="aboutScrollTopButton" class="about-scroll-top-button" aria-label="Retour en haut">&#8593;</button>
+
+    <div class="about-search-overlay" id="aboutSearchOverlay" style="display: none;" aria-hidden="true">
+        <div class="about-search-panel" id="aboutSearchPanel" role="dialog" aria-modal="true" aria-labelledby="aboutSearchTitle">
+            <div class="about-search-header">
+                <div>
+                    <h2 id="aboutSearchTitle">Rechercher votre voyage</h2>
+                    <p>Retrouvez une destination, une date et le nombre de voyageurs en quelques clics.</p>
+                </div>
+                <button type="button" class="about-search-close" id="aboutSearchClose" aria-label="Fermer la recherche">&#10005;</button>
+            </div>
+
+            <div class="about-search-grid">
+                <label class="about-search-field">
+                    <span>Destination</span>
+                    <input type="search" id="aboutSearchDestination" placeholder="Ou voulez-vous aller ?">
+                </label>
+
+                <label class="about-search-field">
+                    <span>Date</span>
+                    <input type="date" id="aboutSearchDate">
+                </label>
+
+                <label class="about-search-field">
+                    <span>Voyageurs</span>
+                    <select id="aboutSearchTravelers">
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="about-search-popular">
+                <span>Destinations populaires :</span>
+                <button type="button" class="about-search-chip" data-destination="Bali">Bali</button>
+                <button type="button" class="about-search-chip" data-destination="Maldives">Maldives</button>
+                <button type="button" class="about-search-chip" data-destination="Tokyo">Tokyo</button>
+                <button type="button" class="about-search-chip" data-destination="Santorini">Santorini</button>
+            </div>
+
+            <p class="about-search-message" id="aboutSearchMessage"></p>
+
+            <button type="button" class="about-search-submit" id="aboutSearchSubmit">&#128269; Rechercher mon voyage</button>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/about.js"></script>
+    <script src="/currency.js"></script>
+
+    <!-- MediaPipe Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="/hand-tracking.js"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

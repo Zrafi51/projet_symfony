@@ -1,0 +1,256 @@
+﻿{% extends 'social/base.html.twig' %}
+
+{% block title %}{{ post.description|slice(0, 50) }} - Forum Voyage{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        {# Back link — three possible origins:
+             • ?from=profile           → back to my own profile
+             • ?from=u:{username}      → back to that user's profile
+             • otherwise               → back to the global feed #}
+        {% set fromRaw = app.request.query.get('from') %}
+        {% set fromProfile = fromRaw == 'profile' %}
+        {% set fromUser = (fromRaw starts with 'u:') ? fromRaw|slice(2) : '' %}
+        {% if fromProfile %}
+            {% set backHref = path('forum_profile') %}
+            {% set backLabel = 'Retour à mon profil' %}
+        {% elseif fromUser %}
+            {% set backHref = path('forum_user_profile', {username: fromUser}) %}
+            {% set backLabel = 'Retour au profil de @' ~ fromUser %}
+        {% else %}
+            {% set backHref = path('forum_forum') %}
+            {% set backLabel = 'Retour au fil' %}
+        {% endif %}
+        <a href="{{ backHref }}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="fas fa-arrow-left me-1"></i>{{ backLabel }}
+        </a>
+
+        <div class="card shadow border-0">
+            {# Cover Image — legacy single-photo field. The modern images live in
+               `post.images`; we only show this if it isn't already duplicated there. #}
+            {% set coverAlreadyInImages = false %}
+            {% for img in post.images %}
+                {% if img.filename == post.cheminPhoto %}{% set coverAlreadyInImages = true %}{% endif %}
+            {% endfor %}
+            {% if post.cheminPhoto and not coverAlreadyInImages %}
+            <div class="post-show-image">
+                <img src="{{ path('image_post_blob', {id: post.id}) }}" class="card-img-top" alt="Photo"
+                     style="max-height: 500px; object-fit: cover;">
+            </div>
+            {% endif %}
+
+            {# Media Gallery — images + videos. A video-only post now shows the
+               video here (previously the detail page rendered nothing in that case). #}
+            {% set hasAnyMedia = post.images|length > 0 or post.videos|length > 0 %}
+            {% if hasAnyMedia %}
+            <div class="p-3 border-bottom">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-photo-film me-2"></i>Galerie
+                    ({{ post.images|length }} image{{ post.images|length > 1 ? 's' : '' }}
+                    {% if post.videos|length > 0 %} · {{ post.videos|length }} vidéo{{ post.videos|length > 1 ? 's' : '' }}{% endif %})
+                </h6>
+
+                {# Videos — muted + loop, same policy as the feed (no user controls). #}
+                {% if post.videos|length > 0 %}
+                <div class="row g-2 mb-3">
+                    {% for vid in post.videos %}
+                        <div class="col-12 col-md-{{ post.videos|length > 1 ? 6 : 12 }}">
+                            <div class="ratio ratio-16x9 rounded overflow-hidden" style="background:#000;">
+                                <video src="{{ asset('uploads/videos/' ~ vid.filename) }}"
+                                       class="post-show-video"
+                                       muted
+                                       playsinline
+                                       loop
+                                       preload="metadata"
+                                       style="object-fit:cover;pointer-events:none;"
+                                       disablepictureinpicture
+                                       controlslist="nodownload noplaybackrate nofullscreen"></video>
+                            </div>
+                            {% if vid.description %}
+                                <small class="text-muted d-block mt-1">{{ vid.description }}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {# Images #}
+                {% if post.images|length > 0 %}
+                <div class="row g-2">
+                    {% for img in post.images %}
+                        {% set imageUrl = path('image_gallery_blob', {id: img.id}) %}
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <img src="{{ imageUrl }}"
+                                 class="img-fluid rounded shadow-sm image-viewer-trigger"
+                                 style="object-fit:cover;aspect-ratio:1/1;width:100%;cursor:zoom-in;"
+                                 alt="{{ img.description ?: 'Image' }}"
+                                 data-src="{{ imageUrl }}"
+                                 data-caption="{{ img.description ?: '' }}"
+                                 loading="lazy">
+                            {% if img.description %}
+                                <small class="text-muted d-block mt-1">{{ img.description }}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="card-body p-4">
+                {# Author Info — mirrors the feed: name, Instagram-style music label, date. #}
+                <div class="d-flex align-items-center mb-4">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3"
+                         style="width:55px;height:55px;">
+                        <span class="text-white fw-bold fs-5">{{ post.auteur|first|upper }}</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-0 fw-bold">{{ post.auteur }}</h5>
+                        {% if post.music %}
+                            <small class="post-music-label d-inline-flex align-items-center text-muted">
+                                <i class="fas fa-music me-1"></i>
+                                <span class="music-marquee"><span>{{ post.music.title }}{% if post.music.artist %} · {{ post.music.artist }}{% endif %}</span></span>
+                            </small>
+                            <br>
+                        {% endif %}
+                        <small class="text-muted"><i class="far fa-clock me-1"></i>{{ post.dateCreation|date('d/m/Y à H:i') }}</small>
+                    </div>
+                </div>
+
+                {# Hidden audio for the post's background music. Auto-played (muted
+                   not required because user clicked "Voir" — that counts as a
+                   gesture in most browsers, but we still unlock on first click
+                   just in case). #}
+                {% if post.music %}
+                    <audio id="postShowMusic"
+                           src="{{ asset('uploads/music/' ~ post.music.filename) }}"
+                           preload="auto"
+                           loop></audio>
+                {% endif %}
+
+                {# Description #}
+                <p class="fs-5 mb-4">{{ post.description|hashtagify }}</p>
+
+                {# Reactions Display #}
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for emoji, count in reactionCounts %}
+                    <span class="badge bg-light text-dark border px-3 py-2 {{ userReaction == emoji ? 'border-primary bg-primary bg-opacity-10' : '' }}">
+                        {{ emoji }} {{ count }} {{ reaction_types[emoji]|default('') }}
+                    </span>
+                    {% endfor %}
+                </div>
+
+                {# Action Buttons #}
+                <div class="d-flex gap-2 mb-4">
+                    <button class="btn btn-outline-danger like-btn" data-post-id="{{ post.id }}">
+                        <i class="fas fa-heart me-1"></i>J'aime (<span class="likes-count">{{ post.likes }}</span>)
+                    </button>
+                    {% for emoji, label in reaction_types %}
+                    <button class="btn btn-outline-secondary btn-sm react-btn {{ userReaction == emoji ? 'active btn-primary text-white' : '' }}"
+                            data-post-id="{{ post.id }}" data-reaction="{{ emoji }}" title="{{ label }}">
+                        <span class="reaction-emoji-lg">{{ emoji }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <hr>
+
+                {# Comments Section #}
+                <h5 class="fw-bold mb-3"><i class="fas fa-comments me-2"></i>Commentaires ({{ post.comments|length }})</h5>
+
+                {# Add Comment Form #}
+                {# Validation handled 100% in PHP by CommentType — no HTML required attribute. #}
+                <form action="{{ path('forum_post_comment', {id: post.id}) }}" method="post" class="mb-4" novalidate>
+                    <div class="input-group">
+                        <input type="text" name="comment[contenu]" class="form-control form-control-lg"
+                               placeholder="Écrire un commentaire...">
+                        <input type="hidden" name="comment[_token]" value="{{ csrf_token('comment') }}">
+                        <button class="btn btn-primary px-4" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+
+                {# Comments List #}
+                {% for comment in post.comments %}
+                <div class="d-flex mb-3 comment-item">
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                         style="width:40px;height:40px;">
+                        <span class="text-white">{{ comment.auteur|first|upper }}</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="bg-light rounded p-3 comment-bubble">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong>{{ comment.auteur }}</strong>
+                                <small class="text-muted">{{ comment.dateCommentaire|date('d/m/Y H:i') }}</small>
+                            </div>
+                            <p class="mb-0">{{ comment.contenu }}</p>
+                        </div>
+                    </div>
+                    {% if comment.auteur == app.user.username or is_granted('ROLE_ADMIN') %}
+                    <form action="{{ path('forum_comment_delete', {id: comment.id}) }}" method="post" class="ms-2 align-self-center">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer ?')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                {% if post.comments is empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash text-muted fs-1"></i>
+                        <p class="text-muted mt-2">Aucun commentaire. Soyez le premier !</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Auto-play every video on the detail page (muted + looping). Matches the
+// feed's policy: the user cannot pause or seek — videos just run silently.
+document.querySelectorAll('video.post-show-video').forEach(function (v) {
+    v.muted = true;
+    var p = v.play();
+    if (p && typeof p.catch === 'function') { p.catch(function () {}); }
+});
+
+// Auto-play the post's background music. The first browser gesture (the
+// click on "Voir" that led here) generally unlocks autoplay, but some
+// browsers still require a gesture on the CURRENT page — in that case,
+// the first click/tap anywhere here starts the track.
+(function () {
+    var music = document.getElementById('postShowMusic');
+    if (!music) return;
+
+    function tryPlay() {
+        var p = music.play();
+        if (p && typeof p.catch === 'function') { p.catch(function () {}); }
+    }
+
+    tryPlay();
+
+    var unlock = function () {
+        document.removeEventListener('click', unlock);
+        document.removeEventListener('keydown', unlock);
+        document.removeEventListener('scroll', unlock);
+        tryPlay();
+    };
+    document.addEventListener('click', unlock, { once: true });
+    document.addEventListener('keydown', unlock, { once: true });
+    document.addEventListener('scroll', unlock, { once: true, passive: true });
+
+    // Pause when tab is hidden, resume when visible.
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) { music.pause(); } else { tryPlay(); }
+    });
+})();
+</script>
+{% endblock %}

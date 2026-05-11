@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default('Paiement securise') }}</title>
+    <link rel="icon" type="image/png" href="/assets/java/trans_bg.png">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/currency.css">
+    <link rel="stylesheet" href="/billing.css">
+    <link rel="stylesheet" href="/hand-tracking.css">
+</head>
+<body class="payment-page-body">
+    {% set fieldErrors = fieldErrors|default({}) %}
+    {% include 'partials/currency-switcher.html.twig' with {currencySwitcherClass: 'currency-switcher-floating', currencySwitcherId: 'paymentCurrencySwitcher'} %}
+    
+    <button id="hand-tracking-toggle" class="hand-toggle-btn" type="button" data-tooltip="Contrôle par la main (Caméra)" style="position: fixed; top: 20px; right: 80px; z-index: 1000;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+        </svg>
+        <span class="hand-status-badge"></span>
+    </button>
+    <main class="payment-page">
+        <section class="payment-shell">
+            <header class="payment-hero">
+                <div class="payment-hero-icon">💳</div>
+                <div>
+                    <h1>Paiement Securise</h1>
+                    <p>Finalisez votre reservation comme dans l'ecran Java EasyTravel.</p>
+                </div>
+            </header>
+
+            {% if savedPayment|default(null) %}
+                <article class="payment-success-card">
+                    <span class="payment-success-icon">✓</span>
+                    <div>
+                        <strong>Votre reservation est confirmee</strong>
+                        <p>Reference: {{ savedPayment.reference_transaction|default('PAY') }}. Vous pouvez maintenant generer la facture du voyage.</p>
+                    </div>
+                    <a href="/factures" class="payment-success-link">Generer facture</a>
+                </article>
+            {% endif %}
+
+            {% if errorMessage|default(null) %}
+                <div class="payment-error">⚠ {{ errorMessage }}</div>
+            {% endif %}
+
+            <form method="post" action="/paiement" class="payment-form" data-payment-form>
+                <input type="hidden" name="client_nom" value="{{ formData.client_nom|default('') }}">
+                <input type="hidden" name="client_email" value="{{ formData.client_email|default('') }}">
+                <input type="hidden" name="destination" value="{{ formData.destination|default('') }}">
+                <input type="hidden" name="pays" value="{{ formData.pays|default('') }}">
+                <input type="hidden" name="montant" value="{{ formData.montant|default(0) }}">
+                <input type="hidden" name="package_id" value="{{ formData.package_id|default(0) }}">
+                <input type="hidden" name="type_voyage" value="{{ formData.type_voyage|default('Aventure') }}">
+                <input type="hidden" name="date_debut" value="{{ formData.date_debut|default('') }}">
+                <input type="hidden" name="date_fin" value="{{ formData.date_fin|default('') }}">
+                <input type="hidden" name="nb_adultes" value="{{ formData.nb_adultes|default(1) }}">
+                <input type="hidden" name="nb_enfants" value="{{ formData.nb_enfants|default(0) }}">
+                <input type="hidden" name="moyen_transport" value="{{ formData.moyen_transport|default('Avion') }}">
+                <input type="hidden" name="hotel" value="{{ formData.hotel|default('Hotel Standard') }}">
+
+                <aside class="payment-recap">
+                    <h2>📋 Recapitulatif de votre voyage</h2>
+                    <div class="payment-recap-row">
+                        <span class="payment-recap-icon">🌍</span>
+                        <div>
+                            <small>Destination</small>
+                            <strong>{{ formData.destination|default('Paris, France') }}</strong>
+                        </div>
+                    </div>
+                    <div class="payment-recap-row">
+                        <span class="payment-recap-icon">👤</span>
+                        <div>
+                            <small>Client</small>
+                            <strong>{{ formData.client_nom|default('Voyageur') ?: 'Voyageur' }}</strong>
+                        </div>
+                    </div>
+                    <div class="payment-total">
+                        <small>Montant Total</small>
+                        <strong data-money data-money-base="TND" data-money-amount="{{ formData.montant|default(0) }}">{{ formData.montant|default(0)|number_format(2, '.', ' ') }} TND</strong>
+                    </div>
+                    <div class="payment-secure-note">🔒 Paiement 100% securise et chiffre</div>
+                </aside>
+
+                <section class="payment-card-form">
+                    <h2>💳 Informations de paiement</h2>
+
+                    <label class="payment-field">
+                        <span>Numero de carte</span>
+                        <input type="text" name="numero_carte" id="numeroCarteField" class="{{ fieldErrors.numero_carte is defined ? 'is-invalid' : '' }}" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" value="{{ formData.numero_carte|default('') }}" required>
+                        {% if fieldErrors.numero_carte is defined %}
+                            <small class="payment-field-error">{{ fieldErrors.numero_carte }}</small>
+                        {% endif %}
+                    </label>
+
+                    <label class="payment-field">
+                        <span>Nom du titulaire</span>
+                        <input type="text" name="nom_titulaire" id="nomTitulaireField" class="{{ fieldErrors.nom_titulaire is defined ? 'is-invalid' : '' }}" autocomplete="cc-name" placeholder="AHMED BEN ALI" value="{{ formData.nom_titulaire|default('') }}" required>
+                        {% if fieldErrors.nom_titulaire is defined %}
+                            <small class="payment-field-error">{{ fieldErrors.nom_titulaire }}</small>
+                        {% endif %}
+                    </label>
+
+                    <div class="payment-field-grid">
+                        <label class="payment-field">
+                            <span>Date d'expiration (MM/AA)</span>
+                            <input type="text" name="expiration" id="expirationField" class="{{ fieldErrors.expiration is defined ? 'is-invalid' : '' }}" inputmode="numeric" autocomplete="cc-exp" placeholder="10/30" value="{{ formData.expiration|default('') }}" required>
+                            <small class="payment-field-hint">Exemple: 11/30 signifie novembre 2030.</small>
+                            {% if fieldErrors.expiration is defined %}
+                                <small class="payment-field-error">{{ fieldErrors.expiration }}</small>
+                            {% endif %}
+                        </label>
+                        <label class="payment-field">
+                            <span>CVV</span>
+                            <input type="text" name="cvv" id="cvvField" class="{{ fieldErrors.cvv is defined ? 'is-invalid' : '' }}" inputmode="numeric" autocomplete="cc-csc" placeholder="123" value="{{ formData.cvv|default('') }}" required>
+                            {% if fieldErrors.cvv is defined %}
+                                <small class="payment-field-error">{{ fieldErrors.cvv }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+
+                    <div class="payment-actions">
+                        <a href="/destinations" class="payment-button payment-button-secondary">Annuler</a>
+                        <button type="submit" class="payment-button payment-button-primary">Payer <span data-money data-money-base="TND" data-money-amount="{{ formData.montant|default(0) }}">{{ formData.montant|default(0)|number_format(2, '.', ' ') }} TND</span></button>
+                    </div>
+                </section>
+            </form>
+        </section>
+    </main>
+    <script src="/currency.js"></script>
+    <script src="/billing.js"></script>
+
+    <!-- MediaPipe Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="/hand-tracking.js"></script>
+</body>
+</html>

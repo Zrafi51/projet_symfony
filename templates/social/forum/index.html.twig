@@ -1,0 +1,694 @@
+{% extends 'social/base.html.twig' %}
+
+{% block title %}Fil d'actualité - Forum Voyage{% endblock %}
+
+{% block body %}
+<div class="row">
+    {# Left Sidebar - Create Post (collapsible) + AI assistant #}
+    <div class="col-lg-3 mb-4">
+        <div class="sticky-top" style="top: 1rem;">
+            {% include 'social/_partials/new_post_card.html.twig' with {
+                postForm: postForm,
+                musicUrlsById: musicUrlsById,
+                collapseId: 'newPostPanel',
+                returnTo: 'forum'
+            } %}
+
+            {# AI Itinerary Planner #}
+            <div class="card shadow-sm border-0 ai-itinerary-card">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">
+                        <i class="fas fa-robot me-2 text-info"></i>Assistant IA — Itinéraire
+                    </h6>
+                    <p class="small text-muted mb-2">
+                        Dis-moi en une phrase où, combien de temps et avec quel budget.
+                    </p>
+                    <textarea class="form-control form-control-sm mb-2" id="aiPrompt" rows="2"
+                              placeholder="Ex : 3 jours à Rome pas cher avec beaucoup de culture"></textarea>
+                    <div class="d-grid">
+                        <button class="btn btn-info btn-sm text-white fw-semibold" type="button" id="aiSuggestBtn">
+                            <i class="fas fa-magic me-1"></i>Générer mon itinéraire
+                        </button>
+                    </div>
+                    <div id="aiResult" class="mt-2 small"></div>
+                    <div class="mt-2 d-flex flex-wrap gap-1">
+                        <button type="button" class="btn btn-outline-secondary btn-xs ai-example" data-example="3 jours à Rome pas cher avec beaucoup de culture">Rome 3j éco</button>
+                        <button type="button" class="btn btn-outline-secondary btn-xs ai-example" data-example="5 jours à Tokyo avec gastronomie et quartiers insolites">Tokyo 5j</button>
+                        <button type="button" class="btn btn-outline-secondary btn-xs ai-example" data-example="week-end romantique à Lisbonne budget moyen">Lisbonne ♥</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Main Feed #}
+    <div class="col-lg-6">
+        {# 24h Stories carousel — Facebook-style. Rendered by its own
+           controller so it pulls fresh data (and purges expired rows) on
+           every request. #}
+        {{ render(path('forum_story_bar')) }}
+
+        {# Tab switcher — "Abonnements" shows people I follow, "Découvrir"
+           shows public accounts I don't follow yet (Instagram/FB style). #}
+        <ul class="nav nav-pills feed-tabs mb-3 shadow-sm">
+            <li class="nav-item flex-fill">
+                <a class="nav-link text-center fw-semibold {{ tab == 'following' ? 'active' : '' }}"
+                   href="{{ path('forum_forum', {tab: 'following'}) }}">
+                    <i class="fas fa-user-friends me-1"></i>Abonnements
+                </a>
+            </li>
+            <li class="nav-item flex-fill">
+                <a class="nav-link text-center fw-semibold {{ tab == 'discover' ? 'active' : '' }}"
+                   href="{{ path('forum_forum', {tab: 'discover'}) }}">
+                    <i class="fas fa-compass me-1"></i>Découvrir
+                </a>
+            </li>
+        </ul>
+
+        {# Search & Filter Bar #}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <form method="get" action="{{ path('forum_forum') }}" class="search-form">
+                    {# Preserve the current tab in the search form. #}
+                    <input type="hidden" name="tab" value="{{ tab }}">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="keyword" class="form-control" placeholder="Rechercher des publications ou des utilisateurs..."
+                               value="{{ keyword }}">
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}" placeholder="Du">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}" placeholder="Au">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" name="min_likes" class="form-control form-control-sm" value="{{ min_likes }}" placeholder="Min likes" min="0">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="sort" class="form-select form-select-sm">
+                                <option value="recent" {{ sort == 'recent' ? 'selected' }}>Récent</option>
+                                <option value="oldest" {{ sort == 'oldest' ? 'selected' }}>Ancien</option>
+                                <option value="most_liked" {{ sort == 'most_liked' ? 'selected' }}>+ Aimé</option>
+                                <option value="least_liked" {{ sort == 'least_liked' ? 'selected' }}>- Aimé</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex gap-1">
+                            <button type="submit" class="btn btn-primary btn-sm flex-fill"><i class="fas fa-filter"></i></button>
+                            <a href="{{ path('forum_forum') }}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-times"></i></a>
+                        </div>
+                    </div>
+                </form>
+                {% if keyword or date_from or date_to or min_likes %}
+                    <small class="text-muted mt-2 d-block">{{ posts|length }} résultat(s) trouvé(s)</small>
+                {% endif %}
+            </div>
+
+            {# Username matches — lets you reach private accounts that can't
+               appear in the feed. #}
+            {% if userMatches is defined and userMatches|length > 0 %}
+                <div class="border-top px-3 py-2">
+                    <small class="text-muted fw-semibold d-block mb-2">
+                        <i class="fas fa-users me-1"></i>Utilisateurs correspondants
+                    </small>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for u in userMatches %}
+                            <a href="{{ path('forum_user_profile', {username: u.username}) }}"
+                               class="user-chip d-inline-flex align-items-center text-decoration-none bg-light rounded-pill px-2 py-1">
+                                {% if u.profilePhotoPath %}
+                                    <img src="{{ asset('uploads/profiles/' ~ u.profilePhotoPath) }}"
+                                         class="rounded-circle me-2" style="width:28px;height:28px;object-fit:cover;" alt="">
+                                {% else %}
+                                    <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2"
+                                          style="width:28px;height:28px;font-size:12px;">{{ u.username|first|upper }}</span>
+                                {% endif %}
+                                <span class="small fw-semibold">{{ u.username }}</span>
+                                {% if u.isPrivate %}
+                                    <i class="fas fa-lock text-muted ms-2 small" title="Compte privé"></i>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Posts Feed — empty state copy depends on the active tab. #}
+        {% if posts is empty %}
+            <div class="text-center py-5">
+                {% if tab == 'following' %}
+                    <i class="fas fa-user-friends text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3 text-muted">Votre fil d'abonnements est vide</h4>
+                    <p class="text-muted">Abonnez-vous à d'autres voyageurs pour voir leurs publications ici.
+                        <br><a href="{{ path('forum_forum', {tab: 'discover'}) }}" class="fw-semibold">Découvrez de nouveaux profils →</a>
+                    </p>
+                {% else %}
+                    <i class="fas fa-compass text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3 text-muted">Aucune nouvelle publication à découvrir</h4>
+                    <p class="text-muted">Vous suivez déjà tout le monde ! Revenez plus tard.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% for post in posts %}
+        <div class="card shadow-sm border-0 mb-4 post-card" id="post-{{ post.id }}">
+            {# Post Header #}
+            <div class="card-header bg-transparent border-0 d-flex align-items-center justify-content-between py-3">
+                <div class="d-flex align-items-center">
+                    {% set authorPhoto = authorPhotos[post.auteur] ?? null %}
+                    {# Clickable avatar → user's Instagram-style profile (clean view,
+                       no auto-open of a specific post). #}
+                    <a href="{{ path('forum_user_profile', {username: post.auteur}) }}"
+                       class="d-inline-block me-3 text-decoration-none">
+                        {% if authorPhoto %}
+                            <img src="{{ asset('uploads/profiles/' ~ authorPhoto) }}"
+                                 class="rounded-circle post-avatar"
+                                 style="width:45px;height:45px;object-fit:cover;" alt="{{ post.auteur }}">
+                        {% else %}
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center post-avatar"
+                                 style="width:45px;height:45px;">
+                                <span class="text-white fw-bold">{{ post.auteur|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                    </a>
+                    <div class="flex-grow-1">
+                        <a href="{{ path('forum_user_profile', {username: post.auteur}) }}"
+                           class="text-decoration-none text-dark"><strong>{{ post.auteur }}</strong></a>
+                        <br>
+                        {# Instagram-style inline music label: song · artist, right under the username.
+                           The actual <audio> tag lives hidden at the bottom of the card and is
+                           auto-played/paused by the IntersectionObserver in app.js. #}
+                        {% if post.music %}
+                            <small class="post-music-label d-inline-flex align-items-center text-muted">
+                                <i class="fas fa-music me-1"></i>
+                                <span class="music-marquee"><span>{{ post.music.title }}{% if post.music.artist %} · {{ post.music.artist }}{% endif %}</span></span>
+                            </small>
+                            <br>
+                        {% endif %}
+                        <small class="text-muted"><i class="far fa-clock me-1"></i>{{ post.dateCreation|date('d/m/Y à H:i') }}</small>
+                    </div>
+                </div>
+                {% if post.auteur == app.user.username or is_granted('ROLE_ADMIN') %}
+                <div class="dropdown">
+                    <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ path('forum_post_edit', {id: post.id}) }}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
+                        <li>
+                            <form action="{{ path('forum_post_delete', {id: post.id}) }}" method="post"
+                                  onsubmit="return confirm('Supprimer cette publication ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                                <button type="submit" class="dropdown-item text-danger"><i class="fas fa-trash me-2"></i>Supprimer</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            {# Post Content — gallery groups all media (images + videos) for the lightbox via data-gallery. #}
+            <div class="card-body pt-0">
+                <p class="card-text mb-3">{{ post.description|hashtagify }}</p>
+                {% set extraImages = post.images %}
+                {% set videos = post.videos %}
+                {% set galleryKey = 'post-' ~ post.id %}
+                {# Build a unified media list (images first, then videos) for the Instagram-style carousel.
+                   Each post has a SINGLE viewport; users swipe/arrow-click to move between items. #}
+                {% set mediaItems = [] %}
+                {% for img in extraImages %}
+                    {% set mediaItems = mediaItems|merge([{
+                        'type': 'image',
+                        'url':  path('image_gallery_blob', {id: img.id}),
+                        'caption': img.description ?: '',
+                    }]) %}
+                {% endfor %}
+                {% for vid in videos %}
+                    {% set mediaItems = mediaItems|merge([{
+                        'type': 'video',
+                        'url':  asset('uploads/videos/' ~ vid.filename),
+                        'caption': vid.description ?: 'Vidéo',
+                    }]) %}
+                {% endfor %}
+
+                {% if mediaItems|length > 0 %}
+                    {% set carId = 'postMedia' ~ post.id %}
+                    <div id="{{ carId }}" class="carousel slide post-media-carousel mb-3"
+                         data-bs-ride="false" data-bs-touch="true" data-bs-interval="false">
+                        <div class="carousel-inner rounded">
+                            {% for item in mediaItems %}
+                                <div class="carousel-item {{ loop.first ? 'active' : '' }}">
+                                    {% if item.type == 'image' %}
+                                        <img src="{{ item.url }}"
+                                             class="d-block w-100 post-media image-viewer-trigger"
+                                             style="object-fit:cover;max-height:520px;cursor:zoom-in;"
+                                             alt="{{ item.caption }}"
+                                             data-gallery="{{ galleryKey }}"
+                                             data-src="{{ item.url }}"
+                                             data-caption="{{ item.caption }}"
+                                             data-type="image"
+                                             loading="lazy">
+                                    {% else %}
+                                        {# No `controls` — users can't pause/seek.
+                                           `loop` restarts automatically at the end.
+                                           `pointer-events:none` blocks any native interaction.
+                                           Auto-play is driven by the IntersectionObserver + carousel
+                                           slide handler in the JS block below. #}
+                                        <video class="d-block w-100 post-media post-carousel-video"
+                                               style="object-fit:cover;max-height:520px;background:#000;pointer-events:none;cursor:default;"
+                                               src="{{ item.url }}"
+                                               preload="metadata"
+                                               playsinline
+                                               muted
+                                               loop
+                                               disablepictureinpicture
+                                               controlslist="nodownload noplaybackrate nofullscreen"></video>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if mediaItems|length > 1 %}
+                            {# Prev / next controls, visible on hover (desktop) and always on mobile. #}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#{{ carId }}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Précédent</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#{{ carId }}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Suivant</span>
+                            </button>
+
+                            {# Dots indicator (Instagram-style). #}
+                            <div class="carousel-indicators post-media-dots">
+                                {% for item in mediaItems %}
+                                    <button type="button"
+                                            data-bs-target="#{{ carId }}"
+                                            data-bs-slide-to="{{ loop.index0 }}"
+                                            class="{{ loop.first ? 'active' : '' }}"
+                                            aria-label="Slide {{ loop.index }}"></button>
+                                {% endfor %}
+                            </div>
+
+                            {# Counter badge (e.g. "1/5") in the top-right of the carousel. #}
+                            <span class="post-media-counter badge rounded-pill">
+                                <span class="current">1</span>/<span class="total">{{ mediaItems|length }}</span>
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {# Hidden audio — IntersectionObserver in the template JS auto-plays this when
+                       the post enters view and pauses it when it leaves. #}
+                    {% if post.music %}
+                        <audio class="post-bg-music"
+                               data-post-id="{{ post.id }}"
+                               src="{{ asset('uploads/music/' ~ post.music.filename) }}"
+                               preload="none"
+                               loop></audio>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            {# Reactions & Stats Bar #}
+            <div class="card-body border-top border-bottom py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="reaction-summary">
+                        {% set counts = post.reactionCounts %}
+                        {% for emoji, count in counts %}
+                            <span class="me-1" title="{{ reaction_types[emoji]|default(emoji) }}">{{ emoji }} {{ count }}</span>
+                        {% endfor %}
+                        {% if counts is empty %}
+                            <small class="text-muted">Aucune réaction</small>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <small class="text-muted">
+                            <i class="fas fa-heart text-danger me-1"></i>{{ post.likes }}
+                            <i class="fas fa-comment ms-3 me-1"></i>{{ post.comments|length }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            {# Action Buttons #}
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between">
+                    {% set isLiked = post.id in likedPostIds %}
+                    <button class="btn btn-sm like-btn flex-fill me-1 {{ isLiked ? 'btn-danger liked' : 'btn-light' }}"
+                            data-post-id="{{ post.id }}"
+                            data-liked="{{ isLiked ? '1' : '0' }}"
+                            aria-pressed="{{ isLiked ? 'true' : 'false' }}">
+                        <i class="{{ isLiked ? 'fas' : 'far' }} fa-heart me-1"></i><span class="like-label">{{ isLiked ? 'Aimé' : 'J\'aime' }}</span>
+                        <span class="likes-count">({{ post.likes }})</span>
+                    </button>
+                    <div class="btn-group flex-fill me-1">
+                        <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-smile me-1"></i>Réagir
+                        </button>
+                        <ul class="dropdown-menu reaction-picker">
+                            {% for emoji, label in reaction_types %}
+                            <li>
+                                <button class="dropdown-item react-btn" data-post-id="{{ post.id }}" data-reaction="{{ emoji }}">
+                                    <span class="reaction-emoji">{{ emoji }}</span> {{ label }}
+                                </button>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <button class="btn btn-light btn-sm flex-fill toggle-comments" data-target="comments-{{ post.id }}">
+                        <i class="fas fa-comment me-1"></i>Commenter ({{ post.comments|length }})
+                    </button>
+                </div>
+            </div>
+
+            {# Comments Section #}
+            <div class="card-body comments-section pt-0" id="comments-{{ post.id }}" style="display:none;">
+                {# Comment Form #}
+                <form action="{{ path('forum_post_comment', {id: post.id}) }}" method="post" class="mb-3">
+                    <div class="input-group">
+                        {# Validation handled in PHP by CommentType (NotBlank + Length) — no HTML required attribute. #}
+                        <input type="text" name="comment[contenu]" class="form-control" placeholder="Écrire un commentaire...">
+                        <input type="hidden" name="comment[_token]" value="{{ csrf_token('comment') }}">
+                        <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </form>
+
+                {# Comments List #}
+                {% for comment in post.comments %}
+                <div class="d-flex mb-2 comment-item">
+                    {% set cAuthorPhoto = authorPhotos[comment.auteur] ?? null %}
+                    {% if cAuthorPhoto %}
+                        <img src="{{ asset('uploads/profiles/' ~ cAuthorPhoto) }}"
+                             class="rounded-circle me-2 flex-shrink-0"
+                             style="width:32px;height:32px;object-fit:cover;" alt="{{ comment.auteur }}">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2 flex-shrink-0"
+                             style="width:32px;height:32px;">
+                            <span class="text-white small">{{ comment.auteur|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    <div class="flex-grow-1">
+                        <div class="bg-light rounded p-2 comment-bubble">
+                            <strong class="small">{{ comment.auteur }}</strong>
+                            <p class="mb-0 small">{{ comment.contenu }}</p>
+                        </div>
+                        <small class="text-muted ms-2">{{ comment.dateCommentaire|date('d/m/Y H:i') }}</small>
+                    </div>
+                    {% if comment.auteur == app.user.username or is_granted('ROLE_ADMIN') %}
+                    <form action="{{ path('forum_comment_delete', {id: comment.id}) }}" method="post" class="ms-1">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
+                        <button type="submit" class="btn btn-link btn-sm text-danger p-0" title="Supprimer"
+                                onclick="return confirm('Supprimer ce commentaire ?')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                {% if post.comments is empty %}
+                    <p class="text-muted small text-center">Aucun commentaire. Soyez le premier !</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# Right Sidebar - Stats #}
+    <div class="col-lg-3 mb-4">
+        <div class="card shadow-sm border-0 sticky-top" style="top: 1rem;">
+            <div class="card-body text-center">
+                {# Avatar → "Mon Profil". Same for the username below. #}
+                <a href="{{ path('forum_profile') }}" class="d-inline-block text-decoration-none sidebar-avatar-link"
+                   title="Voir mon profil">
+                    {% if app.user.profilePhotoPath %}
+                        <img src="{{ asset('uploads/profiles/' ~ app.user.profilePhotoPath) }}"
+                             class="rounded-circle mb-3 border border-3 border-primary" width="80" height="80"
+                             alt="{{ app.user.username }}" style="object-fit:cover">
+                    {% else %}
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center mx-auto mb-3"
+                             style="width:80px;height:80px;">
+                            <span class="text-white fw-bold fs-3">{{ app.user.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                </a>
+                <h6 class="fw-bold mb-1">
+                    <a href="{{ path('forum_profile') }}" class="text-decoration-none text-dark">{{ app.user.username }}</a>
+                </h6>
+                <small class="text-muted">Membre depuis {{ app.user.createdAt|date('M Y') }}</small>
+                <hr>
+                <a href="{{ path('forum_profile') }}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="fas fa-chart-bar me-1"></i>Voir mes statistiques
+                </a>
+            </div>
+
+            {# Quick Stats #}
+            <div class="card-body border-top">
+                <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie me-2 text-primary"></i>Statistiques rapides</h6>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted small">Total publications</span>
+                    <span class="badge bg-primary rounded-pill">{{ posts|length }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ============================================================
+   AI Itinerary Modal — displays the generated day-by-day plan
+   ============================================================ #}
+<div class="modal fade" id="aiItineraryModal" tabindex="-1" aria-labelledby="aiItineraryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content ai-itinerary-modal">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title d-flex align-items-center" id="aiItineraryModalLabel">
+                    <i class="fas fa-route me-2"></i>Ton itinéraire sur mesure
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body" id="aiItineraryBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-info" role="status"></div>
+                    <p class="mt-3 text-muted small">L'IA prépare ton voyage…</p>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <small class="text-muted" id="aiItinerarySource"></small>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="aiItineraryCopy">
+                        <i class="fas fa-copy me-1"></i>Copier
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-xs { padding: 2px 8px; font-size: 0.72rem; border-radius: 999px; }
+    .ai-itinerary-card textarea#aiPrompt { resize: none; }
+    .ai-itinerary-modal h2 { font-size: 1.35rem; margin: 1.25rem 0 0.5rem; padding-bottom: 0.35rem; border-bottom: 2px solid #e0f4f8; color: #0d7490; display: flex; align-items: center; gap: 0.4rem; }
+    .ai-itinerary-modal h2:first-child { margin-top: 0; }
+    .ai-itinerary-modal h3 { font-size: 1.05rem; margin: 1rem 0 0.4rem; color: #0b5f75; font-weight: 600; }
+    .ai-itinerary-modal p { margin: 0.4rem 0; line-height: 1.55; }
+    .ai-itinerary-modal ul { padding-left: 1.25rem; margin: 0.3rem 0 0.6rem; }
+    .ai-itinerary-modal li { margin-bottom: 0.35rem; line-height: 1.5; }
+    .ai-itinerary-modal li strong { color: #0b5f75; }
+    .ai-itinerary-modal hr { margin: 1rem 0; border-color: #e0f4f8; }
+    [data-theme="dark"] .ai-itinerary-modal h2 { color: #5ccae4; border-bottom-color: rgba(92,202,228,0.25); }
+    [data-theme="dark"] .ai-itinerary-modal h3 { color: #9cd9e8; }
+    [data-theme="dark"] .ai-itinerary-modal li strong { color: #9cd9e8; }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function () {
+    // ===== Post media carousel =====
+    // Two rules for videos:
+    //   (1) A video plays only if it is the ACTIVE slide in its carousel.
+    //   (2) A video plays only if its post-card is in the viewport (≥50% visible).
+    // Videos have `loop`, so they restart automatically at the end.
+    // Users cannot pause/seek — `controls` is absent and pointer-events are off.
+
+    // Track which post-cards are currently considered "in view" by the observer.
+    var visibleCards = new WeakSet();
+
+    // Evaluate whether a given <video.post-carousel-video> should be playing
+    // right now, and play or pause it accordingly.
+    function syncVideo(video) {
+        var card = video.closest('.card');
+        var slide = video.closest('.carousel-item');
+        var inView = card && visibleCards.has(card);
+        var isActive = slide && slide.classList.contains('active');
+        if (inView && isActive) {
+            video.muted = true; // required for autoplay
+            var p = video.play();
+            if (p && typeof p.catch === 'function') { p.catch(function () {}); }
+        } else {
+            if (!video.paused) { video.pause(); }
+        }
+    }
+
+    // Sync every video on the page (e.g. after a slide change or scroll event).
+    function syncAllVideos() {
+        document.querySelectorAll('video.post-carousel-video').forEach(syncVideo);
+    }
+
+    document.querySelectorAll('.post-media-carousel').forEach(function (carousel) {
+        var counterCurrent = carousel.querySelector('.post-media-counter .current');
+        var items = carousel.querySelectorAll('.carousel-item');
+
+        // On slide change: update counter, pause non-active videos, maybe play
+        // the new active one (subject to the in-view rule), and toggle bg music.
+        carousel.addEventListener('slid.bs.carousel', function (e) {
+            if (counterCurrent) {
+                var idx = Array.prototype.indexOf.call(items, e.relatedTarget);
+                counterCurrent.textContent = String(idx + 1);
+            }
+            // Pause every video in this carousel first.
+            carousel.querySelectorAll('video.post-carousel-video').forEach(function (v) {
+                v.pause();
+            });
+            var activeVideo = e.relatedTarget.querySelector('video.post-carousel-video');
+            var card = carousel.closest('.card');
+            var bg = card && card.querySelector('audio.post-bg-music');
+            if (activeVideo) {
+                // Pause bg music while a video slide is showing (audio clash).
+                if (bg && !bg.paused) bg.pause();
+                syncVideo(activeVideo);
+            } else if (bg && card) {
+                // Image slide — if this card is currently in view, start/resume bg
+                // music. This covers the case where the carousel's first slide was
+                // a video (so bg music never started on entry) and the user just
+                // swiped to an image slide.
+                var r = card.getBoundingClientRect();
+                var vh = window.innerHeight || document.documentElement.clientHeight;
+                var visible = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+                var ratio = r.height > 0 ? visible / r.height : 0;
+                if (ratio >= 0.5) {
+                    // Pause any other bg audio first (one track at a time).
+                    document.querySelectorAll('audio.post-bg-music').forEach(function (a) {
+                        if (a !== bg && !a.paused) { a.pause(); a.currentTime = 0; }
+                    });
+                    var p2 = bg.play();
+                    if (p2 && typeof p2.catch === 'function') { p2.catch(function () {}); }
+                }
+            }
+        });
+    });
+
+    // IntersectionObserver: mark post-cards as visible / not, then re-sync
+    // any videos they contain.
+    if ('IntersectionObserver' in window) {
+        var cardObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                var card = entry.target;
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                    visibleCards.add(card);
+                } else {
+                    visibleCards.delete(card);
+                }
+                // Re-sync every video inside this card.
+                card.querySelectorAll('video.post-carousel-video').forEach(syncVideo);
+            });
+        }, { threshold: [0, 0.5, 1] });
+
+        document.querySelectorAll('.post-card').forEach(function (card) {
+            cardObserver.observe(card);
+        });
+    } else {
+        // Fallback: just try to play every active slide's video once.
+        document.querySelectorAll('.carousel-item.active video.post-carousel-video').forEach(function (v) {
+            v.muted = true;
+            var p = v.play();
+            if (p && typeof p.catch === 'function') { p.catch(function () {}); }
+        });
+    }
+
+    // ===== Instagram-style auto-play music on scroll =====
+    // For each post that has a hidden <audio class="post-bg-music">, use an
+    // IntersectionObserver: play when the post's image area is in view, pause
+    // when it's not. Only one track plays at a time.
+    var audios = Array.from(document.querySelectorAll('audio.post-bg-music'));
+    if (audios.length && 'IntersectionObserver' in window) {
+        var currentAudio = null;
+
+        function playOnly(audio) {
+            if (currentAudio && currentAudio !== audio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            currentAudio = audio;
+            // .play() returns a promise that rejects if the browser blocks
+            // autoplay (no user gesture yet). Swallow the error silently —
+            // the first click/tap anywhere will unlock it.
+            var p = audio.play();
+            if (p && typeof p.catch === 'function') { p.catch(function () {}); }
+        }
+
+        // Skip bg-music when the currently-active carousel slide is a video
+        // (the video's own audio would clash — even though we mute videos,
+        // we still want the music silent while a video is on screen).
+        function activeSlideIsVideo(card) {
+            return !!card.querySelector('.carousel-item.active video.post-carousel-video');
+        }
+
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                var card = entry.target;
+                var audio = card.querySelector('audio.post-bg-music');
+                if (!audio) return;
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+                    if (!activeSlideIsVideo(card)) {
+                        playOnly(audio);
+                    }
+                } else if (currentAudio === audio) {
+                    audio.pause();
+                }
+            });
+        }, { threshold: [0, 0.6, 1] });
+
+        // Observe each post-card that contains an audio element.
+        audios.forEach(function (audio) {
+            var card = audio.closest('.card') || audio.closest('.post-image-container');
+            if (card) observer.observe(card);
+        });
+
+        // Browsers require a user gesture before audio can auto-play.
+        // After the first click anywhere, re-evaluate which post is in view.
+        var unlock = function () {
+            document.removeEventListener('click', unlock);
+            document.removeEventListener('keydown', unlock);
+            // Find the audio inside the most-visible post card.
+            var best = null, bestRatio = 0;
+            audios.forEach(function (a) {
+                var card = a.closest('.card');
+                if (!card) return;
+                var r = card.getBoundingClientRect();
+                var vh = window.innerHeight || document.documentElement.clientHeight;
+                var visible = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+                var ratio = r.height > 0 ? visible / r.height : 0;
+                if (ratio > bestRatio) { bestRatio = ratio; best = a; }
+            });
+            if (best && bestRatio >= 0.6) playOnly(best);
+        };
+        document.addEventListener('click', unlock, { once: true });
+        document.addEventListener('keydown', unlock, { once: true });
+
+        // Pause all music when the lightbox opens (it may play a video with audio).
+        var modalEl = document.getElementById('imageViewerModal');
+        if (modalEl) {
+            modalEl.addEventListener('shown.bs.modal', function () {
+                audios.forEach(function (a) { a.pause(); });
+                currentAudio = null;
+            });
+        }
+    }
+
+    // Post-form JS (description / image / video / music previews + banned-words
+    // check) lives inside the collapsible partial at templates/_partials/new_post_card.html.twig.
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+﻿{% extends 'social/base.html.twig' %}
+
+{% block title %}Gestion des Publications - Admin{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="fas fa-newspaper me-2 text-primary"></i>Gestion des Publications</h2>
+    <a href="{{ path('forum_admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>Retour
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Auteur</th>
+                        <th>Description</th>
+                        <th>Photo</th>
+                        <th class="text-center">Likes</th>
+                        <th class="text-center">Commentaires</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td>{{ post.id }}</td>
+                        <td><strong>{{ post.auteur }}</strong></td>
+                        <td>{{ post.description|slice(0, 60) }}{% if post.description|length > 60 %}...{% endif %}</td>
+                        <td>
+                            {% if post.cheminPhoto or post.images|length > 0 %}
+                                <img src="{{ path('image_post_blob', {id: post.id}) }}" width="50" height="50"
+                                     class="rounded" style="object-fit:cover" alt="">
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center"><span class="badge bg-danger">{{ post.likes }}</span></td>
+                        <td class="text-center"><span class="badge bg-info">{{ post.comments|length }}</span></td>
+                        <td><small>{{ post.dateCreation|date('d/m/Y H:i') }}</small></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ path('forum_post_show', {id: post.id}) }}" class="btn btn-outline-primary" title="Voir">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <form action="{{ path('forum_admin_post_delete', {id: post.id}) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_delete' ~ post.id) }}">
+                                    <button class="btn btn-outline-danger" onclick="return confirm('Supprimer cette publication ?')" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center py-4 text-muted">Aucune publication</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
