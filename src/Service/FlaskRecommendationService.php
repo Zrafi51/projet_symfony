@@ -4,8 +4,12 @@ namespace App\Service;
 
 final class FlaskRecommendationService
 {
-    public function __construct(private readonly string $baseUrl = 'http://localhost:5000/api')
+    private string $baseUrl;
+
+    public function __construct(?string $baseUrl = null)
     {
+        $candidate = trim((string) ($baseUrl ?: getenv('FLASK_RECOMMENDATION_URL') ?: 'http://localhost:5000/api'));
+        $this->baseUrl = rtrim($candidate, '/');
     }
 
     public function verifierAPI(): bool

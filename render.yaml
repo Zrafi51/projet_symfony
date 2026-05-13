@@ -1,0 +1,76 @@
+services:
+  - type: pserv
+    name: easytravel-db
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    dockerfilePath: ./Dockerfile.db
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 3306
+      - key: MYSQL_DATABASE
+        value: voyage
+      - key: MYSQL_USER
+        value: easytravel
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+    disk:
+      name: easytravel-db-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+
+  - type: pserv
+    name: easytravel-agent
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    dockerfilePath: ./Dockerfile.agent
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LITEAPI_KEY
+        sync: false
+
+  - type: web
+    name: easytravel-web
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_SECRET
+        generateValue: true
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: easytravel-db
+          property: host
+      - key: DB_PORT
+        value: 3306
+      - key: DB_NAME
+        value: voyage
+      - key: DB_USER
+        value: easytravel
+      - key: DB_PASSWORD
+        fromService:
+          type: pserv
+          name: easytravel-db
+          envVarKey: MYSQL_PASSWORD
+      - key: DB_SERVER_VERSION
+        value: mariadb-10.11.0
+      - key: EASY_TRAVEL_AGENT_URL
+        value: http://easytravel-agent:8000
+      - key: FLASK_RECOMMENDATION_URL
+        value: http://easytravel-agent:8000/api

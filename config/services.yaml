@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    default_db_server_version: 'mariadb-10.11.0'
     app.templates_dir: '%kernel.project_dir%/templates'
     app.remember_me_cookie_name: 'easytravel_device_key'
     app.remember_me_duration_days: 30
@@ -45,6 +46,14 @@ services:
             $secret: '%kernel.secret%'
             $cookieName: '%app.remember_me_cookie_name%'
             $durationDays: '%app.remember_me_duration_days%'
+
+    App\Service\FlaskRecommendationService:
+        arguments:
+            $baseUrl: '%env(default::FLASK_RECOMMENDATION_URL)%'
+
+    App\Service\TravelAiClient:
+        arguments:
+            $baseUrl: '%env(default::EASY_TRAVEL_AGENT_URL)%'
 
     App\Service\ProfilePhotoStorageService:
         arguments:

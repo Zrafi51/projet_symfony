@@ -1,20 +1,61 @@
-
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+      travel-agent:
+        condition: service_started
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+      APP_ENV: dev
+      APP_SECRET: ${APP_SECRET:-change-me-in-production}
+      DATABASE_URL: mysql://easytravel:easytravel@database:3306/voyage?serverVersion=mariadb-10.11.0&charset=utf8mb4
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_NAME: voyage
+      DB_USER: easytravel
+      DB_PASSWORD: easytravel
+      EASY_TRAVEL_AGENT_URL: http://travel-agent:8000
+      FLASK_RECOMMENDATION_URL: http://travel-agent:8000/api
+    ports:
+      - "8080:10000"
+    restart: unless-stopped
+
+  travel-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    env_file:
+      - ./Easy travel agent/.env
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  database:
+    image: mariadb:10.11
+    environment:
+      MYSQL_DATABASE: voyage
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: easytravel
+      MYSQL_PASSWORD: easytravel
+    ports:
+      - "3306:3306"
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - database_data:/var/lib/mysql
+      - ./voyage.sql:/docker-entrypoint-initdb.d/01-voyage.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
 
 volumes:
-###> doctrine/doctrine-bundle ###
   database_data:
-###< doctrine/doctrine-bundle ###
+  public_uploads:
+  symfony_var:

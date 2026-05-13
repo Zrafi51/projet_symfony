@@ -288,6 +288,7 @@ final class ChatRepository
         }
 
         $connection = $this->connectionFactory->getConnection();
+        $this->normalizeImportedSchema($connection);
         $connection->exec(
             'CREATE TABLE IF NOT EXISTS sessions (
                 id VARCHAR(80) PRIMARY KEY,
@@ -331,6 +332,60 @@ final class ChatRepository
         );
 
         $this->schemaEnsured = true;
+    }
+
+    private function normalizeImportedSchema(PDO $connection): void
+    {
+        if (!$this->tableExists($connection, 'sessions')) {
+            return;
+        }
+
+        $this->dropForeignKeyIfExists($connection, 'messages', 'fk_messages_session');
+        $this->modifyColumnIfExists($connection, 'sessions', 'id', 'ALTER TABLE sessions MODIFY id VARCHAR(80) NOT NULL');
+        $this->modifyColumnIfExists($connection, 'sessions', 'user_id', 'ALTER TABLE sessions MODIFY user_id VARCHAR(120) NOT NULL');
+        $this->modifyColumnIfExists($connection, 'messages', 'id', 'ALTER TABLE messages MODIFY id VARCHAR(80) NOT NULL');
+        $this->modifyColumnIfExists($connection, 'messages', 'session_id', 'ALTER TABLE messages MODIFY session_id VARCHAR(80) NOT NULL');
+        $this->modifyColumnIfExists($connection, 'chat_cards', 'id', 'ALTER TABLE chat_cards MODIFY id VARCHAR(80) NOT NULL');
+        $this->modifyColumnIfExists($connection, 'chat_cards', 'session_id', 'ALTER TABLE chat_cards MODIFY session_id VARCHAR(80) NOT NULL');
+        $this->modifyColumnIfExists($connection, 'chat_cards', 'user_id', 'ALTER TABLE chat_cards MODIFY user_id VARCHAR(120) NOT NULL');
+    }
+
+    private function tableExists(PDO $connection, string $table): bool
+    {
+        $statement = $connection->prepare(
+            'SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table'
+        );
+        $statement->execute(['table' => $table]);
+
+        return (int) $statement->fetchColumn() > 0;
+    }
+
+    private function modifyColumnIfExists(PDO $connection, string $table, string $column, string $sql): void
+    {
+        $statement = $connection->prepare(
+            'SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table AND COLUMN_NAME = :column'
+        );
+        $statement->execute(['table' => $table, 'column' => $column]);
+        if ((int) $statement->fetchColumn() > 0) {
+            $connection->exec($sql);
+        }
+    }
+
+    private function dropForeignKeyIfExists(PDO $connection, string $table, string $constraint): void
+    {
+        $statement = $connection->prepare(
+            'SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = :table
+               AND CONSTRAINT_NAME = :constraint
+               AND CONSTRAINT_TYPE = "FOREIGN KEY"'
+        );
+        $statement->execute(['table' => $table, 'constraint' => $constraint]);
+        if ((int) $statement->fetchColumn() > 0) {
+            $connection->exec(sprintf('ALTER TABLE %s DROP FOREIGN KEY %s', $table, $constraint));
+        }
     }
 
     private function ensureColumn(PDO $connection, string $table, string $column, string $sql): void

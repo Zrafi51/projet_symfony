@@ -1,7 +1,11 @@
-
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    ports:
-      - "5432"
-###< doctrine/doctrine-bundle ###
+  app:
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - symfony_var:/var/www/html/var
+      - public_uploads:/var/www/html/public/uploads
+
+  travel-agent:
+    volumes:
+      - ./Easy travel agent:/app

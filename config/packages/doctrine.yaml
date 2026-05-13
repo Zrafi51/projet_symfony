@@ -1,6 +1,13 @@
 doctrine:
     dbal:
-        url: '%env(resolve:DATABASE_URL)%'
+        driver: 'pdo_mysql'
+        server_version: '%env(default:default_db_server_version:DB_SERVER_VERSION)%'
+        charset: utf8mb4
+        host: '%env(DB_HOST)%'
+        port: '%env(int:DB_PORT)%'
+        dbname: '%env(DB_NAME)%'
+        user: '%env(DB_USER)%'
+        password: '%env(DB_PASSWORD)%'
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
     orm:

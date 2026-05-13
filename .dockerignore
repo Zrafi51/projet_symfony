@@ -1,0 +1,14 @@
+.git
+.vercel
+var
+vendor
+node_modules
+.env.local
+.env.*.local
+public/uploads
+TP3_Approximation_Polynomiale_Optimisation_Reponses.docx
+Easy travel agent/.git
+Easy travel agent/venv
+Easy travel agent/__pycache__
+Easy travel agent/**/__pycache__
+Easy travel agent/.env

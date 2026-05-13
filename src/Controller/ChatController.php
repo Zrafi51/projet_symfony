@@ -38,7 +38,7 @@ final class ChatController extends AbstractController
         $sessions = $this->hydrateSessions($this->chatRepository->findRecentSessions($userId), $userId);
 
         if ($sessions === []) {
-            $sessionId = 'offline-'.$this->chatRepository->generateId();
+            $sessionId = $this->generateOfflineSessionId();
             $this->chatRepository->createSession($sessionId, $userId, 'Nouvelle discussion', 'fr');
             $this->chatRepository->addMessage($sessionId, $userId, 'assistant', self::WELCOME_MESSAGE);
             $sessions = $this->hydrateSessions($this->chatRepository->findRecentSessions($userId), $userId);
@@ -67,7 +67,7 @@ final class ChatController extends AbstractController
         try {
             $sessionId = $this->travelAiClient->createSession($userId, $title, 'fr', $sessionId);
         } catch (RuntimeException) {
-            $sessionId = 'offline-'.$this->chatRepository->generateId();
+            $sessionId = $this->generateOfflineSessionId();
             $title .= ' (hors ligne)';
         }
 
@@ -240,7 +240,7 @@ final class ChatController extends AbstractController
         try {
             $sessionId = $this->travelAiClient->createSession($userId, $title, 'fr', $sessionId, null, $formData);
         } catch (RuntimeException) {
-            $sessionId = 'offline-'.$this->chatRepository->generateId();
+            $sessionId = $this->generateOfflineSessionId();
             $title .= ' (hors ligne)';
         }
 
@@ -477,6 +477,11 @@ final class ChatController extends AbstractController
         }
 
         return 'Mode hors ligne: je peux deja vous orienter si vous me donnez budget, periode et style de voyage.';
+    }
+
+    private function generateOfflineSessionId(): string
+    {
+        return 'offline-'.substr($this->chatRepository->generateId(), 0, 28);
     }
 
     private function buildHistoryTitle(string $prompt): string
