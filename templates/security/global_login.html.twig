@@ -1,0 +1,187 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Security Gateway | EasyTravel Internal{% endblock %}
+
+{% block body_class %}auth-body{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --fw-bg: #020617;
+            --fw-panel: #0f172a;
+            --fw-border: #334155;
+            --fw-accent: #3b82f6;
+            --fw-text-muted: #94a3b8;
+        }
+
+        body.auth-body {
+            background: var(--fw-bg) !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', 'Monaco', monospace;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .gateway-card {
+            width: 100%;
+            max-width: 450px;
+            background: var(--fw-panel);
+            border: 1px solid var(--fw-border);
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .gateway-header {
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--fw-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .gateway-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: #22c55e;
+            font-weight: 700;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 0 rgba(34, 197, 94, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0); }
+        }
+
+        .gateway-content {
+            padding: 32px;
+        }
+
+        .security-warning {
+            padding: 12px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .fw-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--fw-text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .fw-input {
+            width: 100%;
+            background: #020617;
+            border: 1px solid var(--fw-border);
+            padding: 12px;
+            color: white;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .fw-input:focus {
+            border-color: var(--fw-accent);
+        }
+
+        .fw-button {
+            width: 100%;
+            background: var(--fw-accent);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .fw-button:hover {
+            background: #2563eb;
+        }
+
+        .gateway-footer {
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--fw-border);
+            font-size: 0.7rem;
+            color: var(--fw-text-muted);
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="gateway-card">
+    <div class="gateway-header">
+        <div class="gateway-title">EasyTravel Gateway</div>
+        <div class="status-indicator">
+            <div class="pulse"></div>
+            ENCRYPTED
+        </div>
+    </div>
+
+    <div class="gateway-content">
+        <div class="security-warning">
+            <strong>ATTENTION:</strong> Access restricted to authorized personnel only. All connection attempts are logged and monitored. Unauthorized access is strictly prohibited.
+        </div>
+
+        <form method="post" action="{{ path('global_login') }}">
+            {% if error %}
+                <div style="color: #ef4444; font-size: 0.85rem; margin-bottom: 16px; padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2);">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <label class="fw-label" for="inputUsername">ID_IDENTIFIER</label>
+            <input type="text" value="{{ last_username }}" name="_username" id="inputUsername" class="fw-input" autocomplete="username" required autofocus placeholder="Enter UID">
+
+            <label class="fw-label" for="inputPassword">ACCESS_KEY</label>
+            <input type="password" name="_password" id="inputPassword" class="fw-input" autocomplete="current-password" required placeholder="Enter Secret Key">
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button class="fw-button" type="submit">
+                Request Access
+            </button>
+        </form>
+    </div>
+
+    <div class="gateway-footer">
+        PROTOCOL: TLS v1.3 | CIPHER: AES-256-GCM | SYSTEM: STACK-E1
+    </div>
+</div>
+{% endblock %}

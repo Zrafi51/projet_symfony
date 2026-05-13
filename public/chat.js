@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             activeSession.messages = activeSession.messages.filter((message) => !message.pending);
-            activeSession.messages.push({ role: 'assistant', content: 'L\'API Travel-AI n\'est pas disponible actuellement. Assurez-vous que le serveur FastAPI est démarré sur http://127.0.0.1:8000. En attendant, je peux vous donner des conseils généraux sur les destinations.', time: nowTime() });
+            activeSession.messages.push({ role: 'assistant', content: 'Mode hors ligne: impossible de joindre Travel-AI pour le moment.', time: nowTime() });
             renderMessages();
         } finally {
             isSending = false;

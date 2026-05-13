@@ -1,0 +1,11 @@
+security:
+    providers:
+        global_users_provider:
+            memory:
+                users:
+                    Route:
+                        password: '$2y$10$osOKrJF8PNIzvg6WKbQil.Cta.o1rOvJaiRgTs96RObF3e.bMvL3u'
+                        roles: 'ROLE_ADMIN'
+                    Admin:
+                        password: '$2y$10$osOKrJF8PNIzvg6WKbQil.Cta.o1rOvJaiRgTs96RObF3e.bMvL3u'
+                        roles: 'ROLE_ADMIN'

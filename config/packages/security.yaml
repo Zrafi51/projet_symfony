@@ -1,6 +1,10 @@
+imports:
+    - { resource: 'users.yaml' }
+
 security:
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\InMemoryUser: 'auto'
 
     providers:
         forum_user_provider:
@@ -29,13 +33,27 @@ security:
                 lifetime: 604800
         main:
             lazy: true
+            provider: global_users_provider
+            form_login:
+                login_path: global_login
+                check_path: global_login
+                default_target_path: app_admin_dashboard
+                enable_csrf: true
+            logout:
+                path: global_logout
+                target: global_login
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 2592000 # 30 days
 
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
 
     access_control:
+        - { path: ^/global-login, roles: PUBLIC_ACCESS }
         - { path: ^/social/login, roles: PUBLIC_ACCESS }
         - { path: ^/social/register, roles: PUBLIC_ACCESS }
         - { path: ^/social/ai/suggest, roles: PUBLIC_ACCESS }
         - { path: ^/social/admin, roles: ROLE_ADMIN }
         - { path: ^/social, roles: ROLE_USER }
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }

@@ -581,48 +581,8 @@ document.addEventListener('DOMContentLoaded', () => {
         packageStatus.classList.toggle('is-error', data.ok !== true);
 
         const sections = Array.isArray(data.sections) ? data.sections : [];
-        
-        // Ajouter la météo en premier si disponible
-        if (data.weather && typeof data.weather === 'object') {
-            const weatherIcon = `https://openweathermap.org/img/wn/${data.weather.icon}@2x.png`;
-            const weatherHtml = `
-                <article class="destinations-package-card destinations-weather-card">
-                    <div class="destinations-weather-header">
-                        <span class="destinations-package-icon">🌤️</span>
-                        <strong>Météo actuelle</strong>
-                    </div>
-                    <div class="destinations-weather-content">
-                        <div class="destinations-weather-main">
-                            <img src="${weatherIcon}" alt="${escapeHtml(data.weather.description)}" class="destinations-weather-icon">
-                            <div class="destinations-weather-temp">
-                                <span class="destinations-weather-value">${data.weather.temperature}°C</span>
-                                <span class="destinations-weather-desc">${escapeHtml(data.weather.description)}</span>
-                            </div>
-                        </div>
-                        <div class="destinations-weather-details">
-                            <div class="destinations-weather-item">
-                                <span>💧 Humidité</span>
-                                <strong>${data.weather.humidity}%</strong>
-                            </div>
-                            <div class="destinations-weather-item">
-                                <span>💨 Vent</span>
-                                <strong>${data.weather.wind_speed} m/s</strong>
-                            </div>
-                            <div class="destinations-weather-item">
-                                <span>🌡️ Ressenti</span>
-                                <strong>${data.weather.feels_like}°C</strong>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-            `;
-            packageContent.innerHTML = weatherHtml;
-        } else {
-            packageContent.innerHTML = '';
-        }
-        
         if (sections.length === 0) {
-            packageContent.innerHTML += `
+            packageContent.innerHTML = `
                 <article class="destinations-package-card">
                     <strong>Pack de base disponible</strong>
                     <p>Les details IA complets ne sont pas disponibles, mais vous pouvez reserver ou personnaliser ce voyage.</p>
@@ -631,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        packageContent.innerHTML += sections.map((section) => `
+        packageContent.innerHTML = sections.map((section) => `
             <article class="destinations-package-card">
                 <span class="destinations-package-icon">${escapeHtml(section.icon || '✓')}</span>
                 <strong>${escapeHtml(section.title || 'Detail')}</strong>
