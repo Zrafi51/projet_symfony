@@ -1,0 +1,13 @@
+app = "easytravel-agent"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile.agent"
+
+[env]
+  PORT = "8000"
+  PYTHONUNBUFFERED = "1"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

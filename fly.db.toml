@@ -1,0 +1,19 @@
+app = "easytravel-db"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile.db"
+
+[env]
+  MYSQL_DATABASE = "voyage"
+  MYSQL_USER = "easytravel"
+  PORT = "3306"
+
+[mounts]
+  source = "easytravel_db_data"
+  destination = "/var/lib/mysql"
+  initial_size = "1gb"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

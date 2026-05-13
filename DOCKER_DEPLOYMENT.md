@@ -38,6 +38,36 @@ Create a Render Blueprint from this repository. During Blueprint creation, Rende
 
 The MariaDB service imports `voyage.sql` only when its `/var/lib/mysql` disk is empty. To reseed later, create a new database service/disk or run a manual import from a shell.
 
+## Fly.io deployment
+
+Fly.io uses three apps for this project:
+
+- `easytravel-web`: public Symfony/PHP app from `fly.web.toml`.
+- `easytravel-agent`: private FastAPI app from `fly.agent.toml`.
+- `easytravel-db`: private MariaDB app with a persistent volume from `fly.db.toml`.
+
+The apps communicate over Fly private networking with `.internal` DNS:
+
+- `easytravel-db.internal:3306`
+- `easytravel-agent.internal:8000`
+
+Typical deploy order:
+
+```powershell
+fly apps create easytravel-db --config fly.db.toml
+fly volumes create easytravel_db_data --app easytravel-db --region cdg --size 1
+fly secrets set --app easytravel-db MYSQL_PASSWORD=... MYSQL_ROOT_PASSWORD=...
+fly deploy --config fly.db.toml
+
+fly apps create easytravel-agent --config fly.agent.toml
+fly secrets set --app easytravel-agent OPENAI_API_KEY=... LITEAPI_KEY=...
+fly deploy --config fly.agent.toml
+
+fly apps create easytravel-web --config fly.web.toml
+fly secrets set --app easytravel-web APP_SECRET=... DB_PASSWORD=...
+fly deploy --config fly.web.toml
+```
+
 ## Important Vercel note
 
 Vercel does not run `docker compose` production stacks or long-running Docker containers. Vercel deploys projects as static output and Functions using supported runtimes such as Node.js, Bun, Python, Go, Ruby, Rust, Wasm, and Edge.

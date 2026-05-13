@@ -1,0 +1,27 @@
+app = "easytravel-web"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_ENV = "prod"
+  DB_HOST = "easytravel-db.internal"
+  DB_PORT = "3306"
+  DB_NAME = "voyage"
+  DB_USER = "easytravel"
+  DB_SERVER_VERSION = "mariadb-10.11.0"
+  EASY_TRAVEL_AGENT_URL = "http://easytravel-agent.internal:8000"
+  FLASK_RECOMMENDATION_URL = "http://easytravel-agent.internal:8000/api"
+
+[http_service]
+  internal_port = 10000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
